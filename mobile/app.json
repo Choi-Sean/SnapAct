@@ -1,0 +1,91 @@
+{
+  "expo": {
+    "name": "Snapsist",
+    "slug": "snapact",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.snapact.app",
+      "buildNumber": "12",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.snapact.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#2563eb",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Snapsist needs photo library access to analyze existing photos.",
+          "cameraPermission": "Snapsist needs camera access to photograph business cards, receipts, and flyers."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Snapsist adds events to your calendar when a photo contains event details.",
+          "remindersPermission": "Snapsist adds reminders when a photo contains a to-do."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Snapsist adds contacts when a photo contains a business card."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#2563eb"
+        }
+      ],
+      "expo-mail-composer",
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Snapsist needs photo library access to save demo photos.",
+          "savePhotosPermission": "Snapsist saves demo photos into a Snapsist album."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#2563eb"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cf1866e2-008b-4e5e-9f67-7f72030c7ae9"
+      }
+    },
+    "owner": "seanchoi1991"
+  }
+}

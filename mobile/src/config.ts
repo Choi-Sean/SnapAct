@@ -6,3 +6,7 @@ export const API_BASE_URL = 'http://10.0.0.244:8000';
 
 // Must match backend/.env's API_SHARED_SECRET.
 export const API_KEY = '5GpJo9PcN9KG2nrBpFxygyXlb2-hkcvW';
+
+// The marketing site — used for legal policy links (Terms, Privacy, Refund,
+// Child Safety) from Settings. Update once the site has a real domain.
+export const WEB_BASE_URL = 'https://snapsist.app';

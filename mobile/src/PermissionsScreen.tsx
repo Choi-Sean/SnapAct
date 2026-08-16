@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Linking, ScrollView, StyleSheet, Text, Toucha
 
 import { cancelPlan, clearSession, deleteAccount, loadSession, Session } from './auth';
 import AuthScreen from './AuthScreen';
+import { WEB_BASE_URL } from './config';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
 import { Locale, LOCALE_LABELS } from './i18n/dictionaries';
@@ -140,6 +141,13 @@ export default function PermissionsScreen() {
 
   const deniedCount = ITEMS.filter((i) => statuses[i.key] === 'denied').length;
 
+  const LEGAL_LINKS = [
+    { label: t.permissions.legalTerms, path: '/terms' },
+    { label: t.permissions.legalPrivacy, path: '/privacy' },
+    { label: t.permissions.legalRefund, path: '/refund' },
+    { label: t.permissions.legalChildSafety, path: '/child-safety' },
+  ];
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>{t.permissions.title}</Text>
@@ -261,6 +269,20 @@ export default function PermissionsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+      </View>
+
+      <View style={styles.legalSection}>
+        <Text style={styles.legalTitle}>{t.permissions.legalTitle}</Text>
+        {LEGAL_LINKS.map((link) => (
+          <TouchableOpacity
+            key={link.path}
+            style={styles.legalRow}
+            onPress={() => Linking.openURL(`${WEB_BASE_URL}${link.path}`)}
+          >
+            <Text style={styles.legalRowText}>{link.label}</Text>
+            <Text style={styles.legalRowChevron}>›</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <AuthScreen
@@ -392,4 +414,16 @@ const styles = StyleSheet.create({
   langChipActive: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
   langChipText: { fontSize: 13, fontWeight: '700', color: '#444' },
   langChipTextActive: { color: '#fff' },
+  legalSection: { gap: 2, marginTop: 4 },
+  legalTitle: { fontSize: 15, fontWeight: '800', color: '#111', marginBottom: 8 },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f2f3f6',
+  },
+  legalRowText: { fontSize: 13.5, color: '#333', fontWeight: '600' },
+  legalRowChevron: { fontSize: 16, color: '#bbb' },
 });

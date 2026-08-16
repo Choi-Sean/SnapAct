@@ -136,6 +136,11 @@ export interface Dictionary {
     notice: string;
     openSettingsButton: string;
     manageButton: string;
+    legalTitle: string;
+    legalTerms: string;
+    legalPrivacy: string;
+    legalRefund: string;
+    legalChildSafety: string;
     languageTitle: string;
   };
   review: {
@@ -404,6 +409,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: 'A denied permission may not prompt again — open Settings to turn it on directly.',
       openSettingsButton: 'Open Settings app',
       manageButton: 'Manage',
+      legalTitle: 'Legal',
+      legalTerms: 'Terms of Use',
+      legalPrivacy: 'Privacy Policy',
+      legalRefund: 'Refund Policy',
+      legalChildSafety: 'Child Safety',
       languageTitle: 'Language',
     },
     review: {
@@ -683,6 +693,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: '거부된 권한은 앱에서 다시 요청해도 팝업이 안 뜰 수 있어요. 그럴 땐 아래 버튼으로 설정 앱에서 직접 켜주세요.',
       openSettingsButton: '설정 앱에서 열기',
       manageButton: '관리',
+      legalTitle: '법적 고지',
+      legalTerms: '이용약관',
+      legalPrivacy: '개인정보처리방침',
+      legalRefund: '환불 정책',
+      legalChildSafety: '아동 안전 정책',
       languageTitle: '언어',
     },
     review: {
@@ -962,6 +977,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: '拒否された権限は再度リクエストしてもポップアップが表示されないことがあります。その場合は下のボタンから設定アプリで直接オンにしてください。',
       openSettingsButton: '設定アプリを開く',
       manageButton: '管理',
+      legalTitle: '法的情報',
+      legalTerms: '利用規約',
+      legalPrivacy: 'プライバシーポリシー',
+      legalRefund: '返金ポリシー',
+      legalChildSafety: '児童保護',
       languageTitle: '言語',
     },
     review: {
@@ -1241,6 +1261,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: '被拒绝的权限可能不会再弹出请求 —— 这种情况下请用下面的按钮直接去设置里打开。',
       openSettingsButton: '打开系统设置',
       manageButton: '管理',
+      legalTitle: '法律信息',
+      legalTerms: '使用条款',
+      legalPrivacy: '隐私政策',
+      legalRefund: '退款政策',
+      legalChildSafety: '儿童安全',
       languageTitle: '语言',
     },
     review: {
@@ -1529,6 +1554,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: 'Un permiso denegado puede no volver a preguntar — abre Ajustes para activarlo directamente.',
       openSettingsButton: 'Abrir la app de Ajustes',
       manageButton: 'Gestionar',
+      legalTitle: 'Legal',
+      legalTerms: 'Términos de uso',
+      legalPrivacy: 'Política de privacidad',
+      legalRefund: 'Política de reembolsos',
+      legalChildSafety: 'Seguridad infantil',
       languageTitle: 'Idioma',
     },
     review: {
@@ -1813,6 +1843,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: 'Une autorisation refusée peut ne plus jamais redemander — ouvrez Réglages pour l’activer directement.',
       openSettingsButton: 'Ouvrir l’app Réglages',
       manageButton: 'Gérer',
+      legalTitle: 'Mentions légales',
+      legalTerms: "Conditions d'utilisation",
+      legalPrivacy: 'Politique de confidentialité',
+      legalRefund: 'Politique de remboursement',
+      legalChildSafety: 'Sécurité des enfants',
       languageTitle: 'Langue',
     },
     review: {
@@ -2097,6 +2132,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       notice: 'Eine abgelehnte Berechtigung fragt möglicherweise nicht erneut nach — öffne die Einstellungen, um sie direkt zu aktivieren.',
       openSettingsButton: 'Einstellungen-App öffnen',
       manageButton: 'Verwalten',
+      legalTitle: 'Rechtliches',
+      legalTerms: 'Nutzungsbedingungen',
+      legalPrivacy: 'Datenschutzerklärung',
+      legalRefund: 'Rückerstattungsrichtlinie',
+      legalChildSafety: 'Kinderschutz',
       languageTitle: 'Sprache',
     },
     review: {

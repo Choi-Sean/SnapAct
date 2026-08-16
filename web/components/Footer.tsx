@@ -1,9 +1,13 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import { legalDictionaries } from '@/lib/i18n/legal';
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const legalNav = legalDictionaries[locale].nav;
   const year = new Date().getFullYear();
 
   return (
@@ -19,6 +23,20 @@ export default function Footer() {
         <p className="text-xs text-muted" suppressHydrationWarning>
           © {year} Snapsist. {t.footer.rights}
         </p>
+      </div>
+      <div className="mx-auto flex max-w-content flex-wrap justify-center gap-x-6 gap-y-2 border-t border-border px-6 py-5 text-center sm:justify-start sm:text-left">
+        <Link href="/terms" className="text-xs text-muted hover:text-text">
+          {legalNav.terms}
+        </Link>
+        <Link href="/privacy" className="text-xs text-muted hover:text-text">
+          {legalNav.privacy}
+        </Link>
+        <Link href="/refund" className="text-xs text-muted hover:text-text">
+          {legalNav.refund}
+        </Link>
+        <Link href="/child-safety" className="text-xs text-muted hover:text-text">
+          {legalNav.childSafety}
+        </Link>
       </div>
     </footer>
   );

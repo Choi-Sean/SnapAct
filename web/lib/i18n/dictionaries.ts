@@ -163,7 +163,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       items: [
         {
           q: 'Do I need to create an account?',
-          a: 'No. Snapsist writes directly into apps already on your phone — Contacts, Calendar, Reminders, Wallet. There’s no account system for the core features.',
+          a: 'No — the core features (Contacts, Calendar, Reminders, Wallet, Notes) work without one. An account is only needed for the Pro plan: unlimited photos, batch processing, and history synced across devices.',
         },
         {
           q: 'Does my photo get stored anywhere?',
@@ -183,7 +183,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
         {
           q: 'What does it cost?',
-          a: 'Free during the beta. Pricing after that hasn’t been decided yet.',
+          a: 'Free covers 10 photos a month. Pro is $4.99/month for unlimited photos, batch processing, and synced history — and during the beta, Pro is unlocked for everyone at no cost.',
+        },
+        {
+          q: 'Can I cancel my plan anytime?',
+          a: 'Yes — cancel from Settings whenever you want. You drop back to the Free plan immediately, and everything you’ve already saved stays exactly where it is.',
+        },
+        {
+          q: 'Can I delete my account?',
+          a: 'Yes. Settings has a Delete Account option that permanently removes your account and its data right away — no support ticket needed.',
         },
       ],
     },
@@ -272,12 +280,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: '실제로 많이 물어보시는 것들',
       items: [
-        { q: '계정을 만들어야 하나요?', a: '아니요. Snapsist는 이미 휴대폰에 있는 앱(연락처, 캘린더, 미리 알림, Wallet)에 바로 씁니다. 핵심 기능엔 계정 시스템 자체가 없어요.' },
+        { q: '계정을 만들어야 하나요?', a: '아니요 — 핵심 기능(연락처, 캘린더, 미리 알림, Wallet, 메모)은 계정 없이도 다 됩니다. 계정은 Pro 플랜(무제한 처리, 일괄 처리, 기기 간 기록 동기화)을 쓸 때만 필요해요.' },
         { q: '제 사진이 어딘가에 저장되나요?', a: '사진은 분석을 위해 한 번 전송되고 즉시 폐기됩니다 — Snapsist 백엔드는 스캔한 사진의 사본이나 기록을 보관하지 않습니다.' },
         { q: '항목을 잘못 인식하면 어떡하죠?', a: '저장 전에 항상 확인 화면이 먼저 뜨고, 실제로 저장될 항목을 정확히 보여줍니다. 뭐든 수정하거나 취소할 수 있고, 확인을 누르기 전엔 아무것도 저장되지 않아요.' },
         { q: '왜 메모는 바로 저장 안 하고 공유 시트를 여나요?', a: 'Apple과 Google 둘 다 Notes/Keep 앱에 쓸 수 있는 공개 API를 제공하지 않아서, 어떤 서드파티 앱도 직접 쓸 방법이 없어요. 그래서 Snapsist는 정리된 메모를 공유 시트로 넘겨줍니다 — 탭 0번이 아니라 1번이지만, 기술적으로 가능한 최선입니다.' },
         { q: 'Android도 지원하나요?', a: '지금은 iOS 전용(TestFlight 베타)입니다. 미리 알림과 Apple Wallet은 애초에 iOS 전용 프레임워크라, Android 버전이 나와도 이 두 개는 계속 iOS에서만 됩니다.' },
-        { q: '비용은요?', a: '베타 기간엔 무료입니다. 이후 요금제는 아직 정해지지 않았어요.' },
+        { q: '비용은요?', a: '무료 플랜은 월 10장까지 무료예요. Pro는 월 $4.99로 무제한 처리, 일괄 처리, 기록 동기화가 되고요 — 베타 기간엔 Pro도 모두에게 무료로 열려있어요.' },
+        { q: '언제든 해지할 수 있나요?', a: '네 — 설정에서 언제든 해지할 수 있어요. 바로 무료 플랜으로 전환되고, 이미 저장한 기록은 그대로 남아있어요.' },
+        { q: '계정을 삭제할 수 있나요?', a: '네. 설정의 계정 삭제 버튼으로 계정과 데이터를 바로 영구 삭제할 수 있어요 — 따로 문의할 필요 없어요.' },
       ],
     },
     cta: {
@@ -365,12 +375,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'よくある質問',
       headline: '実際によく聞かれること',
       items: [
-        { q: 'アカウント登録は必要ですか？', a: 'いいえ。Snapsistはすでにスマホにあるアプリ（連絡先、カレンダー、リマインダー、Wallet）に直接書き込みます。主要機能にアカウント制度自体がありません。' },
+        { q: 'アカウント登録は必要ですか？', a: 'いいえ — 主要機能（連絡先、カレンダー、リマインダー、Wallet、メモ）はアカウントなしで使えます。アカウントが必要なのはProプラン（無制限処理、一括処理、デバイス間の履歴同期）を使う場合だけです。' },
         { q: '撮影した写真はどこかに保存されますか？', a: '写真は解析のために一度だけ送信され、直後に破棄されます — Snapsistのサーバーはスキャンした写真のコピーや履歴を保持しません。' },
         { q: '内容が間違って認識された場合は？', a: '保存前に必ず確認画面が開き、実際に書き込まれる項目が正確に表示されます。内容を編集したりキャンセルしたりでき、確定するまで何も保存されません。' },
         { q: 'なぜメモは直接保存せず共有シートを開くのですか？', a: 'AppleもGoogleもメモ/Keepアプリへの公開APIを提供していないため、どのサードパーティアプリも直接書き込む方法がありません。そのためSnapsistは整形済みのメモを共有シート経由で渡します — タップ0回ではなく1回になりますが、技術的に可能な最善の方法です。' },
         { q: 'Androidにも対応していますか？', a: '現在はiOS専用（TestFlightベータ）です。リマインダーとApple Walletはそもそもの機能上iOS専用のため、Android版が出てもこの2つはiOSのみとなります。' },
-        { q: '料金はいくらですか？', a: 'ベータ期間中は無料です。その後の料金プランはまだ決まっていません。' },
+        { q: '料金はいくらですか？', a: '無料プランは月10枚まで無料です。Proは月額$4.99で無制限処理・一括処理・履歴同期が使えます — ベータ期間中はProも全員に無料で開放されています。' },
+        { q: 'いつでも解約できますか？', a: 'はい — 設定画面からいつでも解約できます。すぐに無料プランに戻り、すでに保存した記録はそのまま残ります。' },
+        { q: 'アカウントを削除できますか？', a: 'はい。設定の「アカウントを削除」からアカウントとデータをすぐに完全に削除できます — サポートへの連絡は不要です。' },
       ],
     },
     cta: {
@@ -458,12 +470,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: '常见问题',
       headline: '大家真正会问的问题',
       items: [
-        { q: '需要注册账号吗？', a: '不需要。Snapsist 直接写入你手机里已有的应用 — 通讯录、日历、提醒事项、Wallet。核心功能没有账号系统。' },
+        { q: '需要注册账号吗？', a: '不需要。核心功能（通讯录、日历、提醒事项、Wallet、备忘录）不需要账号也能用。只有使用 Pro 套餐（无限处理、批量处理、跨设备记录同步）时才需要账号。' },
         { q: '我的照片会被存储在哪里吗？', a: '照片仅用于一次性分析，分析完立即删除 — Snapsist 的服务器不会保留你扫描过内容的副本或记录。' },
         { q: '如果 Snapsist 识别错了怎么办？', a: '每次保存前都会先打开确认页面，列出即将写入的具体内容。你可以修改任意内容，或直接取消 — 在你确认之前不会保存任何东西。' },
         { q: '为什么备忘录不能直接保存，而是打开分享面板？', a: '苹果和谷歌都没有为备忘录 / Keep 应用提供公开的接口，所以任何第三方应用都无法直接写入。因此 Snapsist 会通过分享面板把整理好的备忘录传递过去 — 虽然要多点一下，但这已经是技术上能做到的最好方式。' },
         { q: '支持 Android 吗？', a: '目前仅支持 iOS（TestFlight 测试版）。提醒事项和 Apple Wallet 本身就是 iOS 专属功能，即使以后推出 Android 版本，这两项功能仍只在 iOS 上可用。' },
-        { q: '需要付费吗？', a: '测试期间完全免费。后续的收费方案尚未确定。' },
+        { q: '需要付费吗？', a: '免费版每月可处理 10 张照片。Pro 每月 $4.99，支持无限处理、批量处理和记录同步 — 测试期间，Pro 对所有人免费开放。' },
+        { q: '可以随时取消吗？', a: '可以 — 随时在设置里取消，会立即切换回免费版，已保存的记录都会保留。' },
+        { q: '可以删除账户吗？', a: '可以。在设置的"删除账户"里可以立即永久删除账户和数据 — 不需要联系客服。' },
       ],
     },
     cta: {
@@ -551,12 +565,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'Preguntas frecuentes',
       headline: 'Lo que la gente realmente pregunta',
       items: [
-        { q: '¿Necesito crear una cuenta?', a: 'No. Snapsist escribe directamente en las apps que ya tienes en tu teléfono — Contactos, Calendario, Recordatorios, Wallet. No hay sistema de cuentas para las funciones principales.' },
+        { q: '¿Necesito crear una cuenta?', a: 'No — las funciones principales (Contactos, Calendario, Recordatorios, Wallet, Notas) funcionan sin cuenta. Solo hace falta una cuenta para el plan Pro: fotos ilimitadas, procesamiento por lotes e historial sincronizado entre dispositivos.' },
         { q: '¿Se guarda mi foto en algún sitio?', a: 'Tu foto se envía una sola vez para analizarla y se descarta de inmediato — el servidor de Snapsist no conserva copia ni historial de lo que has escaneado.' },
         { q: '¿Y si Snapsist reconoce mal un campo?', a: 'Cada guardado abre primero una pantalla de revisión con los campos exactos que se van a escribir. Puedes editar cualquier cosa o cancelar — no se guarda nada hasta que confirmas.' },
         { q: '¿Por qué Snapsist abre la hoja de compartir para Notas en vez de guardar directamente?', a: 'Ni Apple ni Google ofrecen una API pública para sus apps de Notas / Keep, así que ninguna app externa puede escribir directamente en ellas. Snapsist entrega en su lugar una nota ya formateada mediante la hoja de compartir — un toque en vez de cero, que es lo máximo que se puede automatizar técnicamente.' },
         { q: '¿Está disponible en Android?', a: 'Por ahora Snapsist es solo para iOS, en TestFlight. Recordatorios y Apple Wallet son funciones exclusivas de iOS de todos modos, así que seguirían siendo solo de iOS aunque hubiera una versión para Android.' },
-        { q: '¿Cuánto cuesta?', a: 'Gratis durante la beta. El precio después de eso aún no se ha decidido.' },
+        { q: '¿Cuánto cuesta?', a: 'El plan Free cubre 10 fotos al mes. Pro cuesta $4.99/mes por fotos ilimitadas, procesamiento por lotes e historial sincronizado — y durante la beta, Pro está desbloqueado gratis para todos.' },
+        { q: '¿Puedo cancelar cuando quiera?', a: 'Sí — cancela desde Ajustes cuando quieras. Vuelves al plan Free al instante, y todo lo que ya guardaste se queda tal cual.' },
+        { q: '¿Puedo eliminar mi cuenta?', a: 'Sí. En Ajustes hay una opción para eliminar la cuenta que borra tu cuenta y tus datos de forma permanente al instante — sin tener que contactar con soporte.' },
       ],
     },
     cta: {
@@ -644,12 +660,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: 'Les questions qu’on nous pose vraiment',
       items: [
-        { q: 'Dois-je créer un compte ?', a: 'Non. Snapsist écrit directement dans les applications déjà présentes sur votre téléphone — Contacts, Calendrier, Rappels, Wallet. Il n’y a pas de système de compte pour les fonctions principales.' },
+        { q: 'Dois-je créer un compte ?', a: 'Non — les fonctions principales (Contacts, Calendrier, Rappels, Wallet, Notes) fonctionnent sans compte. Un compte n’est nécessaire que pour le forfait Pro : photos illimitées, traitement par lots et historique synchronisé entre appareils.' },
         { q: 'Ma photo est-elle stockée quelque part ?', a: 'Votre photo est envoyée une seule fois pour être analysée, puis immédiatement supprimée — le serveur de Snapsist ne conserve ni copie ni historique de ce que vous avez numérisé.' },
         { q: 'Et si Snapsist se trompe sur un champ ?', a: 'Chaque enregistrement ouvre d’abord un écran de vérification listant exactement les champs qui vont être écrits. Vous pouvez tout modifier, ou annuler — rien n’est enregistré tant que vous n’avez pas confirmé.' },
         { q: 'Pourquoi Snapsist ouvre-t-il la feuille de partage pour Notes au lieu d’enregistrer directement ?', a: 'Ni Apple ni Google ne fournissent d’API publique pour leurs applications Notes / Keep, donc aucune application tierce ne peut y écrire directement. Snapsist transmet donc une note déjà mise en forme via la feuille de partage — un geste au lieu de zéro, ce qui est le maximum qu’il soit techniquement possible d’automatiser.' },
         { q: 'Est-ce disponible sur Android ?', a: 'Snapsist est pour l’instant réservé à iOS, sur TestFlight. Rappels et Apple Wallet sont de toute façon des fonctions propres à iOS, donc elles resteraient réservées à iOS même avec une version Android.' },
-        { q: 'Combien ça coûte ?', a: 'Gratuit pendant la bêta. La tarification ensuite n’a pas encore été décidée.' },
+        { q: 'Combien ça coûte ?', a: 'Le forfait Free couvre 10 photos par mois. Pro coûte 4,99 $/mois pour des photos illimitées, le traitement par lots et l’historique synchronisé — et pendant la bêta, Pro est débloqué gratuitement pour tout le monde.' },
+        { q: 'Puis-je résilier à tout moment ?', a: 'Oui — résiliez depuis Réglages quand vous voulez. Vous repassez immédiatement au forfait Free, et tout ce que vous avez déjà enregistré reste tel quel.' },
+        { q: 'Puis-je supprimer mon compte ?', a: 'Oui. Réglages propose une option Supprimer le compte qui efface immédiatement et définitivement votre compte et vos données — sans avoir à contacter le support.' },
       ],
     },
     cta: {
@@ -737,12 +755,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: 'Fragen, die wirklich gestellt werden',
       items: [
-        { q: 'Muss ich ein Konto erstellen?', a: 'Nein. Snapsist schreibt direkt in Apps, die schon auf deinem Handy sind — Kontakte, Kalender, Erinnerungen, Wallet. Für die Kernfunktionen gibt es kein Kontosystem.' },
+        { q: 'Muss ich ein Konto erstellen?', a: 'Nein — die Kernfunktionen (Kontakte, Kalender, Erinnerungen, Wallet, Notizen) funktionieren ohne Konto. Ein Konto ist nur für den Pro-Plan nötig: unbegrenzte Fotos, Stapelverarbeitung und geräteübergreifend synchronisierter Verlauf.' },
         { q: 'Wird mein Foto irgendwo gespeichert?', a: 'Dein Foto wird einmal zur Analyse gesendet und danach sofort gelöscht — der Server von Snapsist behält weder eine Kopie noch einen Verlauf dessen, was du gescannt hast.' },
         { q: 'Was, wenn Snapsist ein Feld falsch erkennt?', a: 'Jeder Speichervorgang öffnet zuerst einen Prüfbildschirm mit genau den Feldern, die geschrieben werden. Du kannst alles bearbeiten oder abbrechen — gespeichert wird erst nach deiner Bestätigung.' },
         { q: 'Warum öffnet Snapsist für Notizen das Teilen-Menü, statt direkt zu speichern?', a: 'Weder Apple noch Google bieten eine öffentliche Schnittstelle für ihre Notizen- / Keep-App, sodass keine Drittanbieter-App direkt hineinschreiben kann. Snapsist übergibt stattdessen eine formatierte Notiz über das Teilen-Menü — ein Fingertipp statt null, mehr Automatisierung ist technisch nicht möglich.' },
         { q: 'Gibt es das auch für Android?', a: 'Snapsist ist derzeit nur für iOS verfügbar, über TestFlight. Erinnerungen und Apple Wallet sind ohnehin iOS-spezifische Funktionen, die auch bei einer Android-Version iOS-exklusiv blieben.' },
-        { q: 'Was kostet es?', a: 'Während der Beta kostenlos. Die Preisgestaltung danach steht noch nicht fest.' },
+        { q: 'Was kostet es?', a: 'Der Free-Plan deckt 10 Fotos im Monat ab. Pro kostet 4,99 $/Monat für unbegrenzte Fotos, Stapelverarbeitung und synchronisierten Verlauf — und während der Beta ist Pro für alle kostenlos freigeschaltet.' },
+        { q: 'Kann ich jederzeit kündigen?', a: 'Ja — kündige jederzeit in den Einstellungen. Du wechselst sofort zurück zum Free-Plan, und alles, was du bereits gespeichert hast, bleibt erhalten.' },
+        { q: 'Kann ich mein Konto löschen?', a: 'Ja. In den Einstellungen gibt es die Option „Konto löschen“, die dein Konto und deine Daten sofort dauerhaft entfernt — ganz ohne Support-Anfrage.' },
       ],
     },
     cta: {

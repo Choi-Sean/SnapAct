@@ -65,11 +65,11 @@ def signup(req: SignupRequest) -> AuthResponse:
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT id FROM dbo.users WHERE email = %s", (req.email,))
+        cur.execute("SELECT UserId FROM dbo.Users WHERE Email = %s", (req.email,))
         if cur.fetchone():
             raise HTTPException(status_code=409, detail="An account with this email already exists.")
         cur.execute(
-            "INSERT INTO dbo.users (id, email, password_hash, [plan], created_at) VALUES (%s, %s, %s, 'free', %s)",
+            "INSERT INTO dbo.Users (UserId, Email, PasswordHash, [Plan], CreateDate) VALUES (%s, %s, %s, 'free', %s)",
             (user_id, req.email, password_hash, int(time.time())),
         )
         conn.commit()
@@ -87,18 +87,18 @@ def login(req: LoginRequest) -> AuthResponse:
     try:
         cur = conn.cursor(as_dict=True)
         cur.execute(
-            "SELECT id, password_hash, [plan] FROM dbo.users WHERE email = %s", (req.email.strip().lower(),)
+            "SELECT UserId, PasswordHash, [Plan] FROM dbo.Users WHERE Email = %s", (req.email.strip().lower(),)
         )
         row = cur.fetchone()
     finally:
         conn.close()
 
-    if not row or not row["password_hash"] or not bcrypt.checkpw(
-        req.password.encode("utf-8"), row["password_hash"].encode("utf-8")
+    if not row or not row["PasswordHash"] or not bcrypt.checkpw(
+        req.password.encode("utf-8"), row["PasswordHash"].encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
 
-    return AuthResponse(token=_make_token(row["id"]), email=req.email.strip().lower(), plan=row["plan"])
+    return AuthResponse(token=_make_token(row["UserId"]), email=req.email.strip().lower(), plan=row["Plan"])
 
 
 def _current_user_id(authorization: str = Header(default="")) -> str:
@@ -114,7 +114,7 @@ def _current_user_id(authorization: str = Header(default="")) -> str:
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT id FROM dbo.users WHERE id = %s", (payload["sub"],))
+        cur.execute("SELECT UserId FROM dbo.Users WHERE UserId = %s", (payload["sub"],))
         row = cur.fetchone()
     finally:
         conn.close()
@@ -130,33 +130,33 @@ def get_current_user(authorization: str = Header(default="")) -> UserOut:
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("SELECT email, [plan] FROM dbo.users WHERE id = %s", (user_id,))
+        cur.execute("SELECT Email, [Plan] FROM dbo.Users WHERE UserId = %s", (user_id,))
         row = cur.fetchone()
     finally:
         conn.close()
-    return UserOut(email=row["email"], plan=row["plan"])
+    return UserOut(email=row["Email"], plan=row["Plan"])
 
 
 def cancel_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("UPDATE dbo.users SET [plan] = 'free' WHERE id = %s", (user_id,))
-        cur.execute("SELECT email, [plan] FROM dbo.users WHERE id = %s", (user_id,))
+        cur.execute("UPDATE dbo.Users SET [Plan] = 'free' WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, [Plan] FROM dbo.Users WHERE UserId = %s", (user_id,))
         row = cur.fetchone()
         conn.commit()
     finally:
         conn.close()
-    return UserOut(email=row["email"], plan=row["plan"])
+    return UserOut(email=row["Email"], plan=row["Plan"])
 
 
 def delete_account(user_id: str = Depends(_current_user_id)) -> None:
     conn = get_connection()
     try:
         cur = conn.cursor()
-        # uploaded_images has no FK cascade (see db.py) so it's cleaned up explicitly.
-        cur.execute("DELETE FROM dbo.uploaded_images WHERE user_id = %s", (user_id,))
-        cur.execute("DELETE FROM dbo.users WHERE id = %s", (user_id,))
+        # UploadedImages has no FK cascade (see db.py) so it's cleaned up explicitly.
+        cur.execute("DELETE FROM dbo.UploadedImages WHERE UserId = %s", (user_id,))
+        cur.execute("DELETE FROM dbo.Users WHERE UserId = %s", (user_id,))
         conn.commit()
     finally:
         conn.close()

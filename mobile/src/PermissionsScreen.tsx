@@ -4,11 +4,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { Emoji, EmojiName } from './Emoji';
+
 type Status = 'granted' | 'denied' | 'undetermined' | 'checking';
 
 interface PermissionItem {
   key: string;
-  icon: string;
+  icon: EmojiName;
   label: string;
   hint: string;
   check: () => Promise<{ status: string }>;
@@ -18,7 +20,7 @@ interface PermissionItem {
 const ITEMS: PermissionItem[] = [
   {
     key: 'camera',
-    icon: '📷',
+    icon: 'camera',
     label: '카메라',
     hint: '사진 촬영',
     check: ImagePicker.getCameraPermissionsAsync,
@@ -26,7 +28,7 @@ const ITEMS: PermissionItem[] = [
   },
   {
     key: 'library',
-    icon: '🖼️',
+    icon: 'photos',
     label: '사진 보관함',
     hint: '갤러리에서 선택',
     check: ImagePicker.getMediaLibraryPermissionsAsync,
@@ -34,7 +36,7 @@ const ITEMS: PermissionItem[] = [
   },
   {
     key: 'contacts',
-    icon: '🪪',
+    icon: 'contacts',
     label: '연락처',
     hint: '명함 정보 저장',
     check: Contacts.getPermissionsAsync,
@@ -42,7 +44,7 @@ const ITEMS: PermissionItem[] = [
   },
   {
     key: 'calendar',
-    icon: '📅',
+    icon: 'calendar',
     label: '캘린더',
     hint: '일정 자동 등록',
     check: () => Calendar.getCalendarPermissions(),
@@ -50,7 +52,7 @@ const ITEMS: PermissionItem[] = [
   },
   {
     key: 'reminders',
-    icon: '✅',
+    icon: 'reminders',
     label: '미리 알림',
     hint: '할 일 자동 등록',
     check: () => Calendar.getRemindersPermissions(),
@@ -111,7 +113,7 @@ export default function PermissionsScreen() {
           const granted = status === 'granted';
           return (
             <View key={item.key} style={styles.row}>
-              <Text style={styles.rowIcon}>{item.icon}</Text>
+              <Emoji name={item.icon} size={28} style={styles.rowIcon} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.rowLabel}>{item.label}</Text>
                 <Text style={styles.rowHint}>{item.hint}</Text>
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eef0f4',
   },
-  rowIcon: { fontSize: 24, width: 30, textAlign: 'center' },
+  rowIcon: { marginRight: 2 },
   rowLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
   rowHint: { fontSize: 12, color: '#777', marginTop: 1 },
   badge: { borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },

@@ -41,6 +41,11 @@ export type DemoKey =
   | 'wallet'
   | 'notification';
 
+export interface HistoryField {
+  label: string;
+  value: string;
+}
+
 export interface HistoryEntry {
   id: string;
   type: DemoKey;
@@ -48,4 +53,5 @@ export interface HistoryEntry {
   detail: string;
   savedTo: string;
   createdAt: string;
+  fields?: HistoryField[];
 }

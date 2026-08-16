@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { Emoji, EmojiName } from './Emoji';
 import { requestAllPermissions } from './permissions';
 
-const PERMISSIONS = [
-  { icon: '📷', label: '카메라', hint: '사진 촬영' },
-  { icon: '🖼️', label: '사진 보관함', hint: '갤러리에서 선택' },
-  { icon: '🪪', label: '연락처', hint: '명함 정보 저장' },
-  { icon: '📅', label: '캘린더', hint: '일정 자동 등록' },
-  { icon: '✅', label: '미리 알림', hint: '할 일 자동 등록' },
+const PERMISSIONS: { icon: EmojiName; label: string; hint: string }[] = [
+  { icon: 'camera', label: '카메라', hint: '사진 촬영' },
+  { icon: 'photos', label: '사진 보관함', hint: '갤러리에서 선택' },
+  { icon: 'contacts', label: '연락처', hint: '명함 정보 저장' },
+  { icon: 'calendar', label: '캘린더', hint: '일정 자동 등록' },
+  { icon: 'reminders', label: '미리 알림', hint: '할 일 자동 등록' },
 ];
 
 interface Props {
@@ -34,7 +35,7 @@ export default function OnboardingScreen({ onDone }: Props) {
       <View style={styles.list}>
         {PERMISSIONS.map((p) => (
           <View key={p.label} style={styles.row}>
-            <Text style={styles.rowIcon}>{p.icon}</Text>
+            <Emoji name={p.icon} size={30} />
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>{p.label}</Text>
               <Text style={styles.rowHint}>{p.hint}</Text>
@@ -59,7 +60,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: '#666', textAlign: 'center', marginTop: 8, lineHeight: 20 },
   list: { width: '100%', marginTop: 32, gap: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rowIcon: { fontSize: 26, width: 32, textAlign: 'center' },
   rowLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
   rowHint: { fontSize: 12, color: '#666' },
   note: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: 28 },

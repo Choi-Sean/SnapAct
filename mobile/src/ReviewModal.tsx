@@ -71,7 +71,7 @@ interface Row {
 interface Props {
   demoKey: DemoKey | null;
   onClose: () => void;
-  onSaved: (info: { title: string; detail: string; savedTo: string }) => void;
+  onSaved: (info: { title: string; detail: string; savedTo: string; fields?: { label: string; value: string }[] }) => void;
 }
 
 export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
@@ -211,10 +211,11 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
 
   async function handleConfirm() {
     setSaving(true);
+    const fields = getRows().map((r) => ({ label: r.label, value: r.value }));
     try {
       if (demoKey === 'business_card') {
         await saveContact({ name: `${firstName} ${lastName}`.trim(), phone, email });
-        onSaved({ title: `${firstName} ${lastName}`.trim(), detail: phone, savedTo: '연락처' });
+        onSaved({ title: `${firstName} ${lastName}`.trim(), detail: phone, savedTo: '연락처', fields });
       } else if (demoKey === 'event') {
         const start = new Date();
         const end = new Date(start.getTime() + 60 * 60 * 1000);
@@ -225,34 +226,34 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
           end_date: end.toISOString(),
           notes: '사진에서 자동으로 추출된 일정입니다.',
         });
-        onSaved({ title: eventTitle, detail: eventLocation || '오늘', savedTo: '캘린더' });
+        onSaved({ title: eventTitle, detail: eventLocation || '오늘', savedTo: '캘린더', fields });
       } else if (demoKey === 'receipt') {
         await Share.share({ message: formatReceiptTable(), title: '영수증 내역' });
-        onSaved({ title: '영수증 내역', detail: '8,300원', savedTo: '공유(메모 등)' });
+        onSaved({ title: '영수증 내역', detail: '8,300원', savedTo: '공유(메모 등)', fields });
       } else if (demoKey === 'reminder') {
         await saveReminder({ title: reminderTitle, notes: reminderNotes, dueDate: new Date() });
-        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: '미리 알림' });
+        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: '미리 알림', fields });
       } else if (demoKey === 'photo') {
         const { album } = await savePhotoDemo();
-        onSaved({ title: '데모 사진', detail: `앨범: ${album}`, savedTo: '사진' });
+        onSaved({ title: '데모 사진', detail: `앨범: ${album}`, savedTo: '사진', fields });
       } else if (demoKey === 'mail') {
         const status = await composeMailDemo();
-        onSaved({ title: 'Snapsist 데모 메일', detail: `상태: ${status}`, savedTo: '메일' });
+        onSaved({ title: 'Snapsist 데모 메일', detail: `상태: ${status}`, savedTo: '메일', fields });
       } else if (demoKey === 'sms') {
         const result = await sendSmsDemo();
-        onSaved({ title: 'Snapsist 데모 문자', detail: `상태: ${result}`, savedTo: '문자' });
+        onSaved({ title: 'Snapsist 데모 문자', detail: `상태: ${result}`, savedTo: '문자', fields });
       } else if (demoKey === 'maps') {
         await openMapsDemo();
-        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: '지도' });
+        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: '지도', fields });
       } else if (demoKey === 'files') {
         await shareFileDemo();
-        onSaved({ title: 'snapsist-note.txt', detail: '문서 디렉토리에 저장됨', savedTo: '파일' });
+        onSaved({ title: 'snapsist-note.txt', detail: '문서 디렉토리에 저장됨', savedTo: '파일', fields });
       } else if (demoKey === 'wallet') {
         await addToWalletDemo();
-        onSaved({ title: 'Snapsist 데모 패스', detail: 'Apple Wallet 공유 시트 열림', savedTo: 'Wallet' });
+        onSaved({ title: 'Snapsist 데모 패스', detail: 'Apple Wallet 공유 시트 열림', savedTo: 'Wallet', fields });
       } else if (demoKey === 'notification') {
         await scheduleNotificationDemo();
-        onSaved({ title: 'Snapsist', detail: '5초 뒤 도착 예정', savedTo: '알림' });
+        onSaved({ title: 'Snapsist', detail: '5초 뒤 도착 예정', savedTo: '알림', fields });
       }
     } catch (e) {
       onSaved({ title: '실패', detail: e instanceof Error ? e.message : String(e), savedTo: '오류' });

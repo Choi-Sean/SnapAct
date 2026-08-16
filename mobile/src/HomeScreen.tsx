@@ -12,21 +12,22 @@ import {
 } from 'react-native';
 
 import { analyzePhoto } from './api';
+import { Emoji, EmojiName } from './Emoji';
 import { saveContact, saveEventToCalendar } from './nativeActions';
 import { AnalyzeResponse, DemoKey } from './types';
 
-const DEMO_BUTTONS: { key: DemoKey; icon: string; label: string; hint: string }[] = [
-  { key: 'business_card', icon: '🪪', label: '명함 사진', hint: '연락처에 저장' },
-  { key: 'event', icon: '📅', label: '이벤트 사진', hint: '캘린더에 저장' },
-  { key: 'receipt', icon: '🧾', label: '영수증 사진', hint: '메모로 공유' },
-  { key: 'reminder', icon: '✅', label: '리마인더 사진', hint: '미리 알림에 저장' },
-  { key: 'photo', icon: '🖼️', label: '사진 저장', hint: '앨범에 자동 저장' },
-  { key: 'mail', icon: '✉️', label: '메일 초안', hint: '메일 앱 열기' },
-  { key: 'sms', icon: '💬', label: '문자 초안', hint: '문자 앱 열기' },
-  { key: 'maps', icon: '📍', label: '위치 사진', hint: '지도 앱 열기' },
-  { key: 'files', icon: '📄', label: '문서 저장', hint: '파일로 공유' },
-  { key: 'wallet', icon: '🎫', label: '패스 카드', hint: 'Apple Wallet에 추가' },
-  { key: 'notification', icon: '🔔', label: '알림 예약', hint: '5초 뒤 알림' },
+const DEMO_BUTTONS: { key: DemoKey; icon: EmojiName; label: string; hint: string }[] = [
+  { key: 'business_card', icon: 'contacts', label: '명함 사진', hint: '연락처에 저장' },
+  { key: 'event', icon: 'calendar', label: '이벤트 사진', hint: '캘린더에 저장' },
+  { key: 'receipt', icon: 'notes', label: '영수증 사진', hint: '메모로 공유' },
+  { key: 'reminder', icon: 'reminders', label: '리마인더 사진', hint: '미리 알림에 저장' },
+  { key: 'photo', icon: 'photos', label: '사진 저장', hint: '앨범에 자동 저장' },
+  { key: 'mail', icon: 'mail', label: '메일 초안', hint: '메일 앱 열기' },
+  { key: 'sms', icon: 'sms', label: '문자 초안', hint: '문자 앱 열기' },
+  { key: 'maps', icon: 'maps', label: '위치 사진', hint: '지도 앱 열기' },
+  { key: 'files', icon: 'files', label: '문서 저장', hint: '파일로 공유' },
+  { key: 'wallet', icon: 'wallet', label: '패스 카드', hint: 'Apple Wallet에 추가' },
+  { key: 'notification', icon: 'notification', label: '알림 예약', hint: '5초 뒤 알림' },
 ];
 
 interface Photo {
@@ -124,7 +125,7 @@ export default function HomeScreen({ onDemoPress }: Props) {
         {DEMO_BUTTONS.map((d) => (
           <TouchableOpacity key={d.key} style={styles.demoCard} onPress={() => onDemoPress(d.key)} activeOpacity={0.7}>
             <View style={styles.demoIconWrap}>
-              <Text style={styles.demoIcon}>{d.icon}</Text>
+              <Emoji name={d.icon} size={30} />
             </View>
             <Text style={styles.demoLabel}>{d.label}</Text>
             <Text style={styles.demoHint}>{d.hint}</Text>
@@ -258,7 +259,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  demoIcon: { fontSize: 26 },
   demoLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
   demoHint: { fontSize: 11.5, color: '#888' },
   row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },

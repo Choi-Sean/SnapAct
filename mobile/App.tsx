@@ -71,7 +71,12 @@ export default function App() {
     );
   }
 
-  async function handleSaved(info: { title: string; detail: string; savedTo: string }) {
+  async function handleSaved(info: {
+    title: string;
+    detail: string;
+    savedTo: string;
+    fields?: { label: string; value: string }[];
+  }) {
     const key = reviewKey;
     setReviewKey(null);
     if (!key) return;
@@ -81,7 +86,13 @@ export default function App() {
       return;
     }
 
-    const updated = await addHistoryEntry({ type: key, title: info.title, detail: info.detail, savedTo: info.savedTo });
+    const updated = await addHistoryEntry({
+      type: key,
+      title: info.title,
+      detail: info.detail,
+      savedTo: info.savedTo,
+      fields: info.fields,
+    });
     setHistory(updated);
     Alert.alert('완료', `${info.savedTo}에 저장했어요.`);
   }

@@ -13,7 +13,7 @@ export default function CtaSection() {
         aria-hidden
       />
       <div className="mx-auto max-w-content px-6 py-24 text-center md:py-32">
-        <h2 className="balance mx-auto max-w-2xl text-3xl font-extrabold tracking-tight sm:text-5xl">
+        <h2 className="balance mx-auto text-3xl font-extrabold tracking-tight sm:text-5xl">
           {t.cta.headline}
         </h2>
         <p className="mx-auto mt-5 max-w-md text-[15px] text-muted">{t.cta.sub}</p>

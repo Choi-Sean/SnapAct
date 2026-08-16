@@ -33,6 +33,14 @@ export default function Features() {
                 <h3 className="text-[15px] font-bold">{item.title}</h3>
                 <p className="mt-1 text-[13px] leading-relaxed text-muted">{item.desc}</p>
               </div>
+              <div className="mt-auto flex gap-1.5 pt-1">
+                <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] font-bold text-muted">iOS</span>
+                {item.platforms.includes('android') && (
+                  <span className="rounded-full bg-surface-alt px-2 py-0.5 text-[10px] font-bold text-muted">
+                    Android
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -122,6 +122,9 @@ interface ReminderPayload {
 
 // ---- Reminder: exercises every writable Reminder field (iOS only) ----
 export async function saveReminder(payload: ReminderPayload): Promise<string | undefined> {
+  if (Platform.OS !== 'ios') {
+    throw new Error('미리 알림은 iOS에서만 지원돼요. Android에서는 캘린더를 이용해주세요.');
+  }
   const calendar = await getWritableCalendar(Calendar.EntityTypes.REMINDER);
 
   const dueDate = payload.dueDate ?? new Date();

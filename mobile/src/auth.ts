@@ -23,6 +23,19 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+async function authedRequest<T>(path: string, method: string, token: string): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || `Request failed (${res.status})`);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
 export async function signup(email: string, password: string): Promise<Session> {
   const session = await postJson<Session>('/auth/signup', { email, password });
   await saveSession(session);
@@ -51,4 +64,16 @@ export async function loadSession(): Promise<Session | null> {
 
 export async function clearSession(): Promise<void> {
   await AsyncStorage.removeItem(SESSION_KEY);
+}
+
+export async function cancelPlan(token: string): Promise<{ email: string; plan: string }> {
+  const user = await authedRequest<{ email: string; plan: string }>('/account/cancel-plan', 'POST', token);
+  const session = await loadSession();
+  if (session) await saveSession({ ...session, plan: user.plan });
+  return user;
+}
+
+export async function deleteAccount(token: string): Promise<void> {
+  await authedRequest<void>('/account', 'DELETE', token);
+  await clearSession();
 }

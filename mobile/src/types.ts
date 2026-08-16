@@ -73,4 +73,6 @@ export interface HistoryEntry {
   fields?: HistoryField[];
   replay?: ReplaySpec;
   batchItems?: BatchSubEntry[];
+  imageUri?: string;
+  photoCount?: number;
 }

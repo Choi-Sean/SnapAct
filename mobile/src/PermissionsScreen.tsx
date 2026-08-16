@@ -2,9 +2,9 @@ import * as Calendar from 'expo-calendar';
 import * as Contacts from 'expo-contacts';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { clearSession, loadSession, Session } from './auth';
+import { cancelPlan, clearSession, deleteAccount, loadSession, Session } from './auth';
 import AuthScreen from './AuthScreen';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
@@ -78,6 +78,37 @@ export default function PermissionsScreen() {
     setSession(null);
   }
 
+  function handleCancelPlan() {
+    if (!session) return;
+    Alert.alert(t.account.cancelPlanConfirmTitle, t.account.cancelPlanConfirmBody, [
+      { text: t.review.cancelButton, style: 'cancel' },
+      {
+        text: t.account.cancelPlanButton,
+        style: 'destructive',
+        onPress: async () => {
+          const user = await cancelPlan(session.token);
+          setSession({ ...session, plan: user.plan });
+          Alert.alert(t.account.cancelPlanDoneTitle, t.account.cancelPlanDoneBody);
+        },
+      },
+    ]);
+  }
+
+  function handleDeleteAccount() {
+    if (!session) return;
+    Alert.alert(t.account.deleteConfirmTitle, t.account.deleteConfirmBody, [
+      { text: t.review.cancelButton, style: 'cancel' },
+      {
+        text: t.account.deleteAccountButton,
+        style: 'destructive',
+        onPress: async () => {
+          await deleteAccount(session.token);
+          setSession(null);
+        },
+      },
+    ]);
+  }
+
   async function refresh() {
     const entries = await Promise.all(
       ITEMS.map(async (item) => {
@@ -133,6 +164,16 @@ export default function PermissionsScreen() {
             <TouchableOpacity style={styles.pricingLink} onPress={() => setPricingVisible(true)}>
               <Text style={styles.pricingLinkText}>{t.account.viewPricing}</Text>
             </TouchableOpacity>
+            <View style={styles.accountDangerRow}>
+              {session.plan === 'pro' && (
+                <TouchableOpacity onPress={handleCancelPlan}>
+                  <Text style={styles.accountDangerText}>{t.account.cancelPlanButton}</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={handleDeleteAccount}>
+                <Text style={styles.accountDangerText}>{t.account.deleteAccountButton}</Text>
+              </TouchableOpacity>
+            </View>
           </>
         ) : (
           <>
@@ -292,6 +333,8 @@ const styles = StyleSheet.create({
   accountButtonSecondaryText: { color: '#333', fontWeight: '700', fontSize: 13 },
   pricingLink: { alignSelf: 'flex-start', marginTop: 2 },
   pricingLinkText: { color: '#2563eb', fontWeight: '700', fontSize: 12.5 },
+  accountDangerRow: { flexDirection: 'row', gap: 18, marginTop: 8 },
+  accountDangerText: { color: '#dc2626', fontWeight: '600', fontSize: 11.5 },
   list: { gap: 10 },
   row: {
     flexDirection: 'row',

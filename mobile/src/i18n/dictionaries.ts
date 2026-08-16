@@ -51,6 +51,14 @@ export interface Dictionary {
     signedOutSubtitle: string;
     viewPricing: string;
     logout: string;
+    cancelPlanButton: string;
+    cancelPlanConfirmTitle: string;
+    cancelPlanConfirmBody: string;
+    cancelPlanDoneTitle: string;
+    cancelPlanDoneBody: string;
+    deleteAccountButton: string;
+    deleteConfirmTitle: string;
+    deleteConfirmBody: string;
   };
   home: {
     subtitle: string;
@@ -66,6 +74,8 @@ export interface Dictionary {
     permissionNeededTitle: string;
     permissionNeededBody: string;
     demoButtons: Record<DemoKey, { label: string; hint: string }>;
+    batchDemoButton: { label: string; hint: string };
+    batchDemoRejectReason: string;
     demoModeLabel: string;
     classifyLabel: string;
     contactName: string;
@@ -85,6 +95,8 @@ export interface Dictionary {
     batchSavedTo: string;
     batchDoneTitle: string;
     batchDoneBodyTemplate: string;
+    limitExceededTitle: string;
+    limitExceededBody: string;
   };
   history: {
     title: string;
@@ -102,6 +114,15 @@ export interface Dictionary {
     timeMinutesAgo: string;
     timeHoursAgo: string;
     timeDaysAgo: string;
+    allTime: string;
+    currentPeriod: string;
+    previousPeriod: string;
+    dateFilterLabel: string;
+    datePlaceholder: string;
+    applyFilter: string;
+    clearFilter: string;
+    dateFilterError: string;
+    noResultsForFilter: string;
   };
   permissions: {
     title: string;
@@ -280,6 +301,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: 'Sign up to sync your history and unlock Pro.',
       viewPricing: 'View pricing →',
       logout: 'Log out',
+      cancelPlanButton: 'Cancel Pro plan',
+      cancelPlanConfirmTitle: 'Cancel your Pro plan?',
+      cancelPlanConfirmBody: 'You will move to the Free plan. You can upgrade again anytime.',
+      cancelPlanDoneTitle: 'Plan canceled',
+      cancelPlanDoneBody: 'You are now on the Free plan.',
+      deleteAccountButton: 'Delete account',
+      deleteConfirmTitle: 'Delete your account?',
+      deleteConfirmBody: 'This permanently deletes your account. This cannot be undone.',
     },
     home: {
       subtitle: 'One photo → filed into the right app automatically',
@@ -307,6 +336,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Pass card', 'Add to Apple Wallet'],
         ['Schedule alert', 'Notify in 5s'],
       ]),
+      batchDemoButton: { label: 'Batch upload demo', hint: '10 photos at once' },
+      batchDemoRejectReason: "Couldn't classify — the image is too blurry or has no recognizable text.",
       demoModeLabel: 'DEMO MODE (no API keys)',
       classifyLabel: 'Category: {category} ({confidence}%)',
       contactName: 'Name',
@@ -326,6 +357,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: 'Batch',
       batchDoneTitle: 'Done',
       batchDoneBodyTemplate: 'Saved the results for {n} photos to History.',
+      limitExceededTitle: 'Free plan limit reached',
+      limitExceededBody: 'You\'ve reached the Free plan limit of {n} photos this month. Upgrade to Pro for unlimited photos.',
     },
     history: {
       title: 'History',
@@ -343,6 +376,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: '{n}m ago',
       timeHoursAgo: '{n}h ago',
       timeDaysAgo: '{n}d ago',
+      allTime: 'All time',
+      currentPeriod: 'Current period',
+      previousPeriod: 'Previous period',
+      dateFilterLabel: 'Filter by date',
+      datePlaceholder: 'YYYY-MM-DD',
+      applyFilter: 'Apply',
+      clearFilter: 'Clear',
+      dateFilterError: 'Enter a valid date range (from ≤ to).',
+      noResultsForFilter: 'No entries in this period.',
     },
     permissions: {
       title: 'Settings',
@@ -538,6 +580,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: '가입하면 기록을 동기화하고 Pro 기능을 사용할 수 있어요.',
       viewPricing: '요금제 보기 →',
       logout: '로그아웃',
+      cancelPlanButton: 'Pro 해지',
+      cancelPlanConfirmTitle: 'Pro 플랜을 해지할까요?',
+      cancelPlanConfirmBody: '무료 플랜으로 전환돼요. 언제든 다시 업그레이드할 수 있어요.',
+      cancelPlanDoneTitle: '해지 완료',
+      cancelPlanDoneBody: '이제 무료 플랜이에요.',
+      deleteAccountButton: '계정 삭제',
+      deleteConfirmTitle: '계정을 삭제할까요?',
+      deleteConfirmBody: '계정이 영구적으로 삭제돼요. 되돌릴 수 없어요.',
     },
     home: {
       subtitle: '사진 한 장 → 알맞은 앱에 자동 저장',
@@ -565,6 +615,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['패스 카드', 'Apple Wallet에 추가'],
         ['알림 예약', '5초 뒤 알림'],
       ]),
+      batchDemoButton: { label: '일괄 업로드 데모', hint: '한번에 10장' },
+      batchDemoRejectReason: '분류하지 못했어요 — 사진이 흐릿하거나 인식할 수 있는 글자가 없어요.',
       demoModeLabel: 'DEMO MODE (실제 API 키 없음)',
       classifyLabel: '분류: {category} ({confidence}%)',
       contactName: '이름',
@@ -584,6 +636,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: '일괄 처리',
       batchDoneTitle: '완료',
       batchDoneBodyTemplate: '{n}장 처리 결과를 기록에 저장했어요.',
+      limitExceededTitle: '무료 플랜 한도 초과',
+      limitExceededBody: '이번 달 무료 플랜 한도인 {n}장을 초과했어요. Pro로 업그레이드하면 무제한으로 쓸 수 있어요.',
     },
     history: {
       title: '기록',
@@ -601,6 +655,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: '{n}분 전',
       timeHoursAgo: '{n}시간 전',
       timeDaysAgo: '{n}일 전',
+      allTime: '전체',
+      currentPeriod: '이번 청구 기간',
+      previousPeriod: '지난 청구 기간',
+      dateFilterLabel: '날짜로 필터링',
+      datePlaceholder: 'YYYY-MM-DD',
+      applyFilter: '적용',
+      clearFilter: '초기화',
+      dateFilterError: '유효한 날짜 범위를 입력해주세요 (시작일 ≤ 종료일).',
+      noResultsForFilter: '이 기간에는 기록이 없어요.',
     },
     permissions: {
       title: '설정',
@@ -796,6 +859,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: '登録すると履歴を同期し、Pro機能を利用できます。',
       viewPricing: '料金プランを見る →',
       logout: 'ログアウト',
+      cancelPlanButton: 'Proを解約',
+      cancelPlanConfirmTitle: 'Proプランを解約しますか？',
+      cancelPlanConfirmBody: '無料プランに切り替わります。いつでも再度アップグレードできます。',
+      cancelPlanDoneTitle: '解約しました',
+      cancelPlanDoneBody: '現在は無料プランです。',
+      deleteAccountButton: 'アカウントを削除',
+      deleteConfirmTitle: 'アカウントを削除しますか？',
+      deleteConfirmBody: 'アカウントは完全に削除されます。この操作は元に戻せません。',
     },
     home: {
       subtitle: '写真1枚 → 適切なアプリに自動保存',
@@ -823,6 +894,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['パスカード', 'Apple Walletに追加'],
         ['通知を予約', '5秒後に通知'],
       ]),
+      batchDemoButton: { label: '一括アップロードデモ', hint: '一度に10枚' },
+      batchDemoRejectReason: '分類できませんでした — 画像がぼやけているか、認識できる文字がありません。',
       demoModeLabel: 'デモモード（APIキー未設定）',
       classifyLabel: '分類: {category}（{confidence}%）',
       contactName: '名前',
@@ -842,6 +915,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: '一括処理',
       batchDoneTitle: '完了',
       batchDoneBodyTemplate: '{n}枚の処理結果を履歴に保存しました。',
+      limitExceededTitle: '無料プランの上限に達しました',
+      limitExceededBody: '今月の無料プランの上限（{n}枚）に達しました。Proにアップグレードすると無制限に使えます。',
     },
     history: {
       title: '履歴',
@@ -859,6 +934,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: '{n}分前',
       timeHoursAgo: '{n}時間前',
       timeDaysAgo: '{n}日前',
+      allTime: 'すべて',
+      currentPeriod: '今期',
+      previousPeriod: '前期',
+      dateFilterLabel: '日付で絞り込み',
+      datePlaceholder: 'YYYY-MM-DD',
+      applyFilter: '適用',
+      clearFilter: 'クリア',
+      dateFilterError: '有効な日付範囲を入力してください（開始日 ≤ 終了日）。',
+      noResultsForFilter: 'この期間の記録はありません。',
     },
     permissions: {
       title: '設定',
@@ -1054,6 +1138,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: '注册后可同步记录并解锁 Pro 功能。',
       viewPricing: '查看定价 →',
       logout: '退出登录',
+      cancelPlanButton: '取消 Pro',
+      cancelPlanConfirmTitle: '要取消 Pro 订阅吗？',
+      cancelPlanConfirmBody: '将切换为免费版。您可以随时再次升级。',
+      cancelPlanDoneTitle: '已取消',
+      cancelPlanDoneBody: '您现在是免费版。',
+      deleteAccountButton: '删除账户',
+      deleteConfirmTitle: '要删除账户吗？',
+      deleteConfirmBody: '账户将被永久删除，且无法恢复。',
     },
     home: {
       subtitle: '一张照片 → 自动保存到合适的应用',
@@ -1081,6 +1173,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['卡券/票据', '添加到 Apple Wallet'],
         ['预约提醒', '5秒后通知'],
       ]),
+      batchDemoButton: { label: '批量上传演示', hint: '一次 10 张' },
+      batchDemoRejectReason: '无法分类 — 图片模糊或没有可识别的文字。',
       demoModeLabel: '演示模式（未配置 API 密钥）',
       classifyLabel: '分类：{category}（{confidence}%）',
       contactName: '姓名',
@@ -1100,6 +1194,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: '批量处理',
       batchDoneTitle: '完成',
       batchDoneBodyTemplate: '已将 {n} 张照片的处理结果保存到记录。',
+      limitExceededTitle: '已达免费版上限',
+      limitExceededBody: '本月已达免费版 {n} 张的上限。升级到 Pro 即可无限使用。',
     },
     history: {
       title: '记录',
@@ -1117,6 +1213,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: '{n}分钟前',
       timeHoursAgo: '{n}小时前',
       timeDaysAgo: '{n}天前',
+      allTime: '全部',
+      currentPeriod: '本期',
+      previousPeriod: '上期',
+      dateFilterLabel: '按日期筛选',
+      datePlaceholder: 'YYYY-MM-DD',
+      applyFilter: '应用',
+      clearFilter: '清除',
+      dateFilterError: '请输入有效的日期范围（开始日期 ≤ 结束日期）。',
+      noResultsForFilter: '这个时间段没有记录。',
     },
     permissions: {
       title: '设置',
@@ -1321,6 +1426,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: 'Regístrate para sincronizar tu historial y desbloquear Pro.',
       viewPricing: 'Ver precios →',
       logout: 'Cerrar sesión',
+      cancelPlanButton: 'Cancelar Pro',
+      cancelPlanConfirmTitle: '¿Cancelar tu plan Pro?',
+      cancelPlanConfirmBody: 'Pasarás al plan Free. Puedes volver a mejorar cuando quieras.',
+      cancelPlanDoneTitle: 'Plan cancelado',
+      cancelPlanDoneBody: 'Ahora estás en el plan Free.',
+      deleteAccountButton: 'Eliminar cuenta',
+      deleteConfirmTitle: '¿Eliminar tu cuenta?',
+      deleteConfirmBody: 'Esto elimina tu cuenta de forma permanente. No se puede deshacer.',
     },
     home: {
       subtitle: 'Una foto → archivada automáticamente en la app correcta',
@@ -1348,6 +1461,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Tarjeta/pase', 'Añadir a Apple Wallet'],
         ['Programar alerta', 'Notificar en 5s'],
       ]),
+      batchDemoButton: { label: 'Demo de carga por lotes', hint: '10 fotos a la vez' },
+      batchDemoRejectReason: 'No se pudo clasificar — la imagen está borrosa o no tiene texto reconocible.',
       demoModeLabel: 'MODO DEMO (sin claves de API)',
       classifyLabel: 'Categoría: {category} ({confidence}%)',
       contactName: 'Nombre',
@@ -1367,6 +1482,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: 'Lote',
       batchDoneTitle: 'Listo',
       batchDoneBodyTemplate: 'Se guardaron los resultados de {n} fotos en el historial.',
+      limitExceededTitle: 'Límite del plan Free alcanzado',
+      limitExceededBody: 'Has alcanzado el límite de {n} fotos al mes del plan Free. Mejora a Pro para fotos ilimitadas.',
     },
     history: {
       title: 'Historial',
@@ -1384,6 +1501,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: 'hace {n} min',
       timeHoursAgo: 'hace {n} h',
       timeDaysAgo: 'hace {n} d',
+      allTime: 'Todo',
+      currentPeriod: 'Periodo actual',
+      previousPeriod: 'Periodo anterior',
+      dateFilterLabel: 'Filtrar por fecha',
+      datePlaceholder: 'AAAA-MM-DD',
+      applyFilter: 'Aplicar',
+      clearFilter: 'Borrar',
+      dateFilterError: 'Introduce un rango de fechas válido (desde ≤ hasta).',
+      noResultsForFilter: 'No hay entradas en este periodo.',
     },
     permissions: {
       title: 'Ajustes',
@@ -1584,6 +1710,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: 'Inscrivez-vous pour synchroniser votre historique et débloquer Pro.',
       viewPricing: 'Voir les tarifs →',
       logout: 'Se déconnecter',
+      cancelPlanButton: 'Résilier Pro',
+      cancelPlanConfirmTitle: 'Résilier votre forfait Pro ?',
+      cancelPlanConfirmBody: 'Vous passerez au forfait Free. Vous pourrez remettre à niveau à tout moment.',
+      cancelPlanDoneTitle: 'Forfait résilié',
+      cancelPlanDoneBody: 'Vous êtes maintenant sur le forfait Free.',
+      deleteAccountButton: 'Supprimer le compte',
+      deleteConfirmTitle: 'Supprimer votre compte ?',
+      deleteConfirmBody: 'Cela supprime définitivement votre compte. Cette action est irréversible.',
     },
     home: {
       subtitle: 'Une photo → classée automatiquement dans la bonne application',
@@ -1611,6 +1745,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Carte / billet', 'Ajouter à Apple Wallet'],
         ['Programmer une alerte', 'Notifier dans 5 s'],
       ]),
+      batchDemoButton: { label: 'Démo d’envoi par lots', hint: '10 photos à la fois' },
+      batchDemoRejectReason: "Impossible à classer — l'image est floue ou ne contient pas de texte reconnaissable.",
       demoModeLabel: 'MODE DÉMO (pas de clés API)',
       classifyLabel: 'Catégorie : {category} ({confidence} %)',
       contactName: 'Nom',
@@ -1630,6 +1766,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: 'Lot',
       batchDoneTitle: 'Terminé',
       batchDoneBodyTemplate: 'Les résultats de {n} photos ont été enregistrés dans l’historique.',
+      limitExceededTitle: 'Limite du forfait Free atteinte',
+      limitExceededBody: 'Vous avez atteint la limite de {n} photos par mois du forfait Free. Passez à Pro pour un nombre illimité de photos.',
     },
     history: {
       title: 'Historique',
@@ -1647,6 +1785,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: 'il y a {n} min',
       timeHoursAgo: 'il y a {n} h',
       timeDaysAgo: 'il y a {n} j',
+      allTime: 'Tout',
+      currentPeriod: 'Période actuelle',
+      previousPeriod: 'Période précédente',
+      dateFilterLabel: 'Filtrer par date',
+      datePlaceholder: 'AAAA-MM-JJ',
+      applyFilter: 'Appliquer',
+      clearFilter: 'Effacer',
+      dateFilterError: 'Entrez une plage de dates valide (début ≤ fin).',
+      noResultsForFilter: 'Aucune entrée pour cette période.',
     },
     permissions: {
       title: 'Réglages',
@@ -1847,6 +1994,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       signedOutSubtitle: 'Registriere dich, um deinen Verlauf zu synchronisieren und Pro freizuschalten.',
       viewPricing: 'Preise ansehen →',
       logout: 'Abmelden',
+      cancelPlanButton: 'Pro kündigen',
+      cancelPlanConfirmTitle: 'Deinen Pro-Plan kündigen?',
+      cancelPlanConfirmBody: 'Du wechselst zum kostenlosen Plan. Du kannst jederzeit wieder upgraden.',
+      cancelPlanDoneTitle: 'Gekündigt',
+      cancelPlanDoneBody: 'Du bist jetzt im kostenlosen Plan.',
+      deleteAccountButton: 'Konto löschen',
+      deleteConfirmTitle: 'Dein Konto löschen?',
+      deleteConfirmBody: 'Dein Konto wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.',
     },
     home: {
       subtitle: 'Ein Foto → automatisch in der richtigen App abgelegt',
@@ -1874,6 +2029,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Karte / Ticket', 'Zu Apple Wallet hinzufügen'],
         ['Erinnerung planen', 'Benachrichtigung in 5 s'],
       ]),
+      batchDemoButton: { label: 'Stapel-Upload-Demo', hint: '10 Fotos auf einmal' },
+      batchDemoRejectReason: 'Konnte nicht eingeordnet werden — das Bild ist unscharf oder enthält keinen erkennbaren Text.',
       demoModeLabel: 'DEMO-MODUS (keine API-Schlüssel)',
       classifyLabel: 'Kategorie: {category} ({confidence} %)',
       contactName: 'Name',
@@ -1893,6 +2050,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchSavedTo: 'Stapel',
       batchDoneTitle: 'Fertig',
       batchDoneBodyTemplate: 'Ergebnisse von {n} Fotos wurden im Verlauf gespeichert.',
+      limitExceededTitle: 'Limit des kostenlosen Plans erreicht',
+      limitExceededBody: 'Du hast das monatliche Limit von {n} Fotos im kostenlosen Plan erreicht. Upgrade auf Pro für unbegrenzte Fotos.',
     },
     history: {
       title: 'Verlauf',
@@ -1910,6 +2069,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       timeMinutesAgo: 'vor {n} Min.',
       timeHoursAgo: 'vor {n} Std.',
       timeDaysAgo: 'vor {n} Tg.',
+      allTime: 'Gesamt',
+      currentPeriod: 'Aktueller Zeitraum',
+      previousPeriod: 'Vorheriger Zeitraum',
+      dateFilterLabel: 'Nach Datum filtern',
+      datePlaceholder: 'JJJJ-MM-TT',
+      applyFilter: 'Anwenden',
+      clearFilter: 'Zurücksetzen',
+      dateFilterError: 'Gib einen gültigen Zeitraum ein (von ≤ bis).',
+      noResultsForFilter: 'Keine Einträge in diesem Zeitraum.',
     },
     permissions: {
       title: 'Einstellungen',

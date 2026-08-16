@@ -62,6 +62,16 @@ def auth_me(user: UserOut = Depends(auth.get_current_user)):
     return user
 
 
+@app.post("/account/cancel-plan", response_model=UserOut)
+def account_cancel_plan(user: UserOut = Depends(auth.cancel_plan)):
+    return user
+
+
+@app.delete("/account", status_code=204)
+def account_delete(_: None = Depends(auth.delete_account)):
+    return None
+
+
 @app.get("/wallet/demo-pass", dependencies=[Depends(require_api_key)])
 def wallet_demo_pass():
     try:

@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import BatchReviewModal from './BatchReviewModal';
+import { buildDemoBatchItems } from './demoBatch';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
-import { DemoKey } from './types';
+import { t as fmt } from './i18n/dictionaries';
+import { AnalyzeResponse, BatchSubEntry, DemoKey } from './types';
 
 const DEMO_ICONS: Record<DemoKey, EmojiName> = {
   business_card: 'contacts',
@@ -34,10 +38,28 @@ const DEMO_ORDER: DemoKey[] = [
 
 interface Props {
   onDemoPress: (key: DemoKey) => void;
+  onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
 }
 
-export default function DemoScreen({ onDemoPress }: Props) {
+export default function DemoScreen({ onDemoPress, onBatchSaved }: Props) {
   const { t } = useLanguage();
+  const [batchDemo, setBatchDemo] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
+
+  function handleBatchDemoSaved(batchItems: BatchSubEntry[]) {
+    setBatchDemo(null);
+    const counts: Record<string, number> = {};
+    for (const item of batchItems) counts[item.savedTo] = (counts[item.savedTo] ?? 0) + 1;
+    const detail = Object.entries(counts)
+      .map(([to, n]) => `${to} ${n}`)
+      .join(' · ');
+
+    onBatchSaved({
+      title: fmt(t.home.batchTitleTemplate, { n: batchItems.length }),
+      detail,
+      savedTo: t.home.batchSavedTo,
+      batchItems,
+    });
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -61,7 +83,20 @@ export default function DemoScreen({ onDemoPress }: Props) {
             <Text style={styles.demoHint}>{t.home.demoButtons[key].hint}</Text>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity
+          style={styles.demoCard}
+          onPress={() => setBatchDemo(buildDemoBatchItems(t.home.batchDemoRejectReason))}
+          activeOpacity={0.7}
+        >
+          <View style={styles.demoIconWrap}>
+            <Emoji name="photos" size={30} />
+          </View>
+          <Text style={styles.demoLabel}>{t.home.batchDemoButton.label}</Text>
+          <Text style={styles.demoHint}>{t.home.batchDemoButton.hint}</Text>
+        </TouchableOpacity>
       </View>
+
+      <BatchReviewModal items={batchDemo} onClose={() => setBatchDemo(null)} onSaved={handleBatchDemoSaved} />
     </ScrollView>
   );
 }

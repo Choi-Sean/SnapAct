@@ -122,6 +122,23 @@ function AppInner() {
     setHistory(updated);
   }
 
+  async function handleAnalyzeSaved(info: {
+    type: DemoKey;
+    title: string;
+    detail: string;
+    savedTo: string;
+    imageUri?: string;
+  }) {
+    const updated = await addHistoryEntry({
+      type: info.type,
+      title: info.title,
+      detail: info.detail,
+      savedTo: info.savedTo,
+      imageUri: info.imageUri,
+    });
+    setHistory(updated);
+  }
+
   async function handleBatchSaved(batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) {
     const updated = await addHistoryEntry({
       type: 'batch',
@@ -140,8 +157,10 @@ function AppInner() {
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="auto" />
-      {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} />}
-      {tab === 'analyze' && <AnalyzeScreen onBatchSaved={handleBatchSaved} />}
+      {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
+      {tab === 'analyze' && (
+        <AnalyzeScreen history={history} onBatchSaved={handleBatchSaved} onSaved={handleAnalyzeSaved} />
+      )}
       {tab === 'history' && (
         <HistoryScreen entries={history} onClear={handleClearHistory} onDelete={handleDeleteEntry} />
       )}

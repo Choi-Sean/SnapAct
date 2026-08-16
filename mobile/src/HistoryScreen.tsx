@@ -1,7 +1,19 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { Emoji, EmojiName } from './Emoji';
+import ImageZoomModal from './ImageZoomModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { Dictionary, t as fmt } from './i18n/dictionaries';
 import { replayAction } from './replay';
@@ -42,6 +54,22 @@ function formatFullDate(iso: string): string {
   ).padStart(2, '0')}`;
 }
 
+function monthKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthLabel(key: string): string {
+  const [y, m] = key.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+}
+
+function parseDate(s: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s.trim())) return null;
+  const d = new Date(s.trim() + 'T00:00:00');
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 interface Props {
   entries: HistoryEntry[];
   onClear: () => void;
@@ -53,14 +81,82 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
   const [selected, setSelected] = useState<HistoryEntry | null>(null);
   const [replaying, setReplaying] = useState(false);
   const [page, setPage] = useState(0);
+  const [zoomUri, setZoomUri] = useState<string | null>(null);
 
-  const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [periodPickerOpen, setPeriodPickerOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [activeDateFilter, setActiveDateFilter] = useState<{ from: Date; to: Date } | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
+
+  const nowKey = monthKey(new Date().toISOString());
+  const prevKey = monthKey(new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
+
+  const monthBuckets = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of entries) {
+      const k = monthKey(e.createdAt);
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    return Array.from(counts.entries()).sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    if (activeDateFilter) {
+      const end = new Date(activeDateFilter.to);
+      end.setHours(23, 59, 59, 999);
+      return entries.filter((e) => {
+        const ts = new Date(e.createdAt).getTime();
+        return ts >= activeDateFilter.from.getTime() && ts <= end.getTime();
+      });
+    }
+    if (selectedMonth) {
+      return entries.filter((e) => monthKey(e.createdAt) === selectedMonth);
+    }
+    return entries;
+  }, [entries, selectedMonth, activeDateFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(0);
+  }, [selectedMonth, activeDateFilter]);
 
   useEffect(() => {
     if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1));
   }, [totalPages, page]);
 
-  const pageEntries = entries.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const pageEntries = filteredEntries.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  function periodLabel(): string {
+    if (activeDateFilter) return `${dateFrom} → ${dateTo}`;
+    if (!selectedMonth) return `${t.history.allTime} (${entries.length})`;
+    const count = monthBuckets.find(([k]) => k === selectedMonth)?.[1] ?? 0;
+    const base =
+      selectedMonth === nowKey ? t.history.currentPeriod : selectedMonth === prevKey ? t.history.previousPeriod : monthLabel(selectedMonth);
+    return `${base} (${count})`;
+  }
+
+  function applyDateFilter() {
+    const from = parseDate(dateFrom);
+    const to = parseDate(dateTo);
+    if (!from || !to || from > to) {
+      setDateError(t.history.dateFilterError);
+      return;
+    }
+    setDateError(null);
+    setSelectedMonth(null);
+    setActiveDateFilter({ from, to });
+    setPeriodPickerOpen(false);
+  }
+
+  function clearDateFilter() {
+    setDateFrom('');
+    setDateTo('');
+    setDateError(null);
+    setActiveDateFilter(null);
+  }
 
   async function handleReplay(entry: HistoryEntry) {
     if (!entry.replay) return;
@@ -92,26 +188,37 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
         </View>
       ) : (
         <>
-          <FlatList
-            data={pageEntries}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ gap: 10 }}
-            renderItem={({ item }) => (
-              <SwipeableRow onDelete={() => onDelete(item.id)}>
-                <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
-                  <Emoji name={ICONS[item.type]} size={26} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{item.title}</Text>
-                    <Text style={styles.rowDetail}>{item.detail}</Text>
-                  </View>
-                  <View style={styles.rowRight}>
-                    <Text style={styles.savedTo}>{item.savedTo}</Text>
-                    <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
-                  </View>
-                </TouchableOpacity>
-              </SwipeableRow>
-            )}
-          />
+          <TouchableOpacity style={styles.periodButton} onPress={() => setPeriodPickerOpen(true)} activeOpacity={0.7}>
+            <Text style={styles.periodButtonText}>{periodLabel()}</Text>
+            <Text style={styles.periodButtonChevron}>▾</Text>
+          </TouchableOpacity>
+
+          {filteredEntries.length === 0 ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>{t.history.noResultsForFilter}</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={pageEntries}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ gap: 10 }}
+              renderItem={({ item }) => (
+                <SwipeableRow onDelete={() => onDelete(item.id)}>
+                  <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
+                    <Emoji name={ICONS[item.type]} size={26} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle}>{item.title}</Text>
+                      <Text style={styles.rowDetail}>{item.detail}</Text>
+                    </View>
+                    <View style={styles.rowRight}>
+                      <Text style={styles.savedTo}>{item.savedTo}</Text>
+                      <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </SwipeableRow>
+              )}
+            />
+          )}
 
           {totalPages > 1 && (
             <View style={styles.pager}>
@@ -152,6 +259,12 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                   </View>
                 </View>
 
+                {selected.imageUri && (
+                  <TouchableOpacity onPress={() => setZoomUri(selected.imageUri ?? null)} activeOpacity={0.85}>
+                    <Image source={{ uri: selected.imageUri }} style={styles.detailImage} />
+                  </TouchableOpacity>
+                )}
+
                 {selected.type === 'batch' && selected.batchItems ? (
                   <FlatList
                     style={{ maxHeight: 340 }}
@@ -160,7 +273,9 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                     contentContainerStyle={{ gap: 8 }}
                     renderItem={({ item }) => (
                       <View style={styles.batchRow}>
-                        <Image source={{ uri: item.photoUri }} style={styles.batchThumb} />
+                        <TouchableOpacity onPress={() => setZoomUri(item.photoUri)}>
+                          <Image source={{ uri: item.photoUri }} style={styles.batchThumb} />
+                        </TouchableOpacity>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.batchTitle}>{item.title}</Text>
                           <Text style={styles.batchDetail}>{item.detail}</Text>
@@ -226,6 +341,88 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={periodPickerOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setPeriodPickerOpen(false)}
+      >
+        <View style={styles.backdrop}>
+          <View style={styles.periodSheet}>
+            <Text style={styles.periodSheetTitle}>{t.history.title}</Text>
+
+            <TouchableOpacity
+              style={[styles.periodOption, !selectedMonth && !activeDateFilter && styles.periodOptionActive]}
+              onPress={() => {
+                setSelectedMonth(null);
+                clearDateFilter();
+                setPeriodPickerOpen(false);
+              }}
+            >
+              <Text style={styles.periodOptionText}>{`${t.history.allTime} (${entries.length})`}</Text>
+            </TouchableOpacity>
+
+            {monthBuckets.map(([key, count]) => {
+              const label =
+                key === nowKey
+                  ? `${t.history.currentPeriod} (${monthLabel(key)})`
+                  : key === prevKey
+                    ? `${t.history.previousPeriod} (${monthLabel(key)})`
+                    : monthLabel(key);
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[styles.periodOption, selectedMonth === key && !activeDateFilter && styles.periodOptionActive]}
+                  onPress={() => {
+                    setSelectedMonth(key);
+                    clearDateFilter();
+                    setPeriodPickerOpen(false);
+                  }}
+                >
+                  <Text style={styles.periodOptionText}>{`${label} · ${count}`}</Text>
+                </TouchableOpacity>
+              );
+            })}
+
+            <View style={styles.dateFilterBlock}>
+              <Text style={styles.dateFilterLabel}>{t.history.dateFilterLabel}</Text>
+              <View style={styles.dateFilterRow}>
+                <TextInput
+                  style={styles.dateInput}
+                  placeholder={t.history.datePlaceholder}
+                  placeholderTextColor="#aaa"
+                  value={dateFrom}
+                  onChangeText={setDateFrom}
+                />
+                <Text style={styles.dateFilterArrow}>→</Text>
+                <TextInput
+                  style={styles.dateInput}
+                  placeholder={t.history.datePlaceholder}
+                  placeholderTextColor="#aaa"
+                  value={dateTo}
+                  onChangeText={setDateTo}
+                />
+              </View>
+              {dateError && <Text style={styles.dateFilterError}>{dateError}</Text>}
+              <View style={styles.dateFilterActions}>
+                <TouchableOpacity style={styles.dateFilterApply} onPress={applyDateFilter}>
+                  <Text style={styles.dateFilterApplyText}>{t.history.applyFilter}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={clearDateFilter}>
+                  <Text style={styles.dateFilterClearText}>{t.history.clearFilter}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.periodCloseButton} onPress={() => setPeriodPickerOpen(false)}>
+              <Text style={styles.periodCloseText}>{t.history.closeButton}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <ImageZoomModal uri={zoomUri} onClose={() => setZoomUri(null)} />
     </View>
   );
 }
@@ -300,4 +497,50 @@ const styles = StyleSheet.create({
   replayButton: { flex: 1, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   replayButtonText: { fontWeight: '700', color: '#fff' },
   replayNote: { fontSize: 11.5, color: '#999', textAlign: 'center', lineHeight: 16 },
+  periodButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f2f3f6',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  periodButtonText: { fontSize: 13, fontWeight: '700', color: '#333' },
+  periodButtonChevron: { fontSize: 12, color: '#888' },
+  detailImage: { width: '100%', height: 200, borderRadius: 14, backgroundColor: '#eef0f4' },
+  periodSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 22,
+    paddingBottom: 32,
+    gap: 8,
+    maxHeight: '85%',
+  },
+  periodSheetTitle: { fontSize: 18, fontWeight: '800', color: '#111', marginBottom: 4 },
+  periodOption: { paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10 },
+  periodOptionActive: { backgroundColor: '#eef2ff' },
+  periodOptionText: { fontSize: 14, fontWeight: '600', color: '#222' },
+  dateFilterBlock: { marginTop: 10, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#f2f3f6', gap: 8 },
+  dateFilterLabel: { fontSize: 12.5, fontWeight: '700', color: '#888' },
+  dateFilterRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dateInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#f7f8fb',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+  },
+  dateFilterArrow: { color: '#aaa', fontSize: 13 },
+  dateFilterError: { color: '#dc2626', fontSize: 12 },
+  dateFilterActions: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 2 },
+  dateFilterApply: { backgroundColor: '#2563eb', borderRadius: 10, paddingVertical: 9, paddingHorizontal: 16 },
+  dateFilterApplyText: { color: '#fff', fontWeight: '700', fontSize: 12.5 },
+  dateFilterClearText: { color: '#888', fontWeight: '600', fontSize: 12.5 },
+  periodCloseButton: { marginTop: 10, alignItems: 'center', paddingVertical: 10 },
+  periodCloseText: { color: '#999', fontWeight: '600', fontSize: 13 },
 });

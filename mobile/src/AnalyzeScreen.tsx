@@ -12,11 +12,15 @@ import {
 } from 'react-native';
 
 import { analyzePhoto } from './api';
+import { loadSession } from './auth';
 import BatchReviewModal from './BatchReviewModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
+import { persistImage } from './imageStorage';
 import { saveContact, saveEventToCalendar } from './nativeActions';
-import { AnalyzeResponse, BatchSubEntry, Category } from './types';
+import { countThisMonth, FREE_MONTHLY_LIMIT, hasShownUpgradePrompt, markUpgradePromptShown } from './planLimits';
+import PricingScreen from './PricingScreen';
+import { AnalyzeResponse, BatchSubEntry, Category, DemoKey, HistoryEntry } from './types';
 
 const BATCH_MOCK_CYCLE: Category[] = ['business_card', 'event_flyer', 'receipt', 'document'];
 
@@ -27,19 +31,34 @@ interface Photo {
 }
 
 interface Props {
+  history: HistoryEntry[];
   onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
+  onSaved: (info: { type: DemoKey; title: string; detail: string; savedTo: string; imageUri?: string }) => void;
 }
 
-export default function AnalyzeScreen({ onBatchSaved }: Props) {
+export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props) {
   const { t } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pricingVisible, setPricingVisible] = useState(false);
 
   const [batchProcessing, setBatchProcessing] = useState<{ done: number; total: number } | null>(null);
   const [batchReview, setBatchReview] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
+
+  async function checkFreeTierLimit() {
+    const session = await loadSession();
+    if (!session || session.plan !== 'free') return;
+    if (countThisMonth(history) + 1 <= FREE_MONTHLY_LIMIT) return;
+    if (await hasShownUpgradePrompt()) return;
+    await markUpgradePromptShown();
+    Alert.alert(t.home.limitExceededTitle, fmt(t.home.limitExceededBody, { n: FREE_MONTHLY_LIMIT }), [
+      { text: t.history.closeButton, style: 'cancel' },
+      { text: t.pricing.proCta, onPress: () => setPricingVisible(true) },
+    ]);
+  }
 
   async function pick(source: 'camera' | 'library') {
     const permission =
@@ -149,15 +168,32 @@ export default function AnalyzeScreen({ onBatchSaved }: Props) {
   }
 
   async function handleSave() {
-    if (!result) return;
+    if (!result || !photo) return;
     setSaving(true);
     try {
+      await checkFreeTierLimit();
       if (result.suggested_action === 'contact' && result.contact) {
         await saveContact(result.contact);
         Alert.alert(t.home.saveDoneTitle, t.home.saveContactDoneBody);
+        const imageUri = await persistImage(photo.uri);
+        onSaved({
+          type: 'business_card',
+          title: result.contact.name ?? t.permissions.items[2].label,
+          detail: result.contact.phone ?? '',
+          savedTo: t.permissions.items[2].label,
+          imageUri,
+        });
       } else if (result.suggested_action === 'calendar' && result.calendar) {
         await saveEventToCalendar(result.calendar);
         Alert.alert(t.home.saveDoneTitle, t.home.saveCalendarDoneBody);
+        const imageUri = await persistImage(photo.uri);
+        onSaved({
+          type: 'event',
+          title: result.calendar.title ?? t.permissions.items[3].label,
+          detail: result.calendar.location ?? '',
+          savedTo: t.permissions.items[3].label,
+          imageUri,
+        });
       }
     } catch (e) {
       Alert.alert(t.home.saveFailTitle, e instanceof Error ? e.message : String(e));
@@ -267,6 +303,7 @@ export default function AnalyzeScreen({ onBatchSaved }: Props) {
       )}
 
       <BatchReviewModal items={batchReview} onClose={() => setBatchReview(null)} onSaved={handleBatchSaved} />
+      <PricingScreen visible={pricingVisible} onClose={() => setPricingVisible(false)} onGetStarted={() => setPricingVisible(false)} />
     </ScrollView>
   );
 }

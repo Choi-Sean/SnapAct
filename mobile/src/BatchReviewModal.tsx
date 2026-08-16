@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Image, Modal, Share, StyleSheet, Text, Tou
 
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
+import { persistImage } from './imageStorage';
 import { saveContact, saveEventToCalendar } from './nativeActions';
 import { AnalyzeResponse, BatchSubEntry } from './types';
 
@@ -41,12 +42,13 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
     for (let i = 0; i < items.length; i++) {
       if (excluded.has(i)) continue;
       const { uri, result } = items[i];
+      const photoUri = await persistImage(uri);
 
       try {
         if (result.suggested_action === 'contact' && result.contact) {
           await saveContact(result.contact);
           batchItems.push({
-            photoUri: uri,
+            photoUri,
             category: result.category,
             title: result.contact.name ?? t.permissions.items[2].label,
             detail: result.contact.phone ?? '',
@@ -56,7 +58,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
         } else if (result.suggested_action === 'calendar' && result.calendar) {
           await saveEventToCalendar(result.calendar);
           batchItems.push({
-            photoUri: uri,
+            photoUri,
             category: result.category,
             title: result.calendar.title ?? t.permissions.items[3].label,
             detail: result.calendar.location ?? '',
@@ -67,7 +69,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
           const message = result.summary ?? result.raw_text ?? '';
           await Share.share({ message, title: t.batch.noteShareTitle });
           batchItems.push({
-            photoUri: uri,
+            photoUri,
             category: result.category,
             title: t.batch.categoryLabels[result.category],
             detail: result.summary ?? '',
@@ -76,16 +78,16 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
           });
         } else {
           batchItems.push({
-            photoUri: uri,
+            photoUri,
             category: result.category,
             title: t.batch.categoryLabels[result.category],
-            detail: t.batch.noInfoDetail,
+            detail: result.summary ?? t.batch.noInfoDetail,
             savedTo: t.batch.skippedLabel,
           });
         }
       } catch (e) {
         batchItems.push({
-          photoUri: uri,
+          photoUri,
           category: result.category,
           title: t.batch.errorLabel,
           detail: e instanceof Error ? e.message : String(e),

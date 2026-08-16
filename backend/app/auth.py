@@ -6,7 +6,7 @@ from pathlib import Path
 
 import bcrypt
 import jwt
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 from pydantic import BaseModel, field_validator
 
 from .config import settings
@@ -114,7 +114,7 @@ def login(req: LoginRequest) -> AuthResponse:
     return AuthResponse(token=_make_token(row["id"]), email=req.email.strip().lower(), plan=row["plan"])
 
 
-def get_current_user(authorization: str = Header(default="")) -> UserOut:
+def _current_user_id(authorization: str = Header(default="")) -> str:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header.")
     token = authorization.removeprefix("Bearer ").strip()
@@ -125,9 +125,28 @@ def get_current_user(authorization: str = Header(default="")) -> UserOut:
         raise HTTPException(status_code=401, detail="Invalid or expired session.")
 
     with _connect() as conn:
-        row = conn.execute("SELECT email, plan FROM users WHERE id = ?", (payload["sub"],)).fetchone()
+        row = conn.execute("SELECT id FROM users WHERE id = ?", (payload["sub"],)).fetchone()
 
     if not row:
         raise HTTPException(status_code=401, detail="User no longer exists.")
 
+    return row["id"]
+
+
+def get_current_user(authorization: str = Header(default="")) -> UserOut:
+    user_id = _current_user_id(authorization)
+    with _connect() as conn:
+        row = conn.execute("SELECT email, plan FROM users WHERE id = ?", (user_id,)).fetchone()
     return UserOut(email=row["email"], plan=row["plan"])
+
+
+def cancel_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
+    with _connect() as conn:
+        conn.execute("UPDATE users SET plan = 'free' WHERE id = ?", (user_id,))
+        row = conn.execute("SELECT email, plan FROM users WHERE id = ?", (user_id,)).fetchone()
+    return UserOut(email=row["email"], plan=row["plan"])
+
+
+def delete_account(user_id: str = Depends(_current_user_id)) -> None:
+    with _connect() as conn:
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))

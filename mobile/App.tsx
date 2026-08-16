@@ -11,7 +11,7 @@ import { addHistoryEntry, clearHistory, loadHistory } from './src/history';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
 import ReviewModal from './src/ReviewModal';
-import { DemoKey, HistoryEntry } from './src/types';
+import { BatchSubEntry, DemoKey, HistoryEntry } from './src/types';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -76,6 +76,7 @@ export default function App() {
     detail: string;
     savedTo: string;
     fields?: { label: string; value: string }[];
+    replay?: { kind: DemoKey; payload: unknown };
   }) {
     const key = reviewKey;
     setReviewKey(null);
@@ -92,6 +93,7 @@ export default function App() {
       detail: info.detail,
       savedTo: info.savedTo,
       fields: info.fields,
+      replay: info.replay,
     });
     setHistory(updated);
     Alert.alert('완료', `${info.savedTo}에 저장했어요.`);
@@ -102,10 +104,22 @@ export default function App() {
     setHistory([]);
   }
 
+  async function handleBatchSaved(batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) {
+    const updated = await addHistoryEntry({
+      type: 'batch',
+      title: batch.title,
+      detail: batch.detail,
+      savedTo: batch.savedTo,
+      batchItems: batch.batchItems,
+    });
+    setHistory(updated);
+    Alert.alert('완료', `${batch.batchItems.length}장 처리 결과를 기록에 저장했어요.`);
+  }
+
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="auto" />
-      {tab === 'home' && <HomeScreen onDemoPress={setReviewKey} />}
+      {tab === 'home' && <HomeScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
       {tab === 'history' && <HistoryScreen entries={history} onClear={handleClearHistory} />}
       {tab === 'settings' && <PermissionsScreen />}
 

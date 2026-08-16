@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Emoji, EmojiName } from './Emoji';
+import { replayAction } from './replay';
 import { HistoryEntry } from './types';
 
 const ICONS: Record<HistoryEntry['type'], EmojiName> = {
@@ -16,7 +17,10 @@ const ICONS: Record<HistoryEntry['type'], EmojiName> = {
   files: 'files',
   wallet: 'wallet',
   notification: 'notification',
+  batch: 'photos',
 };
+
+const PAGE_SIZE = 15;
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -42,6 +46,29 @@ interface Props {
 
 export default function HistoryScreen({ entries, onClear }: Props) {
   const [selected, setSelected] = useState<HistoryEntry | null>(null);
+  const [replaying, setReplaying] = useState(false);
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1));
+  }, [totalPages, page]);
+
+  const pageEntries = entries.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  async function handleReplay(entry: HistoryEntry) {
+    if (!entry.replay) return;
+    setReplaying(true);
+    try {
+      await replayAction(entry.replay);
+      Alert.alert('다시 저장됨', `${entry.savedTo}에 다시 반영했어요. AI 재분석 없이 이전 값 그대로 사용했어요.`);
+    } catch (e) {
+      Alert.alert('실패', e instanceof Error ? e.message : String(e));
+    } finally {
+      setReplaying(false);
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -59,24 +86,48 @@ export default function HistoryScreen({ entries, onClear }: Props) {
           <Text style={styles.emptyText}>아직 저장한 게 없어요.{'\n'}홈에서 데모 버튼을 눌러보세요.</Text>
         </View>
       ) : (
-        <FlatList
-          data={entries}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ gap: 10 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
-              <Emoji name={ICONS[item.type]} size={26} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>{item.title}</Text>
-                <Text style={styles.rowDetail}>{item.detail}</Text>
-              </View>
-              <View style={styles.rowRight}>
-                <Text style={styles.savedTo}>{item.savedTo}</Text>
-                <Text style={styles.time}>{timeAgo(item.createdAt)}</Text>
-              </View>
-            </TouchableOpacity>
+        <>
+          <FlatList
+            data={pageEntries}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ gap: 10 }}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
+                <Emoji name={ICONS[item.type]} size={26} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>{item.title}</Text>
+                  <Text style={styles.rowDetail}>{item.detail}</Text>
+                </View>
+                <View style={styles.rowRight}>
+                  <Text style={styles.savedTo}>{item.savedTo}</Text>
+                  <Text style={styles.time}>{timeAgo(item.createdAt)}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+
+          {totalPages > 1 && (
+            <View style={styles.pager}>
+              <TouchableOpacity
+                style={[styles.pagerButton, page === 0 && styles.pagerButtonDisabled]}
+                onPress={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+              >
+                <Text style={styles.pagerButtonText}>이전</Text>
+              </TouchableOpacity>
+              <Text style={styles.pagerLabel}>
+                {page + 1} / {totalPages}
+              </Text>
+              <TouchableOpacity
+                style={[styles.pagerButton, page === totalPages - 1 && styles.pagerButtonDisabled]}
+                onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+              >
+                <Text style={styles.pagerButtonText}>다음</Text>
+              </TouchableOpacity>
+            </View>
           )}
-        />
+        </>
       )}
 
       <Modal visible={!!selected} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
@@ -94,7 +145,39 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                   </View>
                 </View>
 
-                {selected.fields && selected.fields.length > 0 ? (
+                {selected.type === 'batch' && selected.batchItems ? (
+                  <FlatList
+                    style={{ maxHeight: 340 }}
+                    data={selected.batchItems}
+                    keyExtractor={(_, i) => String(i)}
+                    contentContainerStyle={{ gap: 8 }}
+                    renderItem={({ item }) => (
+                      <View style={styles.batchRow}>
+                        <Image source={{ uri: item.photoUri }} style={styles.batchThumb} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.batchTitle}>{item.title}</Text>
+                          <Text style={styles.batchDetail}>{item.detail}</Text>
+                        </View>
+                        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                          <Text style={styles.savedTo}>{item.savedTo}</Text>
+                          {item.replay && (
+                            <TouchableOpacity
+                              style={styles.miniReplayButton}
+                              onPress={() =>
+                                item.replay &&
+                                replayAction(item.replay)
+                                  .then(() => Alert.alert('완료', `${item.savedTo}에 다시 반영했어요.`))
+                                  .catch((e) => Alert.alert('실패', e instanceof Error ? e.message : String(e)))
+                              }
+                            >
+                              <Text style={styles.miniReplayText}>다시 저장</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    )}
+                  />
+                ) : selected.fields && selected.fields.length > 0 ? (
                   <View style={styles.fieldList}>
                     {selected.fields.map((f) => (
                       <View key={f.label} style={styles.fieldRow}>
@@ -107,9 +190,27 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                   <Text style={styles.fieldValue}>{selected.detail}</Text>
                 )}
 
-                <TouchableOpacity style={styles.closeButton} onPress={() => setSelected(null)}>
-                  <Text style={styles.closeButtonText}>닫기</Text>
-                </TouchableOpacity>
+                <View style={styles.sheetActions}>
+                  <TouchableOpacity style={styles.closeButton} onPress={() => setSelected(null)}>
+                    <Text style={styles.closeButtonText}>닫기</Text>
+                  </TouchableOpacity>
+                  {selected.replay && (
+                    <TouchableOpacity
+                      style={styles.replayButton}
+                      onPress={() => handleReplay(selected)}
+                      disabled={replaying}
+                    >
+                      {replaying ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={styles.replayButtonText}>다시 저장</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {selected.replay && (
+                  <Text style={styles.replayNote}>실수로 지웠을 때, AI 재분석 없이 같은 값으로 다시 저장해요.</Text>
+                )}
               </>
             )}
           </View>
@@ -141,6 +242,11 @@ const styles = StyleSheet.create({
   rowRight: { alignItems: 'flex-end' },
   savedTo: { fontSize: 12, color: '#2563eb', fontWeight: '700' },
   time: { fontSize: 11, color: '#aaa', marginTop: 2 },
+  pager: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, paddingTop: 4 },
+  pagerButton: { backgroundColor: '#f2f3f6', borderRadius: 10, paddingVertical: 8, paddingHorizontal: 16 },
+  pagerButtonDisabled: { opacity: 0.4 },
+  pagerButtonText: { fontWeight: '700', color: '#333', fontSize: 13 },
+  pagerLabel: { fontSize: 12.5, color: '#888', fontWeight: '600' },
   backdrop: { flex: 1, backgroundColor: 'rgba(15,17,21,0.45)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#fff',
@@ -149,7 +255,7 @@ const styles = StyleSheet.create({
     padding: 22,
     paddingBottom: 32,
     gap: 14,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   sheetTitle: { fontSize: 18, fontWeight: '800', color: '#111' },
@@ -165,12 +271,23 @@ const styles = StyleSheet.create({
   },
   fieldLabel: { fontSize: 12.5, color: '#888', fontWeight: '600', width: 110 },
   fieldValue: { fontSize: 12.5, color: '#222', flex: 1, textAlign: 'right' },
-  closeButton: {
-    marginTop: 6,
-    backgroundColor: '#f2f3f6',
-    borderRadius: 12,
-    paddingVertical: 14,
+  batchRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f7f8fb',
+    borderRadius: 12,
+    padding: 10,
   },
+  batchThumb: { width: 40, height: 40, borderRadius: 8, backgroundColor: '#e5e7eb' },
+  batchTitle: { fontSize: 13.5, fontWeight: '700', color: '#111' },
+  batchDetail: { fontSize: 12, color: '#888', marginTop: 1 },
+  miniReplayButton: { backgroundColor: '#e8edfd', borderRadius: 8, paddingVertical: 4, paddingHorizontal: 8 },
+  miniReplayText: { fontSize: 10.5, fontWeight: '700', color: '#2563eb' },
+  sheetActions: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  closeButton: { flex: 1, backgroundColor: '#f2f3f6', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   closeButtonText: { fontWeight: '700', color: '#333' },
+  replayButton: { flex: 1, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  replayButtonText: { fontWeight: '700', color: '#fff' },
+  replayNote: { fontSize: 11.5, color: '#999', textAlign: 'center', lineHeight: 16 },
 });

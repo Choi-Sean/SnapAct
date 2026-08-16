@@ -12,9 +12,12 @@ import {
 } from 'react-native';
 
 import { analyzePhoto } from './api';
+import BatchReviewModal from './BatchReviewModal';
 import { Emoji, EmojiName } from './Emoji';
 import { saveContact, saveEventToCalendar } from './nativeActions';
-import { AnalyzeResponse, DemoKey } from './types';
+import { AnalyzeResponse, BatchSubEntry, Category, DemoKey } from './types';
+
+const BATCH_MOCK_CYCLE: Category[] = ['business_card', 'event_flyer', 'receipt', 'document'];
 
 const DEMO_BUTTONS: { key: DemoKey; icon: EmojiName; label: string; hint: string }[] = [
   { key: 'business_card', icon: 'contacts', label: '명함 사진', hint: '연락처에 저장' },
@@ -38,14 +41,18 @@ interface Photo {
 
 interface Props {
   onDemoPress: (key: DemoKey) => void;
+  onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
 }
 
-export default function HomeScreen({ onDemoPress }: Props) {
+export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [batchProcessing, setBatchProcessing] = useState<{ done: number; total: number } | null>(null);
+  const [batchReview, setBatchReview] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
 
   async function pick(source: 'camera' | 'library') {
     const permission =
@@ -75,6 +82,69 @@ export default function HomeScreen({ onDemoPress }: Props) {
     setPhoto({ uri: asset.uri, fileName: asset.fileName, mimeType: asset.mimeType });
     setResult(null);
     setError(null);
+  }
+
+  async function pickMultiple() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.status !== 'granted') {
+      Alert.alert('권한 필요', '사진에 접근하려면 권한이 필요합니다.');
+      return;
+    }
+
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
+    });
+
+    if (picked.canceled || !picked.assets?.length) return;
+
+    setBatchProcessing({ done: 0, total: picked.assets.length });
+    const results: { uri: string; result: AnalyzeResponse }[] = [];
+
+    for (let i = 0; i < picked.assets.length; i++) {
+      const asset = picked.assets[i];
+      const mockCategory = BATCH_MOCK_CYCLE[i % BATCH_MOCK_CYCLE.length];
+      try {
+        const response = await analyzePhoto(
+          { uri: asset.uri, fileName: asset.fileName, mimeType: asset.mimeType },
+          mockCategory
+        );
+        results.push({ uri: asset.uri, result: response });
+      } catch (e) {
+        results.push({
+          uri: asset.uri,
+          result: {
+            mock: true,
+            category: 'other',
+            confidence: 0,
+            suggested_action: 'none',
+            summary: e instanceof Error ? e.message : String(e),
+          },
+        });
+      }
+      setBatchProcessing({ done: i + 1, total: picked.assets.length });
+    }
+
+    setBatchProcessing(null);
+    setBatchReview(results);
+  }
+
+  function handleBatchSaved(batchItems: BatchSubEntry[]) {
+    setBatchReview(null);
+    const counts: Record<string, number> = {};
+    for (const item of batchItems) counts[item.savedTo] = (counts[item.savedTo] ?? 0) + 1;
+    const detail = Object.entries(counts)
+      .map(([to, n]) => `${to} ${n}`)
+      .join(' · ');
+
+    onBatchSaved({
+      title: `${batchItems.length}장 일괄 처리됨`,
+      detail,
+      savedTo: '일괄 처리',
+      batchItems,
+    });
   }
 
   async function handleAnalyze() {
@@ -152,6 +222,24 @@ export default function HomeScreen({ onDemoPress }: Props) {
         </TouchableOpacity>
       </View>
 
+      <TouchableOpacity
+        style={styles.multiButton}
+        onPress={pickMultiple}
+        activeOpacity={0.7}
+        disabled={!!batchProcessing}
+      >
+        {batchProcessing ? (
+          <View style={styles.multiProgressRow}>
+            <ActivityIndicator color="#2563eb" />
+            <Text style={styles.multiButtonText}>
+              {batchProcessing.done}/{batchProcessing.total}장 분석 중...
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.multiButtonText}>🗂️ 여러 장 한번에 처리</Text>
+        )}
+      </TouchableOpacity>
+
       {photo && <Image source={{ uri: photo.uri }} style={styles.preview} />}
 
       {photo && (
@@ -214,6 +302,8 @@ export default function HomeScreen({ onDemoPress }: Props) {
           )}
         </View>
       )}
+
+      <BatchReviewModal items={batchReview} onClose={() => setBatchReview(null)} onSaved={handleBatchSaved} />
     </ScrollView>
   );
 }
@@ -272,6 +362,17 @@ const styles = StyleSheet.create({
   },
   primaryButton: { backgroundColor: '#2563eb', flex: undefined },
   buttonText: { fontWeight: '700', color: '#222', fontSize: 13.5 },
+  multiButton: {
+    backgroundColor: '#eef2ff',
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#dbe3ff',
+    borderStyle: 'dashed',
+  },
+  multiButtonText: { fontWeight: '700', color: '#2563eb', fontSize: 13.5 },
+  multiProgressRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   primaryButtonText: { fontWeight: '700', color: '#fff', fontSize: 15 },
   preview: { width: '100%', height: 240, borderRadius: 16, marginTop: 4 },
   error: { color: '#dc2626', marginTop: 8, fontSize: 13 },

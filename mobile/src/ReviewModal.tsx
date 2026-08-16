@@ -71,7 +71,13 @@ interface Row {
 interface Props {
   demoKey: DemoKey | null;
   onClose: () => void;
-  onSaved: (info: { title: string; detail: string; savedTo: string; fields?: { label: string; value: string }[] }) => void;
+  onSaved: (info: {
+    title: string;
+    detail: string;
+    savedTo: string;
+    fields?: { label: string; value: string }[];
+    replay?: { kind: DemoKey; payload: unknown };
+  }) => void;
 }
 
 export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
@@ -214,46 +220,50 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
     const fields = getRows().map((r) => ({ label: r.label, value: r.value }));
     try {
       if (demoKey === 'business_card') {
-        await saveContact({ name: `${firstName} ${lastName}`.trim(), phone, email });
-        onSaved({ title: `${firstName} ${lastName}`.trim(), detail: phone, savedTo: '연락처', fields });
+        const payload = { name: `${firstName} ${lastName}`.trim(), phone, email };
+        await saveContact(payload);
+        onSaved({ title: payload.name, detail: phone, savedTo: '연락처', fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'event') {
         const start = new Date();
         const end = new Date(start.getTime() + 60 * 60 * 1000);
-        await saveEventToCalendar({
+        const payload = {
           title: eventTitle,
           location: eventLocation,
           start_date: start.toISOString(),
           end_date: end.toISOString(),
           notes: '사진에서 자동으로 추출된 일정입니다.',
-        });
-        onSaved({ title: eventTitle, detail: eventLocation || '오늘', savedTo: '캘린더', fields });
+        };
+        await saveEventToCalendar(payload);
+        onSaved({ title: eventTitle, detail: eventLocation || '오늘', savedTo: '캘린더', fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'receipt') {
-        await Share.share({ message: formatReceiptTable(), title: '영수증 내역' });
-        onSaved({ title: '영수증 내역', detail: '8,300원', savedTo: '공유(메모 등)', fields });
+        const payload = { message: formatReceiptTable(), title: '영수증 내역' };
+        await Share.share(payload);
+        onSaved({ title: '영수증 내역', detail: '8,300원', savedTo: '공유(메모 등)', fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'reminder') {
-        await saveReminder({ title: reminderTitle, notes: reminderNotes, dueDate: new Date() });
-        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: '미리 알림', fields });
+        const payload = { title: reminderTitle, notes: reminderNotes, dueDate: new Date() };
+        await saveReminder(payload);
+        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: '미리 알림', fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'photo') {
         const { album } = await savePhotoDemo();
-        onSaved({ title: '데모 사진', detail: `앨범: ${album}`, savedTo: '사진', fields });
+        onSaved({ title: '데모 사진', detail: `앨범: ${album}`, savedTo: '사진', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'mail') {
         const status = await composeMailDemo();
-        onSaved({ title: 'Snapsist 데모 메일', detail: `상태: ${status}`, savedTo: '메일', fields });
+        onSaved({ title: 'Snapsist 데모 메일', detail: `상태: ${status}`, savedTo: '메일', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'sms') {
         const result = await sendSmsDemo();
-        onSaved({ title: 'Snapsist 데모 문자', detail: `상태: ${result}`, savedTo: '문자', fields });
+        onSaved({ title: 'Snapsist 데모 문자', detail: `상태: ${result}`, savedTo: '문자', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'maps') {
         await openMapsDemo();
-        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: '지도', fields });
+        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: '지도', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'files') {
         await shareFileDemo();
-        onSaved({ title: 'snapsist-note.txt', detail: '문서 디렉토리에 저장됨', savedTo: '파일', fields });
+        onSaved({ title: 'snapsist-note.txt', detail: '문서 디렉토리에 저장됨', savedTo: '파일', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'wallet') {
         await addToWalletDemo();
-        onSaved({ title: 'Snapsist 데모 패스', detail: 'Apple Wallet 공유 시트 열림', savedTo: 'Wallet', fields });
+        onSaved({ title: 'Snapsist 데모 패스', detail: 'Apple Wallet 공유 시트 열림', savedTo: 'Wallet', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'notification') {
         await scheduleNotificationDemo();
-        onSaved({ title: 'Snapsist', detail: '5초 뒤 도착 예정', savedTo: '알림', fields });
+        onSaved({ title: 'Snapsist', detail: '5초 뒤 도착 예정', savedTo: '알림', fields, replay: { kind: demoKey, payload: null } });
       }
     } catch (e) {
       onSaved({ title: '실패', detail: e instanceof Error ? e.message : String(e), savedTo: '오류' });

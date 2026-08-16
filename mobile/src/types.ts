@@ -46,12 +46,31 @@ export interface HistoryField {
   value: string;
 }
 
+// Lets a history entry be replayed later (e.g. the user deleted the contact by
+// accident) without spending another AI call — just re-runs the same native
+// save with the same payload that was used the first time.
+export interface ReplaySpec {
+  kind: DemoKey;
+  payload: unknown;
+}
+
+export interface BatchSubEntry {
+  photoUri: string;
+  category: Category;
+  title: string;
+  detail: string;
+  savedTo: string;
+  replay?: ReplaySpec;
+}
+
 export interface HistoryEntry {
   id: string;
-  type: DemoKey;
+  type: DemoKey | 'batch';
   title: string;
   detail: string;
   savedTo: string;
   createdAt: string;
   fields?: HistoryField[];
+  replay?: ReplaySpec;
+  batchItems?: BatchSubEntry[];
 }

@@ -5,7 +5,7 @@ from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Upload
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, vision, wallet
+from . import auth, claude_analysis, db, vision, wallet
 from .auth import AuthResponse, LoginRequest, SignupRequest, UserOut
 from .config import settings
 from .models import AnalyzeResponse
@@ -24,7 +24,7 @@ MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
 
 @app.on_event("startup")
 def on_startup():
-    auth.init_db()
+    db.init_db()
 
 
 def require_api_key(x_api_key: str = Header(default="")):
@@ -43,6 +43,7 @@ def health():
         "auth_enabled": bool(settings.api_shared_secret),
         "wallet_enabled": settings.wallet_enabled,
         "accounts_enabled": bool(settings.jwt_secret),
+        "db_enabled": settings.db_enabled,
         "google_oauth_enabled": settings.google_oauth_enabled,
     }
 

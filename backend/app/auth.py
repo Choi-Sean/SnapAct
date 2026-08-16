@@ -1,8 +1,6 @@
 import re
-import sqlite3
 import time
 import uuid
-from pathlib import Path
 
 import bcrypt
 import jwt
@@ -10,33 +8,10 @@ from fastapi import Depends, Header, HTTPException
 from pydantic import BaseModel, field_validator
 
 from .config import settings
-
-DB_PATH = Path(__file__).parent / "data" / "snapsist.db"
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+from .db import get_connection
 
 TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-
-
-def _connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def init_db() -> None:
-    with _connect() as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT,
-                plan TEXT NOT NULL DEFAULT 'free',
-                created_at INTEGER NOT NULL
-            )
-            """
-        )
 
 
 class SignupRequest(BaseModel):
@@ -87,14 +62,19 @@ def signup(req: SignupRequest) -> AuthResponse:
     password_hash = bcrypt.hashpw(req.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     user_id = str(uuid.uuid4())
 
-    with _connect() as conn:
-        existing = conn.execute("SELECT id FROM users WHERE email = ?", (req.email,)).fetchone()
-        if existing:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM dbo.users WHERE email = %s", (req.email,))
+        if cur.fetchone():
             raise HTTPException(status_code=409, detail="An account with this email already exists.")
-        conn.execute(
-            "INSERT INTO users (id, email, password_hash, plan, created_at) VALUES (?, ?, ?, 'free', ?)",
+        cur.execute(
+            "INSERT INTO dbo.users (id, email, password_hash, [plan], created_at) VALUES (%s, %s, %s, 'free', %s)",
             (user_id, req.email, password_hash, int(time.time())),
         )
+        conn.commit()
+    finally:
+        conn.close()
 
     return AuthResponse(token=_make_token(user_id), email=req.email, plan="free")
 
@@ -103,12 +83,19 @@ def login(req: LoginRequest) -> AuthResponse:
     if not settings.jwt_secret:
         raise HTTPException(status_code=503, detail="Auth isn't configured on the server yet.")
 
-    with _connect() as conn:
-        row = conn.execute(
-            "SELECT id, password_hash, plan FROM users WHERE email = ?", (req.email.strip().lower(),)
-        ).fetchone()
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute(
+            "SELECT id, password_hash, [plan] FROM dbo.users WHERE email = %s", (req.email.strip().lower(),)
+        )
+        row = cur.fetchone()
+    finally:
+        conn.close()
 
-    if not row or not row["password_hash"] or not bcrypt.checkpw(req.password.encode("utf-8"), row["password_hash"].encode("utf-8")):
+    if not row or not row["password_hash"] or not bcrypt.checkpw(
+        req.password.encode("utf-8"), row["password_hash"].encode("utf-8")
+    ):
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
 
     return AuthResponse(token=_make_token(row["id"]), email=req.email.strip().lower(), plan=row["plan"])
@@ -124,29 +111,52 @@ def _current_user_id(authorization: str = Header(default="")) -> str:
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired session.")
 
-    with _connect() as conn:
-        row = conn.execute("SELECT id FROM users WHERE id = ?", (payload["sub"],)).fetchone()
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM dbo.users WHERE id = %s", (payload["sub"],))
+        row = cur.fetchone()
+    finally:
+        conn.close()
 
     if not row:
         raise HTTPException(status_code=401, detail="User no longer exists.")
 
-    return row["id"]
+    return row[0]
 
 
 def get_current_user(authorization: str = Header(default="")) -> UserOut:
     user_id = _current_user_id(authorization)
-    with _connect() as conn:
-        row = conn.execute("SELECT email, plan FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute("SELECT email, [plan] FROM dbo.users WHERE id = %s", (user_id,))
+        row = cur.fetchone()
+    finally:
+        conn.close()
     return UserOut(email=row["email"], plan=row["plan"])
 
 
 def cancel_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
-    with _connect() as conn:
-        conn.execute("UPDATE users SET plan = 'free' WHERE id = ?", (user_id,))
-        row = conn.execute("SELECT email, plan FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute("UPDATE dbo.users SET [plan] = 'free' WHERE id = %s", (user_id,))
+        cur.execute("SELECT email, [plan] FROM dbo.users WHERE id = %s", (user_id,))
+        row = cur.fetchone()
+        conn.commit()
+    finally:
+        conn.close()
     return UserOut(email=row["email"], plan=row["plan"])
 
 
 def delete_account(user_id: str = Depends(_current_user_id)) -> None:
-    with _connect() as conn:
-        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        # uploaded_images has no FK cascade (see db.py) so it's cleaned up explicitly.
+        cur.execute("DELETE FROM dbo.uploaded_images WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM dbo.users WHERE id = %s", (user_id,))
+        conn.commit()
+    finally:
+        conn.close()

@@ -18,7 +18,16 @@ class Settings(BaseSettings):
     google_oauth_client_id: str = ""
     google_oauth_client_secret: str = ""
 
+    db_server: str = ""
+    db_name: str = ""
+    db_user: str = ""
+    db_password: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @property
+    def db_enabled(self) -> bool:
+        return bool(self.db_server and self.db_name and self.db_user and self.db_password)
 
     @property
     def vision_enabled(self) -> bool:

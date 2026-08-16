@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@/components/icons';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function Features() {
@@ -21,8 +22,8 @@ export default function Features() {
               className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-lg hover:shadow-black/5"
             >
               <div className="flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-lg">
-                  {item.icon}
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <Icon name={item.icon} className="h-5 w-5" />
                 </span>
                 <span className="rounded-full bg-good/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-good">
                   {item.tag}

@@ -1,8 +1,9 @@
 'use client';
 
+import { Icon, IconName } from '@/components/icons';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
-const GRID_ICONS = ['🪪', '📅', '🧾', '✅', '🖼️', '✉️', '💬', '📍'];
+const GRID_ICONS: IconName[] = ['contacts', 'calendar', 'notes', 'reminders', 'photos', 'mail', 'maps', 'wallet'];
 
 export default function PhoneMockup() {
   const { t } = useLanguage();
@@ -26,7 +27,7 @@ export default function PhoneMockup() {
                   key={i}
                   className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-border bg-surface-alt"
                 >
-                  <span className="text-lg leading-none">{icon}</span>
+                  <Icon name={icon} className="h-4 w-4 text-accent" />
                 </div>
               ))}
             </div>

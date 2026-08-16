@@ -16,7 +16,7 @@ export default function Footer() {
           <span className="text-sm font-bold">Snapsist</span>
         </div>
         <p className="text-xs text-muted">{t.footer.tagline}</p>
-        <p className="text-xs text-muted">
+        <p className="text-xs text-muted" suppressHydrationWarning>
           © {year} Snapsist. {t.footer.rights}
         </p>
       </div>

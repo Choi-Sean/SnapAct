@@ -1,3 +1,5 @@
+import type { IconName } from '@/components/icons';
+
 export type Locale = 'en' | 'ko';
 
 export interface Dictionary {
@@ -22,7 +24,7 @@ export interface Dictionary {
     eyebrow: string;
     headline: string;
     sub: string;
-    items: { icon: string; title: string; desc: string; tag: string }[];
+    items: { icon: IconName; title: string; desc: string; tag: string }[];
   };
   preview: {
     eyebrow: string;
@@ -107,14 +109,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'It writes to the apps you already trust',
       sub: 'Every integration uses the real, native framework for that app — not a copy, not a workaround.',
       items: [
-        { icon: '🪪', title: 'Contacts', desc: 'Full name, company, title, phones, emails, addresses, birthday, socials.', tag: 'Fully automatic' },
-        { icon: '📅', title: 'Calendar', desc: 'Title, time, location, alerts, recurrence — a real event, not a note.', tag: 'Fully automatic' },
-        { icon: '✅', title: 'Reminders', desc: 'To-dos with due dates, locations, and alerts on iOS.', tag: 'Fully automatic' },
-        { icon: '🖼️', title: 'Photos', desc: 'Saved straight into an album, ready when you need it.', tag: 'Fully automatic' },
-        { icon: '🎫', title: 'Apple Wallet', desc: 'Signed, scannable passes added straight to Wallet.', tag: 'Fully automatic' },
-        { icon: '✉️', title: 'Mail & Messages', desc: 'A draft appears pre-filled, ready for one tap to send.', tag: 'One tap to send' },
-        { icon: '🧾', title: 'Notes', desc: 'Formatted and handed to Notes through the share sheet.', tag: 'One tap to file' },
-        { icon: '📍', title: 'Maps', desc: 'Opens the address straight in Apple or Google Maps.', tag: 'Opens instantly' },
+        { icon: 'contacts', title: 'Contacts', desc: 'Full name, company, title, phones, emails, addresses, birthday, socials.', tag: 'Fully automatic' },
+        { icon: 'calendar', title: 'Calendar', desc: 'Title, time, location, alerts, recurrence — a real event, not a note.', tag: 'Fully automatic' },
+        { icon: 'reminders', title: 'Reminders', desc: 'To-dos with due dates, locations, and alerts on iOS.', tag: 'Fully automatic' },
+        { icon: 'photos', title: 'Photos', desc: 'Saved straight into an album, ready when you need it.', tag: 'Fully automatic' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signed, scannable passes added straight to Wallet.', tag: 'Fully automatic' },
+        { icon: 'mail', title: 'Mail & Messages', desc: 'A draft appears pre-filled, ready for one tap to send.', tag: 'One tap to send' },
+        { icon: 'notes', title: 'Notes', desc: 'Formatted and handed to Notes through the share sheet.', tag: 'One tap to file' },
+        { icon: 'maps', title: 'Maps', desc: 'Opens the address straight in Apple or Google Maps.', tag: 'Opens instantly' },
       ],
     },
     preview: {
@@ -249,14 +251,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '이미 쓰고 있는 앱에 바로 써줍니다',
       sub: '모든 연동은 실제 네이티브 프레임워크를 사용합니다 — 복사본도, 우회 방식도 아닙니다.',
       items: [
-        { icon: '🪪', title: '연락처', desc: '이름, 회사, 직함, 전화, 이메일, 주소, 생일, SNS까지.', tag: '완전 자동' },
-        { icon: '📅', title: '캘린더', desc: '제목, 시간, 장소, 알림, 반복까지 — 진짜 일정으로 등록됩니다.', tag: '완전 자동' },
-        { icon: '✅', title: '미리 알림', desc: '마감일·장소·알림이 있는 할 일 (iOS).', tag: '완전 자동' },
-        { icon: '🖼️', title: '사진', desc: '앨범에 바로 저장돼서 필요할 때 바로 찾을 수 있어요.', tag: '완전 자동' },
-        { icon: '🎫', title: 'Apple Wallet', desc: '서명된 패스를 Wallet에 바로 추가합니다.', tag: '완전 자동' },
-        { icon: '✉️', title: '메일 · 문자', desc: '내용이 채워진 초안이 뜨고, 탭 한 번이면 전송됩니다.', tag: '한 번 탭' },
-        { icon: '🧾', title: '메모', desc: '정리된 형태로 공유 시트를 통해 메모 앱으로 전달됩니다.', tag: '한 번 탭' },
-        { icon: '📍', title: '지도', desc: '주소를 Apple/Google 지도에서 바로 열어줍니다.', tag: '즉시 열림' },
+        { icon: 'contacts', title: '연락처', desc: '이름, 회사, 직함, 전화, 이메일, 주소, 생일, SNS까지.', tag: '완전 자동' },
+        { icon: 'calendar', title: '캘린더', desc: '제목, 시간, 장소, 알림, 반복까지 — 진짜 일정으로 등록됩니다.', tag: '완전 자동' },
+        { icon: 'reminders', title: '미리 알림', desc: '마감일·장소·알림이 있는 할 일 (iOS).', tag: '완전 자동' },
+        { icon: 'photos', title: '사진', desc: '앨범에 바로 저장돼서 필요할 때 바로 찾을 수 있어요.', tag: '완전 자동' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '서명된 패스를 Wallet에 바로 추가합니다.', tag: '완전 자동' },
+        { icon: 'mail', title: '메일 · 문자', desc: '내용이 채워진 초안이 뜨고, 탭 한 번이면 전송됩니다.', tag: '한 번 탭' },
+        { icon: 'notes', title: '메모', desc: '정리된 형태로 공유 시트를 통해 메모 앱으로 전달됩니다.', tag: '한 번 탭' },
+        { icon: 'maps', title: '지도', desc: '주소를 Apple/Google 지도에서 바로 열어줍니다.', tag: '즉시 열림' },
       ],
     },
     preview: {

@@ -1,4 +1,4 @@
-import type { IconName } from '@/components/icons';
+import type { EmojiName } from '@/components/Emoji';
 
 export type Locale = 'en' | 'ko';
 
@@ -24,7 +24,7 @@ export interface Dictionary {
     eyebrow: string;
     headline: string;
     sub: string;
-    items: { icon: IconName; title: string; desc: string; tag: string }[];
+    items: { icon: EmojiName; title: string; desc: string; tag: string }[];
   };
   preview: {
     eyebrow: string;

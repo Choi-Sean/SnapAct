@@ -1,9 +1,9 @@
 'use client';
 
-import { Icon, IconName } from '@/components/icons';
+import { Emoji, EmojiName } from '@/components/Emoji';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
-const GRID_ICONS: IconName[] = ['contacts', 'calendar', 'notes', 'reminders', 'photos', 'mail', 'maps', 'wallet'];
+const GRID_ICONS: EmojiName[] = ['contacts', 'calendar', 'notes', 'reminders', 'photos', 'mail', 'maps', 'wallet'];
 
 export default function PhoneMockup() {
   const { t } = useLanguage();
@@ -27,7 +27,7 @@ export default function PhoneMockup() {
                   key={i}
                   className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-border bg-surface-alt"
                 >
-                  <Icon name={icon} className="h-4 w-4 text-accent" />
+                  <Emoji name={icon} className="h-5 w-5" />
                 </div>
               ))}
             </div>

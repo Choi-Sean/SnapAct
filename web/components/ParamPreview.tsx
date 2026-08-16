@@ -1,6 +1,6 @@
 'use client';
 
-import { Icon } from '@/components/icons';
+import { Emoji } from '@/components/Emoji';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 function BusinessCardMockup() {
@@ -30,8 +30,8 @@ export default function ParamPreview() {
           <div className="flex items-center gap-4">
             <BusinessCardMockup />
             <span className="font-mono text-lg text-muted/50">→</span>
-            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-accent-soft text-accent">
-              <Icon name="contacts" className="h-5 w-5" />
+            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-accent-soft">
+              <Emoji name="contacts" className="h-6 w-6" />
             </span>
           </div>
 

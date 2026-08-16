@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 
+import { useLanguage } from './i18n/LanguageProvider';
+import { Dictionary, t as fmt } from './i18n/dictionaries';
 import {
   addToWalletDemo,
   composeMailDemo,
@@ -25,42 +27,25 @@ import {
 } from './nativeActions';
 import { DemoKey } from './types';
 
-function formatReceiptTable(): string {
+function formatReceiptTable(d: Dictionary['review']['demo']): string {
   const now = new Date();
   const dateStr = `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}`;
   const items: [string, string][] = [
-    ['아메리카노', '4,500원'],
-    ['크루아상', '3,800원'],
+    [d.receiptItem1, d.receiptPrice1],
+    [d.receiptItem2, d.receiptPrice2],
   ];
-  const total = '8,300원';
 
   const lines = [
-    `🧾 영수증 내역 (${dateStr})`,
+    fmt(d.receiptHeaderTemplate, { date: dateStr }),
     '',
     ...items.map(([name, price]) => `${name.padEnd(10, ' ')} ${price}`),
     '------------------------',
-    `합계          ${total}`,
+    `${d.receiptTotalLabel.padEnd(12, ' ')}${d.receiptTotal}`,
   ];
   return lines.join('\n');
 }
 
-const TITLES: Record<DemoKey, string> = {
-  business_card: '명함 → 연락처',
-  event: '이벤트 → 캘린더',
-  receipt: '영수증 → 메모',
-  reminder: '리마인더 → 미리 알림',
-  photo: '사진 → 갤러리',
-  mail: '메일 초안',
-  sms: '문자 초안',
-  maps: '위치 → 지도',
-  files: '문서 → 파일',
-  wallet: '패스 → Apple Wallet',
-  notification: '알림 예약',
-};
-
-const EXECUTE_LABEL: Partial<Record<DemoKey, string>> = {
-  receipt: '공유하기',
-};
+const SAVE_ERROR = '__error__';
 
 interface Row {
   label: string;
@@ -81,16 +66,20 @@ interface Props {
 }
 
 export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
+  const { t } = useLanguage();
+  const d = t.review.demo;
+  const l = t.review.labels;
+
   const [firstName, setFirstName] = useState('John');
   const [lastName, setLastName] = useState('Smith');
   const [phone, setPhone] = useState('+1 123-456-7894');
   const [email, setEmail] = useState('john.smith@example.com');
 
-  const [eventTitle, setEventTitle] = useState('Snapsist 데모 이벤트');
+  const [eventTitle, setEventTitle] = useState(d.eventTitleDefault);
   const [eventLocation, setEventLocation] = useState('Snapsist HQ');
 
-  const [reminderTitle, setReminderTitle] = useState('우유 사기');
-  const [reminderNotes, setReminderNotes] = useState('Snapsist에서 사진으로 자동 등록된 할 일입니다.');
+  const [reminderTitle, setReminderTitle] = useState(d.reminderTitleDefault);
+  const [reminderNotes, setReminderNotes] = useState(d.reminderNotesAuto);
 
   const [saving, setSaving] = useState(false);
 
@@ -101,12 +90,13 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
       setPhone('+1 123-456-7894');
       setEmail('john.smith@example.com');
     } else if (demoKey === 'event') {
-      setEventTitle('Snapsist 데모 이벤트');
+      setEventTitle(d.eventTitleDefault);
       setEventLocation('Snapsist HQ');
     } else if (demoKey === 'reminder') {
-      setReminderTitle('우유 사기');
-      setReminderNotes('Snapsist에서 사진으로 자동 등록된 할 일입니다.');
+      setReminderTitle(d.reminderTitleDefault);
+      setReminderNotes(d.reminderNotesAuto);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoKey]);
 
   if (!demoKey) return null;
@@ -115,100 +105,100 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
     switch (demoKey) {
       case 'business_card':
         return [
-          { label: 'First Name', value: firstName, input: { value: firstName, onChangeText: setFirstName } },
-          { label: 'Last Name', value: lastName, input: { value: lastName, onChangeText: setLastName } },
-          { label: 'Middle Name', value: 'Andrew' },
-          { label: 'Prefix / Suffix', value: 'Mr. / Jr.' },
+          { label: l.firstName, value: firstName, input: { value: firstName, onChangeText: setFirstName } },
+          { label: l.lastName, value: lastName, input: { value: lastName, onChangeText: setLastName } },
+          { label: l.middleName, value: 'Andrew' },
+          { label: l.prefixSuffix, value: 'Mr. / Jr.' },
           {
-            label: 'Mobile',
+            label: l.mobile,
             value: phone,
             input: { value: phone, onChangeText: setPhone, keyboardType: 'phone-pad' },
           },
-          { label: 'Work Email', value: email, input: { value: email, onChangeText: setEmail, keyboardType: 'email-address' } },
-          { label: 'Company / Dept', value: 'Snapsist Inc. / Engineering' },
-          { label: 'Job Title', value: 'Product Manager' },
-          { label: 'Birthday', value: '1990-05-12' },
-          { label: 'Work Address', value: '123 Main St, San Francisco, CA 94105, USA' },
-          { label: 'Homepage', value: 'https://example.com' },
-          { label: 'Relation', value: 'Colleague — Jane Doe' },
-          { label: 'Social', value: 'Twitter — @johnsmith' },
-          { label: 'Note', value: 'Snapsist 데모로 생성된 연락처입니다.' },
+          { label: l.workEmail, value: email, input: { value: email, onChangeText: setEmail, keyboardType: 'email-address' } },
+          { label: l.companyDept, value: 'Snapsist Inc. / Engineering' },
+          { label: l.jobTitle, value: 'Product Manager' },
+          { label: l.birthday, value: '1990-05-12' },
+          { label: l.workAddress, value: '123 Main St, San Francisco, CA 94105, USA' },
+          { label: l.homepage, value: 'https://example.com' },
+          { label: l.relation, value: 'Colleague — Jane Doe' },
+          { label: l.social, value: 'Twitter — @johnsmith' },
+          { label: l.note, value: t.review.titles.business_card },
         ];
       case 'event':
         return [
-          { label: 'Title', value: eventTitle, input: { value: eventTitle, onChangeText: setEventTitle } },
-          { label: 'Location', value: eventLocation, input: { value: eventLocation, onChangeText: setEventLocation } },
-          { label: 'Start / End', value: '지금 ~ +1시간' },
-          { label: 'All Day', value: 'false' },
-          { label: 'Notes', value: '사진에서 자동으로 추출된 일정입니다.' },
-          { label: 'URL', value: 'https://example.com/snapsist-event' },
-          { label: 'Time Zone', value: '기기 설정값' },
-          { label: 'Availability', value: 'Busy' },
-          { label: 'Alarm', value: '시작 15분 전' },
-          { label: 'Recurrence', value: '매주 반복, 4회' },
+          { label: l.title, value: eventTitle, input: { value: eventTitle, onChangeText: setEventTitle } },
+          { label: l.location, value: eventLocation, input: { value: eventLocation, onChangeText: setEventLocation } },
+          { label: l.startEnd, value: d.eventStartEnd },
+          { label: l.allDay, value: 'false' },
+          { label: l.notes, value: d.eventNotesAuto },
+          { label: l.url, value: 'https://example.com/snapsist-event' },
+          { label: l.timeZone, value: d.eventTimeZone },
+          { label: l.availability, value: 'Busy' },
+          { label: l.alarm, value: d.eventAlarm },
+          { label: l.recurrence, value: d.eventRecurrence },
         ];
       case 'receipt':
-        return [{ label: '내역', value: formatReceiptTable() }];
+        return [{ label: l.note, value: formatReceiptTable(d) }];
       case 'reminder':
         return [
-          { label: 'Title', value: reminderTitle, input: { value: reminderTitle, onChangeText: setReminderTitle } },
-          { label: 'Notes', value: reminderNotes, input: { value: reminderNotes, onChangeText: setReminderNotes } },
-          { label: 'Location', value: 'Snapsist HQ' },
-          { label: 'URL', value: 'https://example.com/snapsist-reminder' },
-          { label: 'Start / Due', value: '지금 / 지금' },
-          { label: 'Completed', value: 'false' },
-          { label: 'Alarm', value: '마감 10분 전' },
+          { label: l.title, value: reminderTitle, input: { value: reminderTitle, onChangeText: setReminderTitle } },
+          { label: l.notes, value: reminderNotes, input: { value: reminderNotes, onChangeText: setReminderNotes } },
+          { label: l.location, value: 'Snapsist HQ' },
+          { label: l.url, value: 'https://example.com/snapsist-reminder' },
+          { label: l.startDue, value: d.reminderStartDue },
+          { label: l.completed, value: 'false' },
+          { label: l.alarm, value: d.reminderAlarm },
         ];
       case 'photo':
         return [
-          { label: '저장 앨범', value: 'Snapsist' },
-          { label: '원본 파일', value: '데모 PNG (1×1)' },
-          { label: '사용 API', value: 'Asset.create() · Album.get/create() · album.add()' },
+          { label: l.saveAlbum, value: 'Snapsist' },
+          { label: l.originalFile, value: d.photoOriginalFile },
+          { label: l.usedApi, value: 'Asset.create() · Album.get/create() · album.add()' },
         ];
       case 'mail':
         return [
-          { label: '받는사람', value: 'demo@example.com' },
-          { label: '참조(CC)', value: 'cc@example.com' },
-          { label: '숨은참조(BCC)', value: 'bcc@example.com' },
-          { label: '제목', value: 'Snapsist 데모 메일' },
-          { label: '본문', value: 'HTML 형식 (isHtml: true)' },
-          { label: '첨부파일', value: 'snapsist-summary.txt' },
+          { label: l.recipients, value: 'demo@example.com' },
+          { label: l.cc, value: 'cc@example.com' },
+          { label: l.bcc, value: 'bcc@example.com' },
+          { label: l.subject, value: d.mailSubjectDefault },
+          { label: l.body, value: d.mailBodyFormat },
+          { label: l.attachment, value: 'snapsist-summary.txt' },
         ];
       case 'sms':
         return [
-          { label: '받는사람', value: '+1 123-456-7894, +1 987-654-3210' },
-          { label: '메시지', value: 'Snapsist 데모 문자입니다.' },
-          { label: '첨부파일', value: 'snapsist.png (image/png)' },
+          { label: l.recipients, value: '+1 123-456-7894, +1 987-654-3210' },
+          { label: l.message, value: d.smsMessageDefault },
+          { label: l.attachment, value: 'snapsist.png (image/png)' },
         ];
       case 'maps':
         return [
-          { label: '장소명', value: 'Snapsist HQ' },
-          { label: '좌표', value: '37.5665, 126.978' },
-          { label: '경로', value: 'iOS → Apple Maps / Android → Google Maps(geo:)' },
+          { label: l.placeName, value: 'Snapsist HQ' },
+          { label: l.coordinates, value: '37.5665, 126.978' },
+          { label: l.route, value: 'iOS → Apple Maps / Android → Google Maps(geo:)' },
         ];
       case 'files':
         return [
-          { label: '파일명', value: 'snapsist-note.txt' },
-          { label: '저장 위치', value: '문서 디렉토리 (Paths.document)' },
-          { label: '공유 옵션', value: 'mimeType=text/plain, UTI=public.plain-text' },
+          { label: l.fileName, value: 'snapsist-note.txt' },
+          { label: l.saveLocation, value: d.filesSaveLocation },
+          { label: l.shareOptions, value: 'mimeType=text/plain, UTI=public.plain-text' },
         ];
       case 'wallet':
         return [
-          { label: 'Pass Type', value: 'Generic' },
-          { label: 'Organization', value: 'Snapsist' },
-          { label: 'Description', value: 'Snapsist 데모 패스' },
-          { label: 'Primary Field', value: 'Name — John Smith' },
-          { label: 'Secondary Field', value: 'Title — Product Manager' },
-          { label: 'Barcode', value: 'QR — snapsist-demo-pass' },
-          { label: '색상', value: 'bg #2563eb / fg #ffffff' },
+          { label: l.passType, value: 'Generic' },
+          { label: l.organization, value: 'Snapsist' },
+          { label: l.description, value: d.walletDescriptionDefault },
+          { label: l.primaryField, value: 'Name — John Smith' },
+          { label: l.secondaryField, value: 'Title — Product Manager' },
+          { label: l.barcode, value: 'QR — snapsist-demo-pass' },
+          { label: l.color, value: 'bg #2563eb / fg #ffffff' },
         ];
       case 'notification':
         return [
-          { label: 'Title / Subtitle', value: 'Snapsist / 데모 알림' },
-          { label: 'Badge / Sound', value: '1 / default' },
-          { label: '색상', value: '#2563eb' },
-          { label: '중요도', value: 'active (interruptionLevel)' },
-          { label: '트리거', value: '5초 뒤 (TIME_INTERVAL)' },
+          { label: l.titleSubtitle, value: fmt(d.notificationTitleTemplate, { text: d.notificationSubtitleDefault }) },
+          { label: l.badgeSound, value: '1 / default' },
+          { label: l.color, value: '#2563eb' },
+          { label: l.importance, value: 'active (interruptionLevel)' },
+          { label: l.trigger, value: d.notificationTriggerDefault },
         ];
       default:
         return [];
@@ -222,7 +212,7 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
       if (demoKey === 'business_card') {
         const payload = { name: `${firstName} ${lastName}`.trim(), phone, email };
         await saveContact(payload);
-        onSaved({ title: payload.name, detail: phone, savedTo: '연락처', fields, replay: { kind: demoKey, payload } });
+        onSaved({ title: payload.name, detail: phone, savedTo: t.permissions.items[2].label, fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'event') {
         const start = new Date();
         const end = new Date(start.getTime() + 60 * 60 * 1000);
@@ -231,42 +221,42 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
           location: eventLocation,
           start_date: start.toISOString(),
           end_date: end.toISOString(),
-          notes: '사진에서 자동으로 추출된 일정입니다.',
+          notes: d.eventNotesAuto,
         };
         await saveEventToCalendar(payload);
-        onSaved({ title: eventTitle, detail: eventLocation || '오늘', savedTo: '캘린더', fields, replay: { kind: demoKey, payload } });
+        onSaved({ title: eventTitle, detail: eventLocation || '', savedTo: t.permissions.items[3].label, fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'receipt') {
-        const payload = { message: formatReceiptTable(), title: '영수증 내역' };
+        const payload = { message: formatReceiptTable(d), title: d.receiptHeaderTemplate };
         await Share.share(payload);
-        onSaved({ title: '영수증 내역', detail: '8,300원', savedTo: '공유(메모 등)', fields, replay: { kind: demoKey, payload } });
+        onSaved({ title: d.receiptHeaderTemplate, detail: d.receiptTotal, savedTo: t.review.shareLabel, fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'reminder') {
         const payload = { title: reminderTitle, notes: reminderNotes, dueDate: new Date() };
         await saveReminder(payload);
-        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: '미리 알림', fields, replay: { kind: demoKey, payload } });
+        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: t.permissions.items[4].label, fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'photo') {
         const { album } = await savePhotoDemo();
-        onSaved({ title: '데모 사진', detail: `앨범: ${album}`, savedTo: '사진', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: t.review.titles.photo, detail: fmt(d.photoDetailTemplate, { album }), savedTo: t.permissions.items[1].label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'mail') {
         const status = await composeMailDemo();
-        onSaved({ title: 'Snapsist 데모 메일', detail: `상태: ${status}`, savedTo: '메일', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: d.mailSubjectDefault, detail: fmt(d.mailDetailTemplate, { status }), savedTo: t.home.demoButtons.mail.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'sms') {
         const result = await sendSmsDemo();
-        onSaved({ title: 'Snapsist 데모 문자', detail: `상태: ${result}`, savedTo: '문자', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: d.smsMessageDefault, detail: fmt(d.smsDetailTemplate, { status: result }), savedTo: t.home.demoButtons.sms.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'maps') {
         await openMapsDemo();
-        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: '지도', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: t.home.demoButtons.maps.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'files') {
         await shareFileDemo();
-        onSaved({ title: 'snapsist-note.txt', detail: '문서 디렉토리에 저장됨', savedTo: '파일', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: 'snapsist-note.txt', detail: d.filesDetail, savedTo: t.home.demoButtons.files.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'wallet') {
         await addToWalletDemo();
-        onSaved({ title: 'Snapsist 데모 패스', detail: 'Apple Wallet 공유 시트 열림', savedTo: 'Wallet', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: d.walletDescriptionDefault, detail: d.walletDetail, savedTo: 'Wallet', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'notification') {
         await scheduleNotificationDemo();
-        onSaved({ title: 'Snapsist', detail: '5초 뒤 도착 예정', savedTo: '알림', fields, replay: { kind: demoKey, payload: null } });
+        onSaved({ title: 'Snapsist', detail: d.notificationDetail, savedTo: t.home.demoButtons.notification.label, fields, replay: { kind: demoKey, payload: null } });
       }
     } catch (e) {
-      onSaved({ title: '실패', detail: e instanceof Error ? e.message : String(e), savedTo: '오류' });
+      onSaved({ title: t.review.failTitle, detail: e instanceof Error ? e.message : String(e), savedTo: SAVE_ERROR });
     } finally {
       setSaving(false);
     }
@@ -278,12 +268,12 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
     <Modal visible={!!demoKey} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>{TITLES[demoKey]}</Text>
-          <Text style={styles.subtitle}>아래 파라미터로 실행됩니다 — 확인 후 눌러주세요</Text>
+          <Text style={styles.title}>{t.review.titles[demoKey]}</Text>
+          <Text style={styles.subtitle}>{t.review.subtitle}</Text>
 
           <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
             {demoKey === 'receipt' ? (
-              <Text style={styles.preview}>{formatReceiptTable()}</Text>
+              <Text style={styles.preview}>{formatReceiptTable(d)}</Text>
             ) : (
               <View style={styles.fields}>
                 {rows.map((row) =>
@@ -306,23 +296,19 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
                 )}
               </View>
             )}
-            {demoKey === 'receipt' && (
-              <Text style={styles.note}>Notes 앱은 공식 저장 API가 없어서, 확인 후 공유 시트에서 "메모"를 선택해주세요.</Text>
-            )}
-            {demoKey === 'wallet' && (
-              <Text style={styles.note}>백엔드에서 서명된 .pkpass를 받아 공유 시트로 Wallet에 추가합니다. 인증서가 아직 설정 전이면 오류가 뜰 수 있어요.</Text>
-            )}
+            {demoKey === 'receipt' && <Text style={styles.note}>{t.review.receiptNote}</Text>}
+            {demoKey === 'wallet' && <Text style={styles.note}>{t.review.walletNote}</Text>}
           </ScrollView>
 
           <View style={styles.actions}>
             <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={onClose} disabled={saving}>
-              <Text style={styles.cancelText}>취소</Text>
+              <Text style={styles.cancelText}>{t.review.cancelButton}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionButton, styles.confirmButton]} onPress={handleConfirm} disabled={saving}>
               {saving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.confirmText}>{EXECUTE_LABEL[demoKey] ?? '실행'}</Text>
+                <Text style={styles.confirmText}>{demoKey === 'receipt' ? t.review.shareLabel : t.review.executeLabel}</Text>
               )}
             </TouchableOpacity>
           </View>

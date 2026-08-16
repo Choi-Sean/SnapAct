@@ -14,23 +14,39 @@ import {
 import { analyzePhoto } from './api';
 import BatchReviewModal from './BatchReviewModal';
 import { Emoji, EmojiName } from './Emoji';
+import { useLanguage } from './i18n/LanguageProvider';
+import { t as fmt } from './i18n/dictionaries';
 import { saveContact, saveEventToCalendar } from './nativeActions';
 import { AnalyzeResponse, BatchSubEntry, Category, DemoKey } from './types';
 
 const BATCH_MOCK_CYCLE: Category[] = ['business_card', 'event_flyer', 'receipt', 'document'];
 
-const DEMO_BUTTONS: { key: DemoKey; icon: EmojiName; label: string; hint: string }[] = [
-  { key: 'business_card', icon: 'contacts', label: '명함 사진', hint: '연락처에 저장' },
-  { key: 'event', icon: 'calendar', label: '이벤트 사진', hint: '캘린더에 저장' },
-  { key: 'receipt', icon: 'notes', label: '영수증 사진', hint: '메모로 공유' },
-  { key: 'reminder', icon: 'reminders', label: '리마인더 사진', hint: '미리 알림에 저장' },
-  { key: 'photo', icon: 'photos', label: '사진 저장', hint: '앨범에 자동 저장' },
-  { key: 'mail', icon: 'mail', label: '메일 초안', hint: '메일 앱 열기' },
-  { key: 'sms', icon: 'sms', label: '문자 초안', hint: '문자 앱 열기' },
-  { key: 'maps', icon: 'maps', label: '위치 사진', hint: '지도 앱 열기' },
-  { key: 'files', icon: 'files', label: '문서 저장', hint: '파일로 공유' },
-  { key: 'wallet', icon: 'wallet', label: '패스 카드', hint: 'Apple Wallet에 추가' },
-  { key: 'notification', icon: 'notification', label: '알림 예약', hint: '5초 뒤 알림' },
+const DEMO_ICONS: Record<DemoKey, EmojiName> = {
+  business_card: 'contacts',
+  event: 'calendar',
+  receipt: 'notes',
+  reminder: 'reminders',
+  photo: 'photos',
+  mail: 'mail',
+  sms: 'sms',
+  maps: 'maps',
+  files: 'files',
+  wallet: 'wallet',
+  notification: 'notification',
+};
+
+const DEMO_ORDER: DemoKey[] = [
+  'business_card',
+  'event',
+  'receipt',
+  'reminder',
+  'photo',
+  'mail',
+  'sms',
+  'maps',
+  'files',
+  'wallet',
+  'notification',
 ];
 
 interface Photo {
@@ -45,6 +61,7 @@ interface Props {
 }
 
 export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
+  const { t } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -61,7 +78,7 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permission.status !== 'granted') {
-      Alert.alert('권한 필요', '사진에 접근하려면 권한이 필요합니다.');
+      Alert.alert(t.home.permissionNeededTitle, t.home.permissionNeededBody);
       return;
     }
 
@@ -87,7 +104,7 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
   async function pickMultiple() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permission.status !== 'granted') {
-      Alert.alert('권한 필요', '사진에 접근하려면 권한이 필요합니다.');
+      Alert.alert(t.home.permissionNeededTitle, t.home.permissionNeededBody);
       return;
     }
 
@@ -140,9 +157,9 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
       .join(' · ');
 
     onBatchSaved({
-      title: `${batchItems.length}장 일괄 처리됨`,
+      title: fmt(t.home.batchTitleTemplate, { n: batchItems.length }),
       detail,
-      savedTo: '일괄 처리',
+      savedTo: t.home.batchSavedTo,
       batchItems,
     });
   }
@@ -167,13 +184,13 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
     try {
       if (result.suggested_action === 'contact' && result.contact) {
         await saveContact(result.contact);
-        Alert.alert('저장 완료', '연락처 앱에 저장되었습니다.');
+        Alert.alert(t.home.saveDoneTitle, t.home.saveContactDoneBody);
       } else if (result.suggested_action === 'calendar' && result.calendar) {
         await saveEventToCalendar(result.calendar);
-        Alert.alert('저장 완료', '캘린더 앱에 일정이 추가되었습니다.');
+        Alert.alert(t.home.saveDoneTitle, t.home.saveCalendarDoneBody);
       }
     } catch (e) {
-      Alert.alert('저장 실패', e instanceof Error ? e.message : String(e));
+      Alert.alert(t.home.saveFailTitle, e instanceof Error ? e.message : String(e));
     } finally {
       setSaving(false);
     }
@@ -182,23 +199,23 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Snapsist</Text>
-      <Text style={styles.subtitle}>사진 한 장 → 알맞은 앱에 자동 저장</Text>
+      <Text style={styles.subtitle}>{t.home.subtitle}</Text>
 
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionEmoji}>⚡️</Text>
         <View>
-          <Text style={styles.sectionHeader}>빠른 데모</Text>
-          <Text style={styles.sectionLabel}>버튼을 누르면 확인 화면이 바로 뜹니다</Text>
+          <Text style={styles.sectionHeader}>{t.home.quickDemoHeader}</Text>
+          <Text style={styles.sectionLabel}>{t.home.quickDemoSub}</Text>
         </View>
       </View>
       <View style={styles.demoGrid}>
-        {DEMO_BUTTONS.map((d) => (
-          <TouchableOpacity key={d.key} style={styles.demoCard} onPress={() => onDemoPress(d.key)} activeOpacity={0.7}>
+        {DEMO_ORDER.map((key) => (
+          <TouchableOpacity key={key} style={styles.demoCard} onPress={() => onDemoPress(key)} activeOpacity={0.7}>
             <View style={styles.demoIconWrap}>
-              <Emoji name={d.icon} size={30} />
+              <Emoji name={DEMO_ICONS[key]} size={30} />
             </View>
-            <Text style={styles.demoLabel}>{d.label}</Text>
-            <Text style={styles.demoHint}>{d.hint}</Text>
+            <Text style={styles.demoLabel}>{t.home.demoButtons[key].label}</Text>
+            <Text style={styles.demoHint}>{t.home.demoButtons[key].hint}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -208,17 +225,17 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionEmoji}>🔬</Text>
         <View>
-          <Text style={styles.sectionHeader}>사진으로 실제 분석</Text>
-          <Text style={styles.sectionLabel}>Google Vision이 분류 → Claude가 정보 추출</Text>
+          <Text style={styles.sectionHeader}>{t.home.realAnalysisHeader}</Text>
+          <Text style={styles.sectionLabel}>{t.home.realAnalysisSub}</Text>
         </View>
       </View>
 
       <View style={styles.row}>
         <TouchableOpacity style={styles.button} onPress={() => pick('camera')} activeOpacity={0.7}>
-          <Text style={styles.buttonText}>📷 카메라로 촬영</Text>
+          <Text style={styles.buttonText}>{t.home.cameraButton}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => pick('library')} activeOpacity={0.7}>
-          <Text style={styles.buttonText}>🖼️ 갤러리에서 선택</Text>
+          <Text style={styles.buttonText}>{t.home.galleryButton}</Text>
         </TouchableOpacity>
       </View>
 
@@ -232,11 +249,11 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
           <View style={styles.multiProgressRow}>
             <ActivityIndicator color="#2563eb" />
             <Text style={styles.multiButtonText}>
-              {batchProcessing.done}/{batchProcessing.total}장 분석 중...
+              {fmt(t.home.multiSelectProgress, { done: batchProcessing.done, total: batchProcessing.total })}
             </Text>
           </View>
         ) : (
-          <Text style={styles.multiButtonText}>🗂️ 여러 장 한번에 처리</Text>
+          <Text style={styles.multiButtonText}>{t.home.multiSelectButton}</Text>
         )}
       </TouchableOpacity>
 
@@ -252,7 +269,7 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
           {analyzing ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.primaryButtonText}>분석하기</Text>
+            <Text style={styles.primaryButtonText}>{t.home.analyzeButton}</Text>
           )}
         </TouchableOpacity>
       )}
@@ -261,26 +278,26 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
 
       {result && (
         <View style={styles.card}>
-          {result.mock && <Text style={styles.badge}>DEMO MODE (실제 API 키 없음)</Text>}
+          {result.mock && <Text style={styles.badge}>{t.home.demoModeLabel}</Text>}
           <Text style={styles.cardTitle}>
-            분류: {result.category} ({Math.round(result.confidence * 100)}%)
+            {fmt(t.home.classifyLabel, { category: result.category, confidence: Math.round(result.confidence * 100) })}
           </Text>
           {result.summary && <Text style={styles.cardBody}>{result.summary}</Text>}
 
           {result.contact && (
             <View style={styles.fieldBlock}>
-              <Text style={styles.fieldLabel}>이름: {result.contact.name}</Text>
-              <Text style={styles.fieldLabel}>전화: {result.contact.phone}</Text>
-              <Text style={styles.fieldLabel}>이메일: {result.contact.email}</Text>
-              <Text style={styles.fieldLabel}>회사: {result.contact.company}</Text>
+              <Text style={styles.fieldLabel}>{t.home.contactName}: {result.contact.name}</Text>
+              <Text style={styles.fieldLabel}>{t.home.contactPhone}: {result.contact.phone}</Text>
+              <Text style={styles.fieldLabel}>{t.home.contactEmail}: {result.contact.email}</Text>
+              <Text style={styles.fieldLabel}>{t.home.contactCompany}: {result.contact.company}</Text>
             </View>
           )}
 
           {result.calendar && (
             <View style={styles.fieldBlock}>
-              <Text style={styles.fieldLabel}>제목: {result.calendar.title}</Text>
-              <Text style={styles.fieldLabel}>장소: {result.calendar.location}</Text>
-              <Text style={styles.fieldLabel}>시작: {result.calendar.start_date}</Text>
+              <Text style={styles.fieldLabel}>{t.home.calendarTitle}: {result.calendar.title}</Text>
+              <Text style={styles.fieldLabel}>{t.home.calendarLocation}: {result.calendar.location}</Text>
+              <Text style={styles.fieldLabel}>{t.home.calendarStart}: {result.calendar.start_date}</Text>
             </View>
           )}
 
@@ -295,7 +312,7 @@ export default function HomeScreen({ onDemoPress, onBatchSaved }: Props) {
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.primaryButtonText}>
-                  {result.suggested_action === 'contact' ? '연락처에 저장' : '캘린더에 저장'}
+                  {result.suggested_action === 'contact' ? t.home.saveToContacts : t.home.saveToCalendar}
                 </Text>
               )}
             </TouchableOpacity>

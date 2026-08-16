@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Emoji, EmojiName } from './Emoji';
+import { useLanguage } from './i18n/LanguageProvider';
+import { Dictionary, t as fmt } from './i18n/dictionaries';
 import { replayAction } from './replay';
 import { HistoryEntry } from './types';
 
@@ -22,14 +24,14 @@ const ICONS: Record<HistoryEntry['type'], EmojiName> = {
 
 const PAGE_SIZE = 15;
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, h: Dictionary['history']): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const min = Math.floor(diffMs / 60000);
-  if (min < 1) return '방금 전';
-  if (min < 60) return `${min}분 전`;
+  if (min < 1) return h.timeJustNow;
+  if (min < 60) return fmt(h.timeMinutesAgo, { n: min });
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}시간 전`;
-  return `${Math.floor(hr / 24)}일 전`;
+  if (hr < 24) return fmt(h.timeHoursAgo, { n: hr });
+  return fmt(h.timeDaysAgo, { n: Math.floor(hr / 24) });
 }
 
 function formatFullDate(iso: string): string {
@@ -45,6 +47,7 @@ interface Props {
 }
 
 export default function HistoryScreen({ entries, onClear }: Props) {
+  const { t } = useLanguage();
   const [selected, setSelected] = useState<HistoryEntry | null>(null);
   const [replaying, setReplaying] = useState(false);
   const [page, setPage] = useState(0);
@@ -62,9 +65,9 @@ export default function HistoryScreen({ entries, onClear }: Props) {
     setReplaying(true);
     try {
       await replayAction(entry.replay);
-      Alert.alert('다시 저장됨', `${entry.savedTo}에 다시 반영했어요. AI 재분석 없이 이전 값 그대로 사용했어요.`);
+      Alert.alert(t.history.replayDoneTitle, fmt(t.history.replayDoneBodyTemplate, { savedTo: entry.savedTo }));
     } catch (e) {
-      Alert.alert('실패', e instanceof Error ? e.message : String(e));
+      Alert.alert(t.history.failTitle, e instanceof Error ? e.message : String(e));
     } finally {
       setReplaying(false);
     }
@@ -73,17 +76,17 @@ export default function HistoryScreen({ entries, onClear }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>기록</Text>
+        <Text style={styles.title}>{t.history.title}</Text>
         {entries.length > 0 && (
           <TouchableOpacity onPress={onClear}>
-            <Text style={styles.clear}>전체 삭제</Text>
+            <Text style={styles.clear}>{t.history.clearAll}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {entries.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>아직 저장한 게 없어요.{'\n'}홈에서 데모 버튼을 눌러보세요.</Text>
+          <Text style={styles.emptyText}>{t.history.emptyText}</Text>
         </View>
       ) : (
         <>
@@ -100,7 +103,7 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                 </View>
                 <View style={styles.rowRight}>
                   <Text style={styles.savedTo}>{item.savedTo}</Text>
-                  <Text style={styles.time}>{timeAgo(item.createdAt)}</Text>
+                  <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -113,7 +116,7 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                 onPress={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
               >
-                <Text style={styles.pagerButtonText}>이전</Text>
+                <Text style={styles.pagerButtonText}>{t.history.prev}</Text>
               </TouchableOpacity>
               <Text style={styles.pagerLabel}>
                 {page + 1} / {totalPages}
@@ -123,7 +126,7 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                 onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
               >
-                <Text style={styles.pagerButtonText}>다음</Text>
+                <Text style={styles.pagerButtonText}>{t.history.next}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -166,11 +169,16 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                               onPress={() =>
                                 item.replay &&
                                 replayAction(item.replay)
-                                  .then(() => Alert.alert('완료', `${item.savedTo}에 다시 반영했어요.`))
-                                  .catch((e) => Alert.alert('실패', e instanceof Error ? e.message : String(e)))
+                                  .then(() =>
+                                    Alert.alert(
+                                      t.review.saveDoneTitle,
+                                      fmt(t.review.saveDoneBodyTemplate, { savedTo: item.savedTo })
+                                    )
+                                  )
+                                  .catch((e) => Alert.alert(t.history.failTitle, e instanceof Error ? e.message : String(e)))
                               }
                             >
-                              <Text style={styles.miniReplayText}>다시 저장</Text>
+                              <Text style={styles.miniReplayText}>{t.history.replayButton}</Text>
                             </TouchableOpacity>
                           )}
                         </View>
@@ -192,7 +200,7 @@ export default function HistoryScreen({ entries, onClear }: Props) {
 
                 <View style={styles.sheetActions}>
                   <TouchableOpacity style={styles.closeButton} onPress={() => setSelected(null)}>
-                    <Text style={styles.closeButtonText}>닫기</Text>
+                    <Text style={styles.closeButtonText}>{t.history.closeButton}</Text>
                   </TouchableOpacity>
                   {selected.replay && (
                     <TouchableOpacity
@@ -203,14 +211,12 @@ export default function HistoryScreen({ entries, onClear }: Props) {
                       {replaying ? (
                         <ActivityIndicator color="#fff" />
                       ) : (
-                        <Text style={styles.replayButtonText}>다시 저장</Text>
+                        <Text style={styles.replayButtonText}>{t.history.replayButton}</Text>
                       )}
                     </TouchableOpacity>
                   )}
                 </View>
-                {selected.replay && (
-                  <Text style={styles.replayNote}>실수로 지웠을 때, AI 재분석 없이 같은 값으로 다시 저장해요.</Text>
-                )}
+                {selected.replay && <Text style={styles.replayNote}>{t.history.replayNote}</Text>}
               </>
             )}
           </View>

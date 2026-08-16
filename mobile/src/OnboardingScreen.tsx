@@ -2,21 +2,17 @@ import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Emoji, EmojiName } from './Emoji';
+import { useLanguage } from './i18n/LanguageProvider';
 import { requestAllPermissions } from './permissions';
 
-const PERMISSIONS: { icon: EmojiName; label: string; hint: string }[] = [
-  { icon: 'camera', label: '카메라', hint: '사진 촬영' },
-  { icon: 'photos', label: '사진 보관함', hint: '갤러리에서 선택' },
-  { icon: 'contacts', label: '연락처', hint: '명함 정보 저장' },
-  { icon: 'calendar', label: '캘린더', hint: '일정 자동 등록' },
-  { icon: 'reminders', label: '미리 알림', hint: '할 일 자동 등록' },
-];
+const ICONS: EmojiName[] = ['camera', 'photos', 'contacts', 'calendar', 'reminders'];
 
 interface Props {
   onDone: () => void;
 }
 
 export default function OnboardingScreen({ onDone }: Props) {
+  const { t } = useLanguage();
   const [requesting, setRequesting] = useState(false);
 
   async function handleStart() {
@@ -30,12 +26,12 @@ export default function OnboardingScreen({ onDone }: Props) {
     <View style={styles.container}>
       <Text style={styles.logo}>✨</Text>
       <Text style={styles.title}>Snapsist</Text>
-      <Text style={styles.subtitle}>사진 한 장이면 충분해요.{'\n'}알맞은 앱에 자동으로 저장해드릴게요.</Text>
+      <Text style={styles.subtitle}>{t.onboarding.subtitle}</Text>
 
       <View style={styles.list}>
-        {PERMISSIONS.map((p) => (
+        {t.onboarding.permissions.map((p, i) => (
           <View key={p.label} style={styles.row}>
-            <Emoji name={p.icon} size={30} />
+            <Emoji name={ICONS[i]} size={30} />
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>{p.label}</Text>
               <Text style={styles.rowHint}>{p.hint}</Text>
@@ -44,10 +40,10 @@ export default function OnboardingScreen({ onDone }: Props) {
         ))}
       </View>
 
-      <Text style={styles.note}>다음 화면에서 권한 팝업이 여러 번 뜹니다. 모두 허용해주셔야 기능이 정상 동작해요.</Text>
+      <Text style={styles.note}>{t.onboarding.note}</Text>
 
       <TouchableOpacity style={styles.button} onPress={handleStart} disabled={requesting}>
-        {requesting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>권한 허용하고 시작하기</Text>}
+        {requesting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t.onboarding.startButton}</Text>}
       </TouchableOpacity>
     </View>
   );

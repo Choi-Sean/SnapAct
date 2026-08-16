@@ -8,6 +8,7 @@ import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'r
 import HistoryScreen from './src/HistoryScreen';
 import HomeScreen from './src/HomeScreen';
 import { addHistoryEntry, clearHistory, loadHistory } from './src/history';
+import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
 import ReviewModal from './src/ReviewModal';
@@ -25,16 +26,26 @@ Notifications.setNotificationHandler({
 });
 
 const ONBOARDED_KEY = 'snapsist_onboarded';
+const SAVE_ERROR = '__error__';
 
 type Tab = 'home' | 'history' | 'settings';
 
-const TABS: { key: Tab; icon: string; label: string }[] = [
-  { key: 'home', icon: '🏠', label: '홈' },
-  { key: 'history', icon: '🗂️', label: '기록' },
-  { key: 'settings', icon: '⚙️', label: '설정' },
-];
-
 export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
+  );
+}
+
+function AppInner() {
+  const { t } = useLanguage();
+  const TABS: { key: Tab; icon: string; label: string }[] = [
+    { key: 'home', icon: '🏠', label: t.tabs.home },
+    { key: 'history', icon: '🗂️', label: t.tabs.history },
+    { key: 'settings', icon: '⚙️', label: t.tabs.settings },
+  ];
+
   const [appReady, setAppReady] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [tab, setTab] = useState<Tab>('home');
@@ -82,8 +93,8 @@ export default function App() {
     setReviewKey(null);
     if (!key) return;
 
-    if (info.savedTo === '오류') {
-      Alert.alert('실패', info.detail);
+    if (info.savedTo === SAVE_ERROR) {
+      Alert.alert(t.review.failTitle, info.detail);
       return;
     }
 
@@ -96,7 +107,7 @@ export default function App() {
       replay: info.replay,
     });
     setHistory(updated);
-    Alert.alert('완료', `${info.savedTo}에 저장했어요.`);
+    Alert.alert(t.review.saveDoneTitle, t.review.saveDoneBodyTemplate.replace('{savedTo}', info.savedTo));
   }
 
   async function handleClearHistory() {
@@ -113,7 +124,10 @@ export default function App() {
       batchItems: batch.batchItems,
     });
     setHistory(updated);
-    Alert.alert('완료', `${batch.batchItems.length}장 처리 결과를 기록에 저장했어요.`);
+    Alert.alert(
+      t.home.batchDoneTitle,
+      t.home.batchDoneBodyTemplate.replace('{n}', String(batch.batchItems.length))
+    );
   }
 
   return (
@@ -126,12 +140,12 @@ export default function App() {
       <ReviewModal demoKey={reviewKey} onClose={() => setReviewKey(null)} onSaved={handleSaved} />
 
       <View style={styles.tabBar}>
-        {TABS.map((t) => (
-          <TouchableOpacity key={t.key} style={styles.tabItem} onPress={() => setTab(t.key)}>
-            <View style={[styles.tabPill, tab === t.key && styles.tabPillActive]}>
-              <Text style={styles.tabIcon}>{t.icon}</Text>
+        {TABS.map((tabItem) => (
+          <TouchableOpacity key={tabItem.key} style={styles.tabItem} onPress={() => setTab(tabItem.key)}>
+            <View style={[styles.tabPill, tab === tabItem.key && styles.tabPillActive]}>
+              <Text style={styles.tabIcon}>{tabItem.icon}</Text>
             </View>
-            <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
+            <Text style={[styles.tabLabel, tab === tabItem.key && styles.tabLabelActive]}>{tabItem.label}</Text>
           </TouchableOpacity>
         ))}
       </View>

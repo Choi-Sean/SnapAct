@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { useLanguage } from './i18n/LanguageProvider';
+import { t as fmt } from './i18n/dictionaries';
 import { saveContact, saveEventToCalendar } from './nativeActions';
-import { AnalyzeResponse, BatchSubEntry, Category } from './types';
-
-const CATEGORY_LABEL: Record<Category, string> = {
-  business_card: '명함',
-  receipt: '영수증',
-  event_flyer: '이벤트',
-  document: '문서',
-  other: '알 수 없음',
-};
+import { AnalyzeResponse, BatchSubEntry } from './types';
 
 interface Item {
   uri: string;
@@ -24,6 +18,7 @@ interface Props {
 }
 
 export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
+  const { t } = useLanguage();
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
 
@@ -53,9 +48,9 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
           batchItems.push({
             photoUri: uri,
             category: result.category,
-            title: result.contact.name ?? '연락처',
+            title: result.contact.name ?? t.permissions.items[2].label,
             detail: result.contact.phone ?? '',
-            savedTo: '연락처',
+            savedTo: t.permissions.items[2].label,
             replay: { kind: 'business_card', payload: result.contact },
           });
         } else if (result.suggested_action === 'calendar' && result.calendar) {
@@ -63,38 +58,38 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
           batchItems.push({
             photoUri: uri,
             category: result.category,
-            title: result.calendar.title ?? '이벤트',
+            title: result.calendar.title ?? t.permissions.items[3].label,
             detail: result.calendar.location ?? '',
-            savedTo: '캘린더',
+            savedTo: t.permissions.items[3].label,
             replay: { kind: 'event', payload: result.calendar },
           });
         } else if (result.suggested_action === 'note') {
           const message = result.summary ?? result.raw_text ?? '';
-          await Share.share({ message, title: 'Snapsist 노트' });
+          await Share.share({ message, title: t.batch.noteShareTitle });
           batchItems.push({
             photoUri: uri,
             category: result.category,
-            title: CATEGORY_LABEL[result.category],
+            title: t.batch.categoryLabels[result.category],
             detail: result.summary ?? '',
-            savedTo: '공유(메모 등)',
-            replay: { kind: 'receipt', payload: { message, title: 'Snapsist 노트' } },
+            savedTo: t.review.shareLabel,
+            replay: { kind: 'receipt', payload: { message, title: t.batch.noteShareTitle } },
           });
         } else {
           batchItems.push({
             photoUri: uri,
             category: result.category,
-            title: CATEGORY_LABEL[result.category],
-            detail: '인식된 정보 없음',
-            savedTo: '건너뜀',
+            title: t.batch.categoryLabels[result.category],
+            detail: t.batch.noInfoDetail,
+            savedTo: t.batch.skippedLabel,
           });
         }
       } catch (e) {
         batchItems.push({
           photoUri: uri,
           category: result.category,
-          title: '실패',
+          title: t.batch.errorLabel,
           detail: e instanceof Error ? e.message : String(e),
-          savedTo: '오류',
+          savedTo: t.batch.errorLabel,
         });
       }
     }
@@ -109,8 +104,8 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
     <Modal visible={!!items} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>{items.length}장 분석 완료</Text>
-          <Text style={styles.subtitle}>저장할 항목을 선택하고 일괄 저장하세요 — 체크 해제하면 그 사진은 건너뜁니다</Text>
+          <Text style={styles.title}>{fmt(t.batch.titleTemplate, { n: items.length })}</Text>
+          <Text style={styles.subtitle}>{t.batch.subtitle}</Text>
 
           <FlatList
             style={{ maxHeight: 380 }}
@@ -121,12 +116,12 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
               const isExcluded = excluded.has(index);
               const actionLabel =
                 item.result.suggested_action === 'contact'
-                  ? '→ 연락처'
+                  ? t.batch.actionContact
                   : item.result.suggested_action === 'calendar'
-                    ? '→ 캘린더'
+                    ? t.batch.actionCalendar
                     : item.result.suggested_action === 'note'
-                      ? '→ 메모 공유'
-                      : '→ 건너뜀';
+                      ? t.batch.actionNote
+                      : t.batch.actionSkip;
               return (
                 <TouchableOpacity
                   style={[styles.row, isExcluded && styles.rowExcluded]}
@@ -135,7 +130,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
                 >
                   <Image source={{ uri: item.uri }} style={styles.thumb} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{CATEGORY_LABEL[item.result.category]}</Text>
+                    <Text style={styles.rowTitle}>{t.batch.categoryLabels[item.result.category]}</Text>
                     <Text style={styles.rowDetail} numberOfLines={1}>
                       {item.result.summary ?? actionLabel}
                     </Text>
@@ -150,7 +145,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
 
           <View style={styles.actions}>
             <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={onClose} disabled={saving}>
-              <Text style={styles.cancelText}>취소</Text>
+              <Text style={styles.cancelText}>{t.batch.cancelButton}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.confirmButton]}
@@ -160,7 +155,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
               {saving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.confirmText}>{includedCount}개 일괄 저장</Text>
+                <Text style={styles.confirmText}>{fmt(t.batch.saveButtonTemplate, { n: includedCount })}</Text>
               )}
             </TouchableOpacity>
           </View>

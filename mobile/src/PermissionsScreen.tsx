@@ -5,14 +5,14 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Emoji, EmojiName } from './Emoji';
+import { useLanguage } from './i18n/LanguageProvider';
+import { Locale, LOCALE_LABELS } from './i18n/dictionaries';
 
 type Status = 'granted' | 'denied' | 'undetermined' | 'checking';
 
 interface PermissionItem {
   key: string;
   icon: EmojiName;
-  label: string;
-  hint: string;
   check: () => Promise<{ status: string }>;
   request: () => Promise<{ status: string }>;
 }
@@ -21,53 +21,45 @@ const ITEMS: PermissionItem[] = [
   {
     key: 'camera',
     icon: 'camera',
-    label: '카메라',
-    hint: '사진 촬영',
     check: ImagePicker.getCameraPermissionsAsync,
     request: ImagePicker.requestCameraPermissionsAsync,
   },
   {
     key: 'library',
     icon: 'photos',
-    label: '사진 보관함',
-    hint: '갤러리에서 선택',
     check: ImagePicker.getMediaLibraryPermissionsAsync,
     request: ImagePicker.requestMediaLibraryPermissionsAsync,
   },
   {
     key: 'contacts',
     icon: 'contacts',
-    label: '연락처',
-    hint: '명함 정보 저장',
     check: Contacts.getPermissionsAsync,
     request: Contacts.requestPermissionsAsync,
   },
   {
     key: 'calendar',
     icon: 'calendar',
-    label: '캘린더',
-    hint: '일정 자동 등록',
     check: () => Calendar.getCalendarPermissions(),
     request: () => Calendar.requestCalendarPermissions(),
   },
   {
     key: 'reminders',
     icon: 'reminders',
-    label: '미리 알림',
-    hint: '할 일 자동 등록',
     check: () => Calendar.getRemindersPermissions(),
     request: () => Calendar.requestRemindersPermissions(),
   },
 ];
 
-const STATUS_LABEL: Record<Status, string> = {
-  granted: '허용됨',
-  denied: '거부됨',
-  undetermined: '미확인',
-  checking: '확인 중',
-};
+const LOCALES: Locale[] = ['en', 'ko', 'ja', 'zh', 'es', 'fr', 'de'];
 
 export default function PermissionsScreen() {
+  const { t, locale, setLocale } = useLanguage();
+  const STATUS_LABEL: Record<Status, string> = {
+    granted: t.permissions.statusGranted,
+    denied: t.permissions.statusDenied,
+    undetermined: t.permissions.statusUndetermined,
+    checking: t.permissions.statusChecking,
+  };
   const [statuses, setStatuses] = useState<Record<string, Status>>({});
   const [requestingKey, setRequestingKey] = useState<string | null>(null);
 
@@ -104,19 +96,20 @@ export default function PermissionsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>설정</Text>
-      <Text style={styles.subtitle}>Snapsist가 사용 중인 권한 상태예요</Text>
+      <Text style={styles.title}>{t.permissions.title}</Text>
+      <Text style={styles.subtitle}>{t.permissions.subtitle}</Text>
 
       <View style={styles.list}>
-        {ITEMS.map((item) => {
+        {ITEMS.map((item, i) => {
           const status = statuses[item.key] ?? 'checking';
           const granted = status === 'granted';
+          const label = t.permissions.items[i];
           return (
             <View key={item.key} style={styles.row}>
               <Emoji name={item.icon} size={28} style={styles.rowIcon} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.rowLabel}>{item.label}</Text>
-                <Text style={styles.rowHint}>{item.hint}</Text>
+                <Text style={styles.rowLabel}>{label.label}</Text>
+                <Text style={styles.rowHint}>{label.hint}</Text>
               </View>
               {status === 'checking' ? (
                 <ActivityIndicator size="small" color="#999" />
@@ -133,7 +126,7 @@ export default function PermissionsScreen() {
                   {requestingKey === item.key ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Text style={styles.grantButtonText}>권한 허용하기</Text>
+                    <Text style={styles.grantButtonText}>{t.permissions.grantButton}</Text>
                   )}
                 </TouchableOpacity>
               )}
@@ -144,14 +137,29 @@ export default function PermissionsScreen() {
 
       {deniedCount > 0 && (
         <View style={styles.notice}>
-          <Text style={styles.noticeText}>
-            거부된 권한은 앱에서 다시 요청해도 팝업이 안 뜰 수 있어요. 그럴 땐 아래 버튼으로 설정 앱에서 직접 켜주세요.
-          </Text>
+          <Text style={styles.noticeText}>{t.permissions.notice}</Text>
           <TouchableOpacity style={styles.settingsButton} onPress={() => Linking.openSettings()}>
-            <Text style={styles.settingsButtonText}>설정 앱에서 열기</Text>
+            <Text style={styles.settingsButtonText}>{t.permissions.openSettingsButton}</Text>
           </TouchableOpacity>
         </View>
       )}
+
+      <View style={styles.langSection}>
+        <Text style={styles.langTitle}>{t.permissions.languageTitle}</Text>
+        <View style={styles.langGrid}>
+          {LOCALES.map((l) => (
+            <TouchableOpacity
+              key={l}
+              style={[styles.langChip, locale === l && styles.langChipActive]}
+              onPress={() => setLocale(l)}
+            >
+              <Text style={[styles.langChipText, locale === l && styles.langChipTextActive]}>
+                {LOCALE_LABELS[l]}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
@@ -201,4 +209,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   settingsButtonText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  langSection: { gap: 10, marginTop: 4 },
+  langTitle: { fontSize: 15, fontWeight: '800', color: '#111' },
+  langGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  langChip: {
+    backgroundColor: '#f2f3f6',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#eef0f4',
+  },
+  langChipActive: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
+  langChipText: { fontSize: 13, fontWeight: '700', color: '#444' },
+  langChipTextActive: { color: '#fff' },
 });

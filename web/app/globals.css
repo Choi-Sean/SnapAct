@@ -2,36 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RGB channel triplets (no "rgb()" wrapper) so Tailwind's color-opacity
+   modifiers (e.g. bg-text/70) can interpolate an alpha value in. */
 :root {
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --surface-alt: #eef1f8;
-  --border: #e2e6f0;
-  --text: #10131a;
-  --text-muted: #5b6472;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --accent-soft: #e3ebfe;
-  --highlight: #f59e0b;
-  --good: #16a34a;
+  --bg: 245 247 251;
+  --surface: 255 255 255;
+  --surface-alt: 238 241 248;
+  --border: 226 230 240;
+  --text: 16 19 26;
+  --text-muted: 91 100 114;
+  --accent: 37 99 235;
+  --accent-dark: 29 78 216;
+  --accent-soft: 227 235 254;
+  --highlight: 245 158 11;
+  --good: 22 163 74;
 }
 
 .dark {
-  --bg: #0b0f17;
-  --surface: #12161f;
-  --surface-alt: #181d29;
-  --border: #262c3a;
-  --text: #eef1f8;
-  --text-muted: #9aa3b5;
-  --accent: #6d95f5;
-  --accent-dark: #8fabf8;
-  --accent-soft: #1c2540;
-  --highlight: #f5b95c;
-  --good: #4ade80;
+  --bg: 11 15 23;
+  --surface: 18 22 31;
+  --surface-alt: 24 29 41;
+  --border: 38 44 58;
+  --text: 238 241 248;
+  --text-muted: 154 163 181;
+  --accent: 109 149 245;
+  --accent-dark: 143 171 248;
+  --accent-soft: 28 37 64;
+  --highlight: 245 185 92;
+  --good: 74 222 128;
 }
 
 * {
-  border-color: var(--border);
+  border-color: rgb(var(--border));
 }
 
 html {
@@ -39,8 +41,8 @@ html {
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: rgb(var(--bg));
+  color: rgb(var(--text));
 }
 
 .balance {

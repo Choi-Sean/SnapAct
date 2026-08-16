@@ -10,7 +10,7 @@ export default function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[560px] bg-[radial-gradient(60%_60%_at_50%_0%,var(--accent-soft)_0%,transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[560px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(var(--accent-soft))_0%,transparent_70%)]"
         aria-hidden
       />
       <div className="mx-auto grid max-w-content items-center gap-14 px-6 py-16 md:grid-cols-2 md:py-24">

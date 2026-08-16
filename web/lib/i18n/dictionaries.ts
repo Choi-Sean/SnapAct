@@ -95,12 +95,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
           desc: 'Take a photo or pick one from your library — a business card, receipt, flyer, whatever needs saving.',
         },
         {
-          title: 'Read',
-          desc: 'Google Vision classifies the photo, then Claude extracts every field — names, dates, amounts, addresses.',
+          title: 'Classify',
+          desc: 'An agentic AI pipeline (Google Vision + Claude) figures out what it’s looking at and pulls out every field — names, dates, amounts, addresses.',
         },
         {
-          title: 'File',
-          desc: 'Review the exact fields about to be written, then save straight into the right native app on your phone.',
+          title: 'Auto-file',
+          desc: 'Review the exact fields about to be written, then the AI saves them straight into the right built-in app on your phone — no manual export, no copy-paste.',
         },
       ],
     },
@@ -242,8 +242,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '세 단계, 타이핑은 0번',
       steps: [
         { title: '촬영', desc: '명함, 영수증, 전단지 등 저장이 필요한 걸 사진으로 찍거나 갤러리에서 선택하세요.' },
-        { title: '인식', desc: 'Google Vision이 사진을 분류하고, Claude가 이름·날짜·금액·주소 등 모든 정보를 추출합니다.' },
-        { title: '정리', desc: '저장될 항목을 정확히 확인한 뒤, 알맞은 기기 앱에 바로 저장합니다.' },
+        { title: '자동 분류', desc: 'Agentic AI 파이프라인(Google Vision + Claude)이 사진이 뭔지 판단하고 이름·날짜·금액·주소 등 모든 정보를 뽑아냅니다.' },
+        { title: '자동 저장', desc: '저장될 항목을 정확히 확인한 뒤, AI가 알맞은 OS 기본 앱에 바로 저장합니다 — 내보내기도, 복사·붙여넣기도 필요 없어요.' },
       ],
     },
     features: {

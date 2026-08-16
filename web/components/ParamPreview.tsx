@@ -5,11 +5,13 @@ import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 function BusinessCardMockup() {
   return (
-    <div className="relative h-[72px] w-[112px] -rotate-6 rounded-xl border border-black/5 bg-white p-3 shadow-lg shadow-black/10">
-      <div className="h-2.5 w-2.5 rounded-full bg-accent" />
-      <div className="mt-2 h-1.5 w-14 rounded-full bg-text/70" />
-      <div className="mt-1.5 h-1.5 w-9 rounded-full bg-text/25" />
-      <div className="mt-3 h-1 w-16 rounded-full bg-text/15" />
+    <div className="relative h-[92px] w-[140px] -rotate-6 rounded-xl border border-black/5 bg-white p-3.5 shadow-lg shadow-black/10">
+      <div className="absolute right-3.5 top-3.5 h-3 w-3 rounded-full bg-accent" />
+      <p className="text-[11px] font-extrabold leading-tight text-[#10131a]">John Smith</p>
+      <p className="mt-0.5 text-[8px] font-semibold leading-tight text-[#5b6472]">Product Manager</p>
+      <p className="text-[8px] leading-tight text-[#5b6472]">Snapsist Inc.</p>
+      <div className="absolute bottom-3.5 left-3.5 right-3.5 h-px bg-black/10" />
+      <p className="absolute bottom-1.5 left-3.5 font-mono text-[7px] text-[#5b6472]">+1 123-456-7894</p>
     </div>
   );
 }

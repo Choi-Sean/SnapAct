@@ -9,7 +9,7 @@ export default function CtaSection() {
   return (
     <section id="get" className="relative overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full bg-[radial-gradient(60%_80%_at_50%_20%,var(--accent-soft)_0%,transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full bg-[radial-gradient(60%_80%_at_50%_20%,rgb(var(--accent-soft))_0%,transparent_70%)]"
         aria-hidden
       />
       <div className="mx-auto max-w-content px-6 py-24 text-center md:py-32">

@@ -1,5 +1,7 @@
-These SVGs are from Twemoji (https://github.com/jdecked/twemoji),
-licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
+These images are from Microsoft Fluent Emoji (3D style)
+(https://github.com/microsoft/fluentui-emoji), Copyright (c) Microsoft
+Corporation, licensed under the MIT License:
+https://opensource.org/licenses/MIT
 
-Copyright 2020 Twitter, Inc and other contributors.
-Attribution credit is shown in the site footer.
+MIT doesn't require an on-screen credit for image assets used this
+way — this notice satisfies the license's attribution requirement.

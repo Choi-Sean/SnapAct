@@ -20,13 +20,6 @@ export default function Footer() {
           © {year} Snapsist. {t.footer.rights}
         </p>
       </div>
-      <p className="pb-6 text-center text-[11px] text-muted/60">
-        Emoji graphics by{' '}
-        <a href="https://github.com/jdecked/twemoji" target="_blank" rel="noopener noreferrer" className="underline">
-          Twemoji
-        </a>
-        , licensed under CC-BY 4.0.
-      </p>
     </footer>
   );
 }

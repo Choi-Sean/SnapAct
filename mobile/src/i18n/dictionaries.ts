@@ -13,7 +13,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 };
 
 export interface Dictionary {
-  tabs: { home: string; history: string; settings: string };
+  tabs: { demo: string; analyze: string; history: string; settings: string };
   onboarding: {
     subtitle: string;
     permissions: { label: string; hint: string }[];
@@ -114,6 +114,7 @@ export interface Dictionary {
     grantButton: string;
     notice: string;
     openSettingsButton: string;
+    manageButton: string;
     languageTitle: string;
   };
   review: {
@@ -230,7 +231,7 @@ const categoryLabels = (v: [string, string, string, string, string]): Record<Cat
 
 export const dictionaries: Record<Locale, Dictionary> = {
   en: {
-    tabs: { home: 'Home', history: 'History', settings: 'Settings' },
+    tabs: { demo: 'Demo', analyze: 'Analyze', history: 'History', settings: 'Settings' },
     onboarding: {
       subtitle: 'One photo is all it takes.\nWe’ll file it into the right app automatically.',
       permissions: [
@@ -360,6 +361,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: 'Allow',
       notice: 'A denied permission may not prompt again — open Settings to turn it on directly.',
       openSettingsButton: 'Open Settings app',
+      manageButton: 'Manage',
       languageTitle: 'Language',
     },
     review: {
@@ -492,7 +494,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   ko: {
-    tabs: { home: '홈', history: '기록', settings: '설정' },
+    tabs: { demo: '데모', analyze: '분석', history: '기록', settings: '설정' },
     onboarding: {
       subtitle: '사진 한 장이면 충분해요.\n알맞은 앱에 자동으로 저장해드릴게요.',
       permissions: [
@@ -617,6 +619,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: '권한 허용하기',
       notice: '거부된 권한은 앱에서 다시 요청해도 팝업이 안 뜰 수 있어요. 그럴 땐 아래 버튼으로 설정 앱에서 직접 켜주세요.',
       openSettingsButton: '설정 앱에서 열기',
+      manageButton: '관리',
       languageTitle: '언어',
     },
     review: {
@@ -749,7 +752,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   ja: {
-    tabs: { home: 'ホーム', history: '履歴', settings: '設定' },
+    tabs: { demo: 'デモ', analyze: '分析', history: '履歴', settings: '設定' },
     onboarding: {
       subtitle: '写真1枚で十分です。\n適切なアプリに自動で保存します。',
       permissions: [
@@ -874,6 +877,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: '許可する',
       notice: '拒否された権限は再度リクエストしてもポップアップが表示されないことがあります。その場合は下のボタンから設定アプリで直接オンにしてください。',
       openSettingsButton: '設定アプリを開く',
+      manageButton: '管理',
       languageTitle: '言語',
     },
     review: {
@@ -1006,7 +1010,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   zh: {
-    tabs: { home: '主页', history: '记录', settings: '设置' },
+    tabs: { demo: '演示', analyze: '分析', history: '记录', settings: '设置' },
     onboarding: {
       subtitle: '只需一张照片。\n我们会自动帮你归档到合适的应用。',
       permissions: [
@@ -1131,6 +1135,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: '允许权限',
       notice: '被拒绝的权限可能不会再弹出请求 —— 这种情况下请用下面的按钮直接去设置里打开。',
       openSettingsButton: '打开系统设置',
+      manageButton: '管理',
       languageTitle: '语言',
     },
     review: {
@@ -1263,7 +1268,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   es: {
-    tabs: { home: 'Inicio', history: 'Historial', settings: 'Ajustes' },
+    tabs: { demo: 'Demo', analyze: 'Analizar', history: 'Historial', settings: 'Ajustes' },
     onboarding: {
       subtitle: 'Con una foto basta.\nLa archivaremos automáticamente en la app correcta.',
       permissions: [
@@ -1397,6 +1402,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: 'Permitir',
       notice: 'Un permiso denegado puede no volver a preguntar — abre Ajustes para activarlo directamente.',
       openSettingsButton: 'Abrir la app de Ajustes',
+      manageButton: 'Gestionar',
       languageTitle: 'Idioma',
     },
     review: {
@@ -1529,7 +1535,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   fr: {
-    tabs: { home: 'Accueil', history: 'Historique', settings: 'Réglages' },
+    tabs: { demo: 'Démo', analyze: 'Analyser', history: 'Historique', settings: 'Réglages' },
     onboarding: {
       subtitle: 'Une seule photo suffit.\nOn la classe automatiquement dans la bonne application.',
       permissions: [
@@ -1659,6 +1665,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: 'Autoriser',
       notice: 'Une autorisation refusée peut ne plus jamais redemander — ouvrez Réglages pour l’activer directement.',
       openSettingsButton: 'Ouvrir l’app Réglages',
+      manageButton: 'Gérer',
       languageTitle: 'Langue',
     },
     review: {
@@ -1791,7 +1798,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
   },
   de: {
-    tabs: { home: 'Start', history: 'Verlauf', settings: 'Einstellungen' },
+    tabs: { demo: 'Demo', analyze: 'Analysieren', history: 'Verlauf', settings: 'Einstellungen' },
     onboarding: {
       subtitle: 'Ein Foto genügt.\nWir legen es automatisch in der richtigen App ab.',
       permissions: [
@@ -1921,6 +1928,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       grantButton: 'Erlauben',
       notice: 'Eine abgelehnte Berechtigung fragt möglicherweise nicht erneut nach — öffne die Einstellungen, um sie direkt zu aktivieren.',
       openSettingsButton: 'Einstellungen-App öffnen',
+      manageButton: 'Verwalten',
       languageTitle: 'Sprache',
     },
     review: {

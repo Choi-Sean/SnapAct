@@ -170,8 +170,13 @@ export default function PermissionsScreen() {
               {status === 'checking' ? (
                 <ActivityIndicator size="small" color="#999" />
               ) : granted ? (
-                <View style={[styles.badge, styles.badgeGranted]}>
-                  <Text style={styles.badgeTextGranted}>{STATUS_LABEL[status]}</Text>
+                <View style={styles.grantedCol}>
+                  <View style={[styles.badge, styles.badgeGranted]}>
+                    <Text style={styles.badgeTextGranted}>{STATUS_LABEL[status]}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => Linking.openSettings()}>
+                    <Text style={styles.manageText}>{t.permissions.manageButton}</Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
@@ -301,9 +306,11 @@ const styles = StyleSheet.create({
   rowIcon: { marginRight: 2 },
   rowLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
   rowHint: { fontSize: 12, color: '#777', marginTop: 1 },
+  grantedCol: { alignItems: 'flex-end', gap: 4 },
   badge: { borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
   badgeGranted: { backgroundColor: '#dcfce7' },
   badgeTextGranted: { color: '#15803d', fontWeight: '700', fontSize: 12 },
+  manageText: { color: '#888', fontWeight: '600', fontSize: 11 },
   grantButton: {
     backgroundColor: '#2563eb',
     borderRadius: 999,

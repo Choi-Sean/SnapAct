@@ -5,8 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import AnalyzeScreen from './src/AnalyzeScreen';
+import DemoScreen from './src/DemoScreen';
 import HistoryScreen from './src/HistoryScreen';
-import HomeScreen from './src/HomeScreen';
 import { addHistoryEntry, clearHistory, deleteHistoryEntry, loadHistory } from './src/history';
 import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
@@ -28,7 +29,7 @@ Notifications.setNotificationHandler({
 const ONBOARDED_KEY = 'snapsist_onboarded';
 const SAVE_ERROR = '__error__';
 
-type Tab = 'home' | 'history' | 'settings';
+type Tab = 'demo' | 'analyze' | 'history' | 'settings';
 
 export default function App() {
   return (
@@ -41,14 +42,15 @@ export default function App() {
 function AppInner() {
   const { t } = useLanguage();
   const TABS: { key: Tab; icon: string; label: string }[] = [
-    { key: 'home', icon: '🏠', label: t.tabs.home },
+    { key: 'demo', icon: '⚡️', label: t.tabs.demo },
+    { key: 'analyze', icon: '🔬', label: t.tabs.analyze },
     { key: 'history', icon: '🗂️', label: t.tabs.history },
     { key: 'settings', icon: '⚙️', label: t.tabs.settings },
   ];
 
   const [appReady, setAppReady] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
-  const [tab, setTab] = useState<Tab>('home');
+  const [tab, setTab] = useState<Tab>('demo');
   const [reviewKey, setReviewKey] = useState<DemoKey | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
@@ -138,7 +140,8 @@ function AppInner() {
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="auto" />
-      {tab === 'home' && <HomeScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
+      {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} />}
+      {tab === 'analyze' && <AnalyzeScreen onBatchSaved={handleBatchSaved} />}
       {tab === 'history' && (
         <HistoryScreen entries={history} onClear={handleClearHistory} onDelete={handleDeleteEntry} />
       )}

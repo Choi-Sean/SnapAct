@@ -9,6 +9,7 @@ backend/.venv/
 backend/app/certs/*.p12
 backend/app/certs/*.pem
 backend/app/certs/*.csr
+backend/app/data/
 
 # Mobile / Node
 mobile/node_modules/

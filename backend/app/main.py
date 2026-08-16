@@ -5,7 +5,8 @@ from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Upload
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import claude_analysis, vision, wallet
+from . import auth, claude_analysis, vision, wallet
+from .auth import AuthResponse, LoginRequest, SignupRequest, UserOut
 from .config import settings
 from .models import AnalyzeResponse
 
@@ -19,6 +20,11 @@ app.add_middleware(
 )
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+@app.on_event("startup")
+def on_startup():
+    auth.init_db()
 
 
 def require_api_key(x_api_key: str = Header(default="")):
@@ -36,7 +42,24 @@ def health():
         "claude_enabled": claude_analysis.settings.claude_enabled,
         "auth_enabled": bool(settings.api_shared_secret),
         "wallet_enabled": settings.wallet_enabled,
+        "accounts_enabled": bool(settings.jwt_secret),
+        "google_oauth_enabled": settings.google_oauth_enabled,
     }
+
+
+@app.post("/auth/signup", response_model=AuthResponse)
+def auth_signup(req: SignupRequest):
+    return auth.signup(req)
+
+
+@app.post("/auth/login", response_model=AuthResponse)
+def auth_login(req: LoginRequest):
+    return auth.login(req)
+
+
+@app.get("/auth/me", response_model=UserOut)
+def auth_me(user: UserOut = Depends(auth.get_current_user)):
+    return user
 
 
 @app.get("/wallet/demo-pass", dependencies=[Depends(require_api_key)])

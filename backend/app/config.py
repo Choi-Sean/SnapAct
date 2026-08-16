@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     pass_cert_p12_path: str = ""
     pass_cert_p12_password: str = ""
 
+    jwt_secret: str = ""
+    google_oauth_client_id: str = ""
+    google_oauth_client_secret: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
@@ -27,6 +31,10 @@ class Settings(BaseSettings):
     @property
     def wallet_enabled(self) -> bool:
         return bool(self.pass_cert_p12_path) and Path(self.pass_cert_p12_path).is_file()
+
+    @property
+    def google_oauth_enabled(self) -> bool:
+        return bool(self.google_oauth_client_id and self.google_oauth_client_secret)
 
 
 settings = Settings()

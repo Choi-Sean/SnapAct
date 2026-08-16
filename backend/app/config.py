@@ -23,11 +23,20 @@ class Settings(BaseSettings):
     db_user: str = ""
     db_password: str = ""
 
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
     def db_enabled(self) -> bool:
         return bool(self.db_server and self.db_name and self.db_user and self.db_password)
+
+    @property
+    def r2_enabled(self) -> bool:
+        return bool(self.r2_account_id and self.r2_access_key_id and self.r2_secret_access_key and self.r2_bucket_name)
 
     @property
     def vision_enabled(self) -> bool:

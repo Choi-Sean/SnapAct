@@ -27,7 +27,6 @@ export default function Hero() {
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <a
-              id="get"
               href="#get"
               className="rounded-full bg-accent px-7 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-accent/25 transition-transform hover:-translate-y-0.5"
             >

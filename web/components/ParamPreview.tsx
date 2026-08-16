@@ -2,6 +2,17 @@
 
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
+function BusinessCardMockup() {
+  return (
+    <div className="relative h-[72px] w-[112px] -rotate-6 rounded-xl border border-black/5 bg-white p-3 shadow-lg shadow-black/10">
+      <div className="h-2.5 w-2.5 rounded-full bg-accent" />
+      <div className="mt-2 h-1.5 w-14 rounded-full bg-text/70" />
+      <div className="mt-1.5 h-1.5 w-9 rounded-full bg-text/25" />
+      <div className="mt-3 h-1 w-16 rounded-full bg-text/15" />
+    </div>
+  );
+}
+
 export default function ParamPreview() {
   const { t } = useLanguage();
 
@@ -15,7 +26,17 @@ export default function ParamPreview() {
         </div>
 
         <div className="rounded-3xl border border-border bg-surface p-6 shadow-xl shadow-black/5 sm:p-8">
-          <p className="text-lg font-extrabold">{t.features.items[0].title} → {t.trust.items[0]}</p>
+          <div className="flex items-center gap-4">
+            <BusinessCardMockup />
+            <span className="font-mono text-lg text-muted/50">→</span>
+            <span className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-accent-soft text-xl">
+              🪪
+            </span>
+          </div>
+
+          <p className="mt-5 text-lg font-extrabold">
+            {t.preview.sourceLabel} → {t.preview.destLabel}
+          </p>
           <p className="mt-1 text-[13px] text-muted">{t.preview.note}</p>
 
           <div className="mt-6 divide-y divide-border">

@@ -16,7 +16,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        <TrustBar />
+        {/* <TrustBar /> */}
         <HowItWorks />
         <Features />
         <ParamPreview />

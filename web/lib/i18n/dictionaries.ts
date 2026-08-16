@@ -28,6 +28,8 @@ export interface Dictionary {
     eyebrow: string;
     headline: string;
     sub: string;
+    sourceLabel: string;
+    destLabel: string;
     fields: { label: string; value: string }[];
     note: string;
     button: string;
@@ -119,6 +121,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'No surprises',
       headline: 'You see every field before anything is saved',
       sub: 'Snapsist never writes silently. Every button opens a review screen listing exactly what will be written — edit what matters, then confirm.',
+      sourceLabel: 'Business Card',
+      destLabel: 'Contacts',
       fields: [
         { label: 'First / Last Name', value: 'John / Smith' },
         { label: 'Mobile', value: '+1 123-456-7894' },
@@ -259,6 +263,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: '숨기는 거 없음',
       headline: '저장 전에 모든 항목을 먼저 보여줍니다',
       sub: 'Snapsist는 조용히 저장하지 않습니다. 버튼을 누르면 실제로 저장될 값을 전부 나열한 확인 화면이 뜨고, 필요한 건 수정한 뒤 확인을 눌러야 저장됩니다.',
+      sourceLabel: '명함',
+      destLabel: '연락처',
       fields: [
         { label: '이름 / 성', value: 'John / Smith' },
         { label: '휴대폰', value: '+1 123-456-7894' },

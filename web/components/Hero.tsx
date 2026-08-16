@@ -1,8 +1,12 @@
 'use client';
 
+import { motion } from 'framer-motion';
+
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 import PhoneMockup from './PhoneMockup';
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero() {
   const { t } = useLanguage();
@@ -10,11 +14,15 @@ export default function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[560px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(var(--accent-soft))_0%,transparent_70%)]"
+        className="animate-glow-drift pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[560px] bg-[radial-gradient(60%_60%_at_50%_0%,rgb(var(--accent-soft))_0%,transparent_70%)]"
         aria-hidden
       />
       <div className="mx-auto grid max-w-content items-center gap-14 px-6 py-16 md:grid-cols-2 md:py-24">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE }}
+        >
           <p className="mb-5 inline-flex items-center rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted">
             {t.hero.eyebrow}
           </p>
@@ -36,9 +44,15 @@ export default function Hero() {
               {t.hero.ctaSecondary} →
             </a>
           </div>
-        </div>
+        </motion.div>
 
-        <PhoneMockup />
+        <motion.div
+          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
+        >
+          <PhoneMockup />
+        </motion.div>
       </div>
     </section>
   );

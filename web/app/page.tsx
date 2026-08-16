@@ -6,6 +6,7 @@ import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
 import Nav from '@/components/Nav';
 import ParamPreview from '@/components/ParamPreview';
+import Reveal from '@/components/Reveal';
 import TrustBar from '@/components/TrustBar';
 import Why from '@/components/Why';
 
@@ -16,12 +17,24 @@ export default function Home() {
       <main>
         <Hero />
         {/* <TrustBar /> */}
-        <HowItWorks />
-        <Features />
-        <ParamPreview />
-        <Why />
-        <Faq />
-        <CtaSection />
+        <Reveal>
+          <HowItWorks />
+        </Reveal>
+        <Reveal>
+          <Features />
+        </Reveal>
+        <Reveal>
+          <ParamPreview />
+        </Reveal>
+        <Reveal>
+          <Why />
+        </Reveal>
+        <Reveal>
+          <Faq />
+        </Reveal>
+        <Reveal>
+          <CtaSection />
+        </Reveal>
       </main>
       <Footer />
     </>

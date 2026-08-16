@@ -65,6 +65,27 @@ async def analyze(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 
-    category, confidence = vision.classify_image(image_bytes, mock_category=mock_category)
-    result = claude_analysis.analyze(image_bytes, category, confidence, media_type=file.content_type)
+    category, confidence, ocr_text = vision.classify_image(image_bytes, mock_category=mock_category)
+
+    using_real_pipeline = vision.settings.vision_enabled and claude_analysis.settings.claude_enabled
+
+    # Nothing recognizable in the photo — skip the Claude call entirely rather than
+    # paying for a vision request that will just come back empty.
+    if using_real_pipeline and category == "other":
+        return AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            summary="No business card, receipt, event, or document content was recognized in this photo.",
+        )
+
+    # Text-dense categories: hand Claude the OCR text instead of the image. Text tokens
+    # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
+    text_only_categories = {"receipt", "document"}
+    ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
+
+    result = claude_analysis.analyze(
+        image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude
+    )
     return result

@@ -18,7 +18,7 @@ export default function Hero() {
           <p className="mb-5 inline-flex items-center rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted">
             {t.hero.eyebrow}
           </p>
-          <h1 className="balance text-[2.6rem] font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+          <h1 className="balance text-[2.75rem] font-extrabold leading-[1.02] tracking-tighter sm:text-6xl md:text-7xl">
             {t.hero.headline}
             <br />
             <span className="text-accent">{t.hero.headlineAccent}</span>

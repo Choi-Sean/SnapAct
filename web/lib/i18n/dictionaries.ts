@@ -1,6 +1,16 @@
 import type { EmojiName } from '@/components/Emoji';
 
-export type Locale = 'en' | 'ko';
+export type Locale = 'en' | 'ko' | 'ja' | 'zh' | 'es' | 'fr' | 'de';
+
+export const LOCALE_LABELS: Record<Locale, string> = {
+  en: 'English',
+  ko: '한국어',
+  ja: '日本語',
+  zh: '中文',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+};
 
 export interface Dictionary {
   meta: { title: string; description: string };
@@ -40,12 +50,6 @@ export interface Dictionary {
     eyebrow: string;
     headline: string;
     items: { title: string; desc: string }[];
-  };
-  pipeline: {
-    eyebrow: string;
-    headline: string;
-    sub: string;
-    steps: { label: string; title: string; desc: string }[];
   };
   faq: {
     eyebrow: string;
@@ -95,19 +99,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
           desc: 'Take a photo or pick one from your library — a business card, receipt, flyer, whatever needs saving.',
         },
         {
-          title: 'Classify',
-          desc: 'An agentic AI pipeline (Google Vision + Claude) figures out what it’s looking at and pulls out every field — names, dates, amounts, addresses.',
+          title: 'AI reads it for you',
+          desc: 'It figures out what kind of thing it’s looking at and pulls out the details — names, dates, amounts, addresses — automatically.',
         },
         {
-          title: 'Auto-file',
-          desc: 'Review the exact fields about to be written, then the AI saves them straight into the right built-in app on your phone — no manual export, no copy-paste.',
+          title: 'It saves itself',
+          desc: 'Check the details, tap once, and it’s already in the right app on your phone — no exporting, no copy-paste.',
         },
       ],
     },
     features: {
       eyebrow: 'Integrations',
       headline: 'It writes to the apps you already trust',
-      sub: 'Every integration uses the real, native framework for that app — not a copy, not a workaround.',
+      sub: 'It really writes into these apps — not a copy, not a workaround.',
       items: [
         { icon: 'contacts', title: 'Contacts', desc: 'Full name, company, title, phones, emails, addresses, birthday, socials.', tag: 'Fully automatic' },
         { icon: 'calendar', title: 'Calendar', desc: 'Title, time, location, alerts, recurrence — a real event, not a note.', tag: 'Fully automatic' },
@@ -141,7 +145,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       items: [
         {
           title: 'Nothing leaves your phone by default',
-          desc: 'Every save writes directly to a native framework on-device. No account required to use the core features.',
+          desc: 'Every save writes directly to the app on your device. No account required to use the core features.',
         },
         {
           title: 'You approve every write',
@@ -149,29 +153,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
         {
           title: 'Real integrations, not workarounds',
-          desc: 'EventKit for Calendar and Reminders, CNContactStore for Contacts, PassKit for Wallet — the same frameworks Apple’s own apps use.',
-        },
-      ],
-    },
-    pipeline: {
-      eyebrow: 'Under the hood',
-      headline: 'Built to be cheap and accurate, not just impressive',
-      sub: 'Every photo runs through a two-model pipeline designed so you never pay for more inference than the photo actually needs.',
-      steps: [
-        {
-          label: '01',
-          title: 'Google Vision classifies first',
-          desc: 'A fast, inexpensive pass reads the photo’s labels and any visible text to work out what kind of thing it is.',
-        },
-        {
-          label: '02',
-          title: 'Nothing useful? It stops right there',
-          desc: 'If Vision doesn’t recognize a business card, receipt, event, or document, Snapsist skips the expensive model entirely — no wasted call.',
-        },
-        {
-          label: '03',
-          title: 'Claude reads only what it needs to',
-          desc: 'Text-heavy photos (receipts, documents) send Claude the extracted text, not the image — far cheaper than image tokens. Visual layout (business cards, flyers) sends the real image.',
+          desc: 'Snapsist saves through the exact same official channel Apple’s own Contacts, Calendar, and Wallet apps use — not a copy, not a trick.',
         },
       ],
     },
@@ -181,7 +163,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       items: [
         {
           q: 'Do I need to create an account?',
-          a: 'No. Snapsist writes directly to native frameworks already on your phone — Contacts, Calendar, Reminders, Wallet. There’s no account system for the core features.',
+          a: 'No. Snapsist writes directly into apps already on your phone — Contacts, Calendar, Reminders, Wallet. There’s no account system for the core features.',
         },
         {
           q: 'Does my photo get stored anywhere?',
@@ -242,14 +224,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '세 단계, 타이핑은 0번',
       steps: [
         { title: '촬영', desc: '명함, 영수증, 전단지 등 저장이 필요한 걸 사진으로 찍거나 갤러리에서 선택하세요.' },
-        { title: '자동 분류', desc: 'Agentic AI 파이프라인(Google Vision + Claude)이 사진이 뭔지 판단하고 이름·날짜·금액·주소 등 모든 정보를 뽑아냅니다.' },
-        { title: '자동 저장', desc: '저장될 항목을 정확히 확인한 뒤, AI가 알맞은 OS 기본 앱에 바로 저장합니다 — 내보내기도, 복사·붙여넣기도 필요 없어요.' },
+        { title: 'AI가 대신 읽어드려요', desc: '이게 뭔지 알아서 판단하고, 이름·날짜·금액·주소 같은 정보를 자동으로 찾아내요.' },
+        { title: '알아서 저장돼요', desc: '내용 확인하고 탭 한 번이면, 이미 휴대폰의 알맞은 앱에 들어가 있어요 — 내보내기도, 복사·붙여넣기도 필요 없어요.' },
       ],
     },
     features: {
       eyebrow: '연동 기능',
       headline: '이미 쓰고 있는 앱에 바로 써줍니다',
-      sub: '모든 연동은 실제 네이티브 프레임워크를 사용합니다 — 복사본도, 우회 방식도 아닙니다.',
+      sub: '진짜로 그 앱에 써줍니다 — 복사본도, 우회 방식도 아닙니다.',
       items: [
         { icon: 'contacts', title: '연락처', desc: '이름, 회사, 직함, 전화, 이메일, 주소, 생일, SNS까지.', tag: '완전 자동' },
         { icon: 'calendar', title: '캘린더', desc: '제목, 시간, 장소, 알림, 반복까지 — 진짜 일정으로 등록됩니다.', tag: '완전 자동' },
@@ -283,24 +265,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       items: [
         { title: '기본적으로 기기 밖으로 안 나갑니다', desc: '모든 저장은 기기 내장 프레임워크로 바로 기록됩니다. 핵심 기능은 계정 없이도 사용 가능합니다.' },
         { title: '모든 저장은 사용자가 승인합니다', desc: '연락처·캘린더·Wallet에 뭔가 쓰이기 전에, 정확히 어떤 값이 들어갈지 확인 화면에서 보여줍니다.' },
-        { title: '진짜 연동입니다, 우회가 아니라', desc: '캘린더·미리 알림엔 EventKit, 연락처엔 CNContactStore, Wallet엔 PassKit — Apple 기본 앱들과 똑같은 프레임워크를 씁니다.' },
-      ],
-    },
-    pipeline: {
-      eyebrow: '내부 동작 원리',
-      headline: '멋있어 보이려고가 아니라, 저렴하고 정확하려고 만든 구조',
-      sub: '모든 사진은 2단계 모델 파이프라인을 거칩니다 — 사진에 필요한 만큼만 추론 비용을 쓰도록 설계했어요.',
-      steps: [
-        { label: '01', title: 'Google Vision이 먼저 분류합니다', desc: '빠르고 저렴한 1차 패스로 사진의 라벨과 보이는 텍스트를 읽어서 어떤 종류인지 판단합니다.' },
-        { label: '02', title: '쓸 만한 게 없으면 거기서 멈춥니다', desc: '명함·영수증·이벤트·문서 중 아무것도 인식 못 하면, 비싼 모델(Claude)은 아예 호출하지 않습니다 — 낭비 없음.' },
-        { label: '03', title: 'Claude는 필요한 만큼만 읽습니다', desc: '텍스트 위주 사진(영수증, 문서)은 이미지 대신 추출된 텍스트만 Claude에 보냅니다 — 이미지 토큰보다 훨씬 저렴해요. 레이아웃이 중요한 것(명함, 전단지)은 실제 이미지를 보냅니다.' },
+        { title: '진짜 연동입니다, 우회가 아니라', desc: 'Apple의 연락처·캘린더·Wallet 앱이 쓰는 것과 똑같은 공식 통로로 저장합니다 — 복사본도, 편법도 아니에요.' },
       ],
     },
     faq: {
       eyebrow: 'FAQ',
       headline: '실제로 많이 물어보시는 것들',
       items: [
-        { q: '계정을 만들어야 하나요?', a: '아니요. Snapsist는 이미 휴대폰에 있는 네이티브 프레임워크(연락처, 캘린더, 미리 알림, Wallet)에 바로 씁니다. 핵심 기능엔 계정 시스템 자체가 없어요.' },
+        { q: '계정을 만들어야 하나요?', a: '아니요. Snapsist는 이미 휴대폰에 있는 앱(연락처, 캘린더, 미리 알림, Wallet)에 바로 씁니다. 핵심 기능엔 계정 시스템 자체가 없어요.' },
         { q: '제 사진이 어딘가에 저장되나요?', a: '사진은 분석을 위해 한 번 전송되고 즉시 폐기됩니다 — Snapsist 백엔드는 스캔한 사진의 사본이나 기록을 보관하지 않습니다.' },
         { q: '항목을 잘못 인식하면 어떡하죠?', a: '저장 전에 항상 확인 화면이 먼저 뜨고, 실제로 저장될 항목을 정확히 보여줍니다. 뭐든 수정하거나 취소할 수 있고, 확인을 누르기 전엔 아무것도 저장되지 않아요.' },
         { q: '왜 메모는 바로 저장 안 하고 공유 시트를 여나요?', a: 'Apple과 Google 둘 다 Notes/Keep 앱에 쓸 수 있는 공개 API를 제공하지 않아서, 어떤 서드파티 앱도 직접 쓸 방법이 없어요. 그래서 Snapsist는 정리된 메모를 공유 시트로 넘겨줍니다 — 탭 0번이 아니라 1번이지만, 기술적으로 가능한 최선입니다.' },
@@ -317,6 +289,471 @@ export const dictionaries: Record<Locale, Dictionary> = {
     footer: {
       tagline: '사진 한 장이면, 모든 앱이 자동으로 업데이트됩니다.',
       rights: 'All rights reserved.',
+    },
+  },
+  ja: {
+    meta: {
+      title: 'Snapsist — 写真1枚で自動整理',
+      description:
+        'Snapsistは名刺、レシート、イベントチラシ、メモを撮影するだけで読み取り、連絡先・カレンダー・リマインダー・Walletなどに自動で保存します。入力不要。',
+    },
+    nav: { features: '連携機能', how: '使い方', integrations: '連携機能', cta: 'アプリを入手' },
+    hero: {
+      eyebrow: '写真 → 連絡先・カレンダー・Walletなどに自動連携',
+      headline: '一度撮るだけで、',
+      headlineAccent: '自動で整理されます。',
+      subheadline:
+        '名刺やレシート、チラシ、メモにカメラを向けてください。Snapsistが読み取り、すでに使っているアプリ — 連絡先、カレンダー、リマインダー、Wallet、メール — にそのまま書き込みます。コピーも再入力も不要です。',
+      ctaPrimary: 'TestFlightで入手',
+      ctaSecondary: '使い方を見る',
+      mockCaption: '保存前にすべての項目を表示します — 勝手に処理されることはありません。',
+    },
+    trust: {
+      label: 'すべて端末内の連携機能で動作します',
+      items: ['連絡先', 'カレンダー', 'リマインダー', 'Wallet', 'メール', 'ファイル'],
+    },
+    how: {
+      eyebrow: '使い方',
+      headline: '3ステップ、入力はゼロ',
+      steps: [
+        { title: '撮影', desc: '名刺やレシート、チラシなど保存したいものを撮影するか、ライブラリから選んでください。' },
+        { title: 'AIが代わりに読み取ります', desc: '何の写真かを自動で判断し、名前・日付・金額・住所などの情報を自動で抽出します。' },
+        { title: '自動で保存されます', desc: '内容を確認してタップするだけで、スマホの適切なアプリにすでに反映されています — 書き出しもコピペも不要です。' },
+      ],
+    },
+    features: {
+      eyebrow: '連携機能',
+      headline: 'すでに使っているアプリにそのまま書き込みます',
+      sub: '本当にそのアプリに保存されます — コピーでも回避策でもありません。',
+      items: [
+        { icon: 'contacts', title: '連絡先', desc: '氏名、会社、役職、電話番号、メール、住所、誕生日、SNSまで。', tag: '完全自動' },
+        { icon: 'calendar', title: 'カレンダー', desc: 'タイトル、時間、場所、通知、繰り返しまで — メモではなく本物の予定として登録。', tag: '完全自動' },
+        { icon: 'reminders', title: 'リマインダー', desc: '期限・場所・通知付きのToDo（iOS）。', tag: '完全自動' },
+        { icon: 'photos', title: '写真', desc: 'アルバムに直接保存され、必要なときにすぐ見つかります。', tag: '完全自動' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '署名済みのスキャン可能なパスをWalletに直接追加。', tag: '完全自動' },
+        { icon: 'mail', title: 'メール・メッセージ', desc: '内容が入力済みの下書きが表示され、タップ一つで送信できます。', tag: 'ワンタップで送信' },
+        { icon: 'notes', title: 'メモ', desc: '整形された内容が共有シート経由でメモアプリに渡されます。', tag: 'ワンタップで保存' },
+        { icon: 'maps', title: 'マップ', desc: '住所をApple/Googleマップでそのまま開きます。', tag: 'すぐに開く' },
+      ],
+    },
+    preview: {
+      eyebrow: '隠しごとなし',
+      headline: '保存前にすべての項目を確認できます',
+      sub: 'Snapsistは黙って保存しません。どのボタンを押しても、実際に書き込まれる内容を一覧表示する確認画面が開きます — 必要な部分を編集してから確定してください。',
+      sourceLabel: '名刺',
+      destLabel: '連絡先',
+      fields: [
+        { label: '姓 / 名', value: 'John / Smith' },
+        { label: '携帯電話', value: '+1 123-456-7894' },
+        { label: '勤務先メール', value: 'john.smith@example.com' },
+        { label: '会社名 / 役職', value: 'Snapsist Inc. / Product Manager' },
+        { label: '住所', value: '123 Main St, San Francisco, CA' },
+      ],
+      note: 'これは実際のアプリの確認画面です — 隠したり簡略化したりしていません。',
+      button: '連絡先に保存',
+    },
+    why: {
+      eyebrow: 'Snapsistを選ぶ理由',
+      headline: '自動化の主導権はあなたにあります',
+      items: [
+        { title: '基本的に端末の外には出ません', desc: '保存は常にお使いの端末上のアプリへ直接書き込まれます。主要機能の利用にアカウントは不要です。' },
+        { title: 'すべての保存はあなたが承認します', desc: '連絡先・カレンダー・Walletに何かが書き込まれる前に、確認画面で内容を正確に表示します。' },
+        { title: '本物の連携です、回避策ではありません', desc: 'SnapsistはAppleの連絡先・カレンダー・Wallet自体が使うのと同じ正規の方法で保存します — コピーでも裏技でもありません。' },
+      ],
+    },
+    faq: {
+      eyebrow: 'よくある質問',
+      headline: '実際によく聞かれること',
+      items: [
+        { q: 'アカウント登録は必要ですか？', a: 'いいえ。Snapsistはすでにスマホにあるアプリ（連絡先、カレンダー、リマインダー、Wallet）に直接書き込みます。主要機能にアカウント制度自体がありません。' },
+        { q: '撮影した写真はどこかに保存されますか？', a: '写真は解析のために一度だけ送信され、直後に破棄されます — Snapsistのサーバーはスキャンした写真のコピーや履歴を保持しません。' },
+        { q: '内容が間違って認識された場合は？', a: '保存前に必ず確認画面が開き、実際に書き込まれる項目が正確に表示されます。内容を編集したりキャンセルしたりでき、確定するまで何も保存されません。' },
+        { q: 'なぜメモは直接保存せず共有シートを開くのですか？', a: 'AppleもGoogleもメモ/Keepアプリへの公開APIを提供していないため、どのサードパーティアプリも直接書き込む方法がありません。そのためSnapsistは整形済みのメモを共有シート経由で渡します — タップ0回ではなく1回になりますが、技術的に可能な最善の方法です。' },
+        { q: 'Androidにも対応していますか？', a: '現在はiOS専用（TestFlightベータ）です。リマインダーとApple Walletはそもそもの機能上iOS専用のため、Android版が出てもこの2つはiOSのみとなります。' },
+        { q: '料金はいくらですか？', a: 'ベータ期間中は無料です。その後の料金プランはまだ決まっていません。' },
+      ],
+    },
+    cta: {
+      headline: '写真にすでに書いてある内容を、もう一度入力しないでください。',
+      sub: 'Snapsistは現在テスト中です — 誰よりも早くTestFlightで試してみてください。',
+      button: 'TestFlightで入手',
+      note: 'iOS・ベータ期間中は無料',
+    },
+    footer: {
+      tagline: '写真1枚で、すべてのアプリが自動更新されます。',
+      rights: 'All rights reserved.',
+    },
+  },
+  zh: {
+    meta: {
+      title: 'Snapsist — 一张照片，自动归档',
+      description:
+        'Snapsist 拍下名片、收据、活动传单或备忘录后自动识别，直接保存到通讯录、日历、提醒事项、Wallet 等应用 — 无需手动输入。',
+    },
+    nav: { features: '集成功能', how: '使用方法', integrations: '集成功能', cta: '获取应用' },
+    hero: {
+      eyebrow: '照片 → 自动同步到通讯录、日历、Wallet 等',
+      headline: '拍一次，',
+      headlineAccent: '自动帮你整理。',
+      subheadline:
+        '把镜头对准名片、收据、传单或便签。Snapsist 会读取内容，直接写入你手机里已经在用的应用 — 通讯录、日历、提醒事项、Wallet、邮件 — 无需复制粘贴，无需重新输入。',
+      ctaPrimary: '在 TestFlight 获取',
+      ctaSecondary: '查看使用方法',
+      mockCaption: '保存前会显示每一项内容 — 绝不会悄悄处理。',
+    },
+    trust: {
+      label: '完全基于设备原生功能集成',
+      items: ['通讯录', '日历', '提醒事项', 'Wallet', '邮件', '文件'],
+    },
+    how: {
+      eyebrow: '使用方法',
+      headline: '三步搞定，零输入',
+      steps: [
+        { title: '拍摄', desc: '拍一张照片，或从相册中选择 — 名片、收据、传单，任何需要保存的内容都可以。' },
+        { title: 'AI 自动帮你读取', desc: '它会判断这是什么内容，并自动提取姓名、日期、金额、地址等细节。' },
+        { title: '自动保存', desc: '确认内容后轻点一下，它就已经出现在手机里对应的应用中 — 无需导出，无需复制粘贴。' },
+      ],
+    },
+    features: {
+      eyebrow: '集成功能',
+      headline: '直接写入你已经信任的应用',
+      sub: '它是真的写入这些应用 — 不是副本，也不是变通方法。',
+      items: [
+        { icon: 'contacts', title: '通讯录', desc: '姓名、公司、职位、电话、邮箱、地址、生日、社交账号，全都有。', tag: '全自动' },
+        { icon: 'calendar', title: '日历', desc: '标题、时间、地点、提醒、重复规则 — 是真正的日程，不只是备注。', tag: '全自动' },
+        { icon: 'reminders', title: '提醒事项', desc: '带截止日期、地点和提醒的待办事项（iOS）。', tag: '全自动' },
+        { icon: 'photos', title: '照片', desc: '直接保存到相册，需要时随时可找到。', tag: '全自动' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '已签名、可扫描的卡券直接添加到 Wallet。', tag: '全自动' },
+        { icon: 'mail', title: '邮件与信息', desc: '草稿会自动填好内容，轻点一下即可发送。', tag: '一键发送' },
+        { icon: 'notes', title: '备忘录', desc: '整理好的内容通过分享面板传给备忘录应用。', tag: '一键归档' },
+        { icon: 'maps', title: '地图', desc: '直接在苹果地图或谷歌地图中打开地址。', tag: '立即打开' },
+      ],
+    },
+    preview: {
+      eyebrow: '绝无隐瞒',
+      headline: '保存前你会看到每一项内容',
+      sub: 'Snapsist 从不悄悄写入。每个按钮都会先打开一个确认页面，列出即将写入的具体内容 — 你可以先修改重要信息，再确认。',
+      sourceLabel: '名片',
+      destLabel: '通讯录',
+      fields: [
+        { label: '姓 / 名', value: 'John / Smith' },
+        { label: '手机号', value: '+1 123-456-7894' },
+        { label: '工作邮箱', value: 'john.smith@example.com' },
+        { label: '公司 / 职位', value: 'Snapsist Inc. / Product Manager' },
+        { label: '地址', value: '123 Main St, San Francisco, CA' },
+      ],
+      note: '这就是应用里真实的确认界面 — 没有隐藏，没有简化。',
+      button: '保存到通讯录',
+    },
+    why: {
+      eyebrow: '为什么选择 Snapsist',
+      headline: '自动化，但主动权始终在你手中',
+      items: [
+        { title: '默认不会离开你的手机', desc: '每次保存都直接写入你设备上的应用。使用核心功能无需注册账号。' },
+        { title: '每一次写入都需要你确认', desc: '在任何内容写入通讯录、日历或 Wallet 之前，确认页面都会准确显示将要写入的内容。' },
+        { title: '真正的集成，不是变通方案', desc: 'Snapsist 使用的正是苹果自家通讯录、日历、Wallet 应用所用的官方保存方式 — 不是复制，也不是投机取巧。' },
+      ],
+    },
+    faq: {
+      eyebrow: '常见问题',
+      headline: '大家真正会问的问题',
+      items: [
+        { q: '需要注册账号吗？', a: '不需要。Snapsist 直接写入你手机里已有的应用 — 通讯录、日历、提醒事项、Wallet。核心功能没有账号系统。' },
+        { q: '我的照片会被存储在哪里吗？', a: '照片仅用于一次性分析，分析完立即删除 — Snapsist 的服务器不会保留你扫描过内容的副本或记录。' },
+        { q: '如果 Snapsist 识别错了怎么办？', a: '每次保存前都会先打开确认页面，列出即将写入的具体内容。你可以修改任意内容，或直接取消 — 在你确认之前不会保存任何东西。' },
+        { q: '为什么备忘录不能直接保存，而是打开分享面板？', a: '苹果和谷歌都没有为备忘录 / Keep 应用提供公开的接口，所以任何第三方应用都无法直接写入。因此 Snapsist 会通过分享面板把整理好的备忘录传递过去 — 虽然要多点一下，但这已经是技术上能做到的最好方式。' },
+        { q: '支持 Android 吗？', a: '目前仅支持 iOS（TestFlight 测试版）。提醒事项和 Apple Wallet 本身就是 iOS 专属功能，即使以后推出 Android 版本，这两项功能仍只在 iOS 上可用。' },
+        { q: '需要付费吗？', a: '测试期间完全免费。后续的收费方案尚未确定。' },
+      ],
+    },
+    cta: {
+      headline: '照片上已经写好的内容，别再手动输入一遍了。',
+      sub: 'Snapsist 目前正在测试中 — 加入 TestFlight，抢先体验。',
+      button: '在 TestFlight 获取',
+      note: 'iOS · 测试期间免费',
+    },
+    footer: {
+      tagline: '一张照片，所有应用自动更新。',
+      rights: '保留所有权利。',
+    },
+  },
+  es: {
+    meta: {
+      title: 'Snapsist — Una foto, todo archivado automáticamente',
+      description:
+        'Snapsist lee la foto de una tarjeta de presentación, un recibo, un cartel de un evento o una nota, y la guarda directamente en Contactos, Calendario, Recordatorios, Wallet y más — sin escribir nada.',
+    },
+    nav: { features: 'Integraciones', how: 'Cómo funciona', integrations: 'Integraciones', cta: 'Obtener la app' },
+    hero: {
+      eyebrow: 'Foto → Contactos, Calendario, Wallet y más',
+      headline: 'Tómala una vez.',
+      headlineAccent: 'Se archiva sola.',
+      subheadline:
+        'Apunta la cámara a una tarjeta de presentación, un recibo, un cartel o una nota adhesiva. Snapsist la lee y la escribe directamente en las apps que ya tienes en tu teléfono — Contactos, Calendario, Recordatorios, Wallet, Correo — sin copiar ni volver a escribir nada.',
+      ctaPrimary: 'Consíguela en TestFlight',
+      ctaSecondary: 'Ver cómo funciona',
+      mockCaption: 'Se muestran todos los campos antes de guardar — nada ocurre en silencio.',
+    },
+    trust: {
+      label: 'Integraciones construidas enteramente en el dispositivo',
+      items: ['Contactos', 'Calendario', 'Recordatorios', 'Wallet', 'Correo', 'Archivos'],
+    },
+    how: {
+      eyebrow: 'Cómo funciona',
+      headline: 'Tres pasos. Cero escritura.',
+      steps: [
+        { title: 'Toma la foto', desc: 'Haz una foto o elige una de tu galería — una tarjeta, un recibo, un cartel, lo que necesites guardar.' },
+        { title: 'La IA la lee por ti', desc: 'Descubre de qué se trata y extrae los detalles — nombres, fechas, importes, direcciones — automáticamente.' },
+        { title: 'Se guarda sola', desc: 'Revisa los datos, toca una vez, y ya está en la app correcta de tu teléfono — sin exportar, sin copiar y pegar.' },
+      ],
+    },
+    features: {
+      eyebrow: 'Integraciones',
+      headline: 'Escribe en las apps en las que ya confías',
+      sub: 'Escribe de verdad en esas apps — no es una copia, ni un truco.',
+      items: [
+        { icon: 'contacts', title: 'Contactos', desc: 'Nombre completo, empresa, cargo, teléfonos, correos, direcciones, cumpleaños, redes sociales.', tag: 'Totalmente automático' },
+        { icon: 'calendar', title: 'Calendario', desc: 'Título, hora, ubicación, alertas, repetición — un evento real, no una nota.', tag: 'Totalmente automático' },
+        { icon: 'reminders', title: 'Recordatorios', desc: 'Tareas con fecha límite, ubicación y alertas en iOS.', tag: 'Totalmente automático' },
+        { icon: 'photos', title: 'Fotos', desc: 'Guardadas directamente en un álbum, listas cuando las necesites.', tag: 'Totalmente automático' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Tarjetas firmadas y escaneables añadidas directamente a Wallet.', tag: 'Totalmente automático' },
+        { icon: 'mail', title: 'Correo y mensajes', desc: 'Aparece un borrador ya redactado, listo para enviar con un toque.', tag: 'Un toque para enviar' },
+        { icon: 'notes', title: 'Notas', desc: 'Se entrega en formato ordenado a Notas mediante la hoja de compartir.', tag: 'Un toque para archivar' },
+        { icon: 'maps', title: 'Mapas', desc: 'Abre la dirección directamente en Apple o Google Maps.', tag: 'Se abre al instante' },
+      ],
+    },
+    preview: {
+      eyebrow: 'Sin sorpresas',
+      headline: 'Ves cada campo antes de que se guarde nada',
+      sub: 'Snapsist nunca escribe en silencio. Cada botón abre una pantalla de revisión con exactamente lo que se va a escribir — edita lo que haga falta y confirma.',
+      sourceLabel: 'Tarjeta de presentación',
+      destLabel: 'Contactos',
+      fields: [
+        { label: 'Nombre / Apellido', value: 'John / Smith' },
+        { label: 'Móvil', value: '+1 123-456-7894' },
+        { label: 'Correo del trabajo', value: 'john.smith@example.com' },
+        { label: 'Empresa / Cargo', value: 'Snapsist Inc. / Product Manager' },
+        { label: 'Dirección', value: '123 Main St, San Francisco, CA' },
+      ],
+      note: 'Esta es la pantalla de revisión real de la app — nada está oculto ni simplificado.',
+      button: 'Guardar en Contactos',
+    },
+    why: {
+      eyebrow: 'Por qué Snapsist',
+      headline: 'Automatización que sigue tus reglas',
+      items: [
+        { title: 'Por defecto, nada sale de tu teléfono', desc: 'Cada guardado escribe directamente en la app de tu dispositivo. No hace falta cuenta para las funciones principales.' },
+        { title: 'Apruebas cada escritura', desc: 'Una pantalla de revisión muestra los campos exactos antes de tocar Contactos, Calendario o Wallet.' },
+        { title: 'Integraciones reales, no trucos', desc: 'Snapsist guarda por el mismo canal oficial que usan las propias apps de Contactos, Calendario y Wallet de Apple — no es una copia ni un atajo.' },
+      ],
+    },
+    faq: {
+      eyebrow: 'Preguntas frecuentes',
+      headline: 'Lo que la gente realmente pregunta',
+      items: [
+        { q: '¿Necesito crear una cuenta?', a: 'No. Snapsist escribe directamente en las apps que ya tienes en tu teléfono — Contactos, Calendario, Recordatorios, Wallet. No hay sistema de cuentas para las funciones principales.' },
+        { q: '¿Se guarda mi foto en algún sitio?', a: 'Tu foto se envía una sola vez para analizarla y se descarta de inmediato — el servidor de Snapsist no conserva copia ni historial de lo que has escaneado.' },
+        { q: '¿Y si Snapsist reconoce mal un campo?', a: 'Cada guardado abre primero una pantalla de revisión con los campos exactos que se van a escribir. Puedes editar cualquier cosa o cancelar — no se guarda nada hasta que confirmas.' },
+        { q: '¿Por qué Snapsist abre la hoja de compartir para Notas en vez de guardar directamente?', a: 'Ni Apple ni Google ofrecen una API pública para sus apps de Notas / Keep, así que ninguna app externa puede escribir directamente en ellas. Snapsist entrega en su lugar una nota ya formateada mediante la hoja de compartir — un toque en vez de cero, que es lo máximo que se puede automatizar técnicamente.' },
+        { q: '¿Está disponible en Android?', a: 'Por ahora Snapsist es solo para iOS, en TestFlight. Recordatorios y Apple Wallet son funciones exclusivas de iOS de todos modos, así que seguirían siendo solo de iOS aunque hubiera una versión para Android.' },
+        { q: '¿Cuánto cuesta?', a: 'Gratis durante la beta. El precio después de eso aún no se ha decidido.' },
+      ],
+    },
+    cta: {
+      headline: 'Deja de volver a escribir lo que una foto ya dice.',
+      sub: 'Snapsist está en pruebas ahora mismo — únete a TestFlight para probarla antes que nadie.',
+      button: 'Consíguela en TestFlight',
+      note: 'iOS · Gratis durante la beta',
+    },
+    footer: {
+      tagline: 'Una foto. Todas las apps, actualizadas automáticamente.',
+      rights: 'Todos los derechos reservados.',
+    },
+  },
+  fr: {
+    meta: {
+      title: 'Snapsist — Une photo, tout est classé automatiquement',
+      description:
+        'Snapsist lit la photo d’une carte de visite, d’un reçu, d’une affiche d’événement ou d’un pense-bête, et l’enregistre directement dans Contacts, Calendrier, Rappels, Wallet et plus — sans rien taper.',
+    },
+    nav: { features: 'Intégrations', how: 'Comment ça marche', integrations: 'Intégrations', cta: 'Obtenir l’app' },
+    hero: {
+      eyebrow: 'Photo → Contacts, Calendrier, Wallet et plus',
+      headline: 'Prenez la photo une fois.',
+      headlineAccent: 'Elle se classe toute seule.',
+      subheadline:
+        'Pointez votre appareil photo sur une carte de visite, un reçu, une affiche ou un post-it. Snapsist la lit et l’enregistre directement dans les applications déjà sur votre téléphone — Contacts, Calendrier, Rappels, Wallet, Mail — sans copier, sans ressaisir.',
+      ctaPrimary: 'Obtenir sur TestFlight',
+      ctaSecondary: 'Voir comment ça marche',
+      mockCaption: 'Chaque champ est affiché avant l’enregistrement — rien ne se passe en silence.',
+    },
+    trust: {
+      label: 'Des intégrations entièrement sur l’appareil',
+      items: ['Contacts', 'Calendrier', 'Rappels', 'Wallet', 'Mail', 'Fichiers'],
+    },
+    how: {
+      eyebrow: 'Comment ça marche',
+      headline: 'Trois étapes. Zéro saisie.',
+      steps: [
+        { title: 'Photographiez', desc: 'Prenez une photo ou choisissez-en une dans votre photothèque — une carte de visite, un reçu, une affiche, tout ce qu’il faut enregistrer.' },
+        { title: 'L’IA la lit pour vous', desc: 'Elle détermine de quoi il s’agit et en extrait les informations — noms, dates, montants, adresses — automatiquement.' },
+        { title: 'Elle s’enregistre toute seule', desc: 'Vérifiez les informations, appuyez une fois, et c’est déjà dans la bonne application de votre téléphone — sans export, sans copier-coller.' },
+      ],
+    },
+    features: {
+      eyebrow: 'Intégrations',
+      headline: 'Elle écrit dans les applications que vous utilisez déjà',
+      sub: 'Elle écrit réellement dans ces applications — ni copie, ni contournement.',
+      items: [
+        { icon: 'contacts', title: 'Contacts', desc: 'Nom complet, société, poste, téléphones, e-mails, adresses, anniversaire, réseaux sociaux.', tag: 'Entièrement automatique' },
+        { icon: 'calendar', title: 'Calendrier', desc: 'Titre, heure, lieu, alertes, récurrence — un vrai événement, pas une simple note.', tag: 'Entièrement automatique' },
+        { icon: 'reminders', title: 'Rappels', desc: 'Des tâches avec échéance, lieu et alertes, sous iOS.', tag: 'Entièrement automatique' },
+        { icon: 'photos', title: 'Photos', desc: 'Enregistrées directement dans un album, prêtes quand vous en avez besoin.', tag: 'Entièrement automatique' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Des cartes signées et scannables ajoutées directement dans Wallet.', tag: 'Entièrement automatique' },
+        { icon: 'mail', title: 'Mail et Messages', desc: 'Un brouillon apparaît déjà rempli, prêt à être envoyé en un geste.', tag: 'Envoi en un geste' },
+        { icon: 'notes', title: 'Notes', desc: 'Transmise, mise en forme, à l’app Notes via la feuille de partage.', tag: 'Classement en un geste' },
+        { icon: 'maps', title: 'Plans', desc: 'Ouvre l’adresse directement dans Apple Plans ou Google Maps.', tag: 'Ouverture instantanée' },
+      ],
+    },
+    preview: {
+      eyebrow: 'Aucune surprise',
+      headline: 'Vous voyez chaque champ avant tout enregistrement',
+      sub: 'Snapsist n’écrit jamais en silence. Chaque bouton ouvre un écran de vérification listant exactement ce qui sera écrit — modifiez ce qu’il faut, puis confirmez.',
+      sourceLabel: 'Carte de visite',
+      destLabel: 'Contacts',
+      fields: [
+        { label: 'Prénom / Nom', value: 'John / Smith' },
+        { label: 'Mobile', value: '+1 123-456-7894' },
+        { label: 'E-mail professionnel', value: 'john.smith@example.com' },
+        { label: 'Société / Poste', value: 'Snapsist Inc. / Product Manager' },
+        { label: 'Adresse', value: '123 Main St, San Francisco, CA' },
+      ],
+      note: 'C’est l’écran de vérification réel de l’application — rien n’est caché, rien n’est simplifié.',
+      button: 'Enregistrer dans Contacts',
+    },
+    why: {
+      eyebrow: 'Pourquoi Snapsist',
+      headline: 'Une automatisation qui reste sous votre contrôle',
+      items: [
+        { title: 'Rien ne quitte votre téléphone par défaut', desc: 'Chaque enregistrement écrit directement dans l’application, sur l’appareil. Aucun compte n’est requis pour les fonctions principales.' },
+        { title: 'Vous approuvez chaque écriture', desc: 'Un écran de vérification montre les champs exacts avant que quoi que ce soit ne touche Contacts, Calendrier ou Wallet.' },
+        { title: 'De vraies intégrations, pas des contournements', desc: 'Snapsist enregistre en passant par le même canal officiel que les applications Contacts, Calendrier et Wallet d’Apple elles-mêmes — ni copie, ni astuce.' },
+      ],
+    },
+    faq: {
+      eyebrow: 'FAQ',
+      headline: 'Les questions qu’on nous pose vraiment',
+      items: [
+        { q: 'Dois-je créer un compte ?', a: 'Non. Snapsist écrit directement dans les applications déjà présentes sur votre téléphone — Contacts, Calendrier, Rappels, Wallet. Il n’y a pas de système de compte pour les fonctions principales.' },
+        { q: 'Ma photo est-elle stockée quelque part ?', a: 'Votre photo est envoyée une seule fois pour être analysée, puis immédiatement supprimée — le serveur de Snapsist ne conserve ni copie ni historique de ce que vous avez numérisé.' },
+        { q: 'Et si Snapsist se trompe sur un champ ?', a: 'Chaque enregistrement ouvre d’abord un écran de vérification listant exactement les champs qui vont être écrits. Vous pouvez tout modifier, ou annuler — rien n’est enregistré tant que vous n’avez pas confirmé.' },
+        { q: 'Pourquoi Snapsist ouvre-t-il la feuille de partage pour Notes au lieu d’enregistrer directement ?', a: 'Ni Apple ni Google ne fournissent d’API publique pour leurs applications Notes / Keep, donc aucune application tierce ne peut y écrire directement. Snapsist transmet donc une note déjà mise en forme via la feuille de partage — un geste au lieu de zéro, ce qui est le maximum qu’il soit techniquement possible d’automatiser.' },
+        { q: 'Est-ce disponible sur Android ?', a: 'Snapsist est pour l’instant réservé à iOS, sur TestFlight. Rappels et Apple Wallet sont de toute façon des fonctions propres à iOS, donc elles resteraient réservées à iOS même avec une version Android.' },
+        { q: 'Combien ça coûte ?', a: 'Gratuit pendant la bêta. La tarification ensuite n’a pas encore été décidée.' },
+      ],
+    },
+    cta: {
+      headline: 'Arrêtez de ressaisir ce qu’une photo indique déjà.',
+      sub: 'Snapsist est en phase de test — rejoignez TestFlight pour l’essayer avant tout le monde.',
+      button: 'Obtenir sur TestFlight',
+      note: 'iOS · Gratuit pendant la bêta',
+    },
+    footer: {
+      tagline: 'Une photo. Toutes les applications, mises à jour automatiquement.',
+      rights: 'Tous droits réservés.',
+    },
+  },
+  de: {
+    meta: {
+      title: 'Snapsist — Ein Foto, automatisch abgelegt',
+      description:
+        'Snapsist liest das Foto einer Visitenkarte, eines Kassenbons, eines Veranstaltungsflyers oder einer Notiz und speichert es direkt in Kontakte, Kalender, Erinnerungen, Wallet und mehr — ganz ohne Tippen.',
+    },
+    nav: { features: 'Integrationen', how: 'So funktioniert’s', integrations: 'Integrationen', cta: 'App holen' },
+    hero: {
+      eyebrow: 'Foto → Kontakte, Kalender, Wallet und mehr',
+      headline: 'Einmal fotografieren.',
+      headlineAccent: 'Es legt sich von selbst ab.',
+      subheadline:
+        'Richte die Kamera auf eine Visitenkarte, einen Kassenbon, einen Flyer oder einen Notizzettel. Snapsist liest ihn und schreibt ihn direkt in die Apps, die du schon auf deinem Handy hast — Kontakte, Kalender, Erinnerungen, Wallet, Mail — ohne Abschreiben, ohne Kopieren.',
+      ctaPrimary: 'Auf TestFlight holen',
+      ctaSecondary: 'So funktioniert’s',
+      mockCaption: 'Jedes Feld wird vor dem Speichern angezeigt — nichts passiert im Stillen.',
+    },
+    trust: {
+      label: 'Vollständig geräteinterne Integrationen',
+      items: ['Kontakte', 'Kalender', 'Erinnerungen', 'Wallet', 'Mail', 'Dateien'],
+    },
+    how: {
+      eyebrow: 'So funktioniert’s',
+      headline: 'Drei Schritte. Null Tippen.',
+      steps: [
+        { title: 'Fotografieren', desc: 'Mach ein Foto oder wähle eins aus deiner Mediathek — eine Visitenkarte, ein Kassenbon, ein Flyer, was auch immer gespeichert werden soll.' },
+        { title: 'Die KI liest es für dich', desc: 'Sie erkennt, worum es sich handelt, und extrahiert automatisch die Details — Namen, Daten, Beträge, Adressen.' },
+        { title: 'Es speichert sich von selbst', desc: 'Details prüfen, einmal tippen — und schon steht es in der richtigen App auf deinem Handy, ganz ohne Export, ohne Kopieren und Einfügen.' },
+      ],
+    },
+    features: {
+      eyebrow: 'Integrationen',
+      headline: 'Schreibt in die Apps, denen du schon vertraust',
+      sub: 'Es schreibt wirklich in diese Apps — keine Kopie, kein Umweg.',
+      items: [
+        { icon: 'contacts', title: 'Kontakte', desc: 'Vollständiger Name, Firma, Position, Telefonnummern, E-Mails, Adressen, Geburtstag, Social-Media-Profile.', tag: 'Vollautomatisch' },
+        { icon: 'calendar', title: 'Kalender', desc: 'Titel, Uhrzeit, Ort, Erinnerungen, Wiederholung — ein echter Termin, keine Notiz.', tag: 'Vollautomatisch' },
+        { icon: 'reminders', title: 'Erinnerungen', desc: 'To-dos mit Fälligkeitsdatum, Ort und Erinnerungen unter iOS.', tag: 'Vollautomatisch' },
+        { icon: 'photos', title: 'Fotos', desc: 'Direkt in einem Album gespeichert, bereit, wenn du sie brauchst.', tag: 'Vollautomatisch' },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signierte, scanbare Karten werden direkt zu Wallet hinzugefügt.', tag: 'Vollautomatisch' },
+        { icon: 'mail', title: 'Mail & Nachrichten', desc: 'Ein bereits ausgefüllter Entwurf erscheint, bereit zum Versenden mit einem Fingertipp.', tag: 'Ein Tipp zum Senden' },
+        { icon: 'notes', title: 'Notizen', desc: 'Formatiert und über das Teilen-Menü an die Notizen-App übergeben.', tag: 'Ein Tipp zum Ablegen' },
+        { icon: 'maps', title: 'Karten', desc: 'Öffnet die Adresse direkt in Apple oder Google Maps.', tag: 'Öffnet sofort' },
+      ],
+    },
+    preview: {
+      eyebrow: 'Keine Überraschungen',
+      headline: 'Du siehst jedes Feld, bevor irgendetwas gespeichert wird',
+      sub: 'Snapsist speichert nie im Stillen. Jeder Button öffnet einen Prüfbildschirm, der genau auflistet, was geschrieben wird — ändere, was wichtig ist, und bestätige dann.',
+      sourceLabel: 'Visitenkarte',
+      destLabel: 'Kontakte',
+      fields: [
+        { label: 'Vor- / Nachname', value: 'John / Smith' },
+        { label: 'Mobil', value: '+1 123-456-7894' },
+        { label: 'Geschäftliche E-Mail', value: 'john.smith@example.com' },
+        { label: 'Firma / Position', value: 'Snapsist Inc. / Product Manager' },
+        { label: 'Adresse', value: '123 Main St, San Francisco, CA' },
+      ],
+      note: 'Das ist der echte Prüfbildschirm der App — nichts versteckt, nichts vereinfacht.',
+      button: 'In Kontakten speichern',
+    },
+    why: {
+      eyebrow: 'Warum Snapsist',
+      headline: 'Automatisierung, die deine Regeln respektiert',
+      items: [
+        { title: 'Standardmäßig verlässt nichts dein Handy', desc: 'Jeder Speichervorgang schreibt direkt in die App auf deinem Gerät. Für die Kernfunktionen ist kein Konto nötig.' },
+        { title: 'Du genehmigst jeden Schreibvorgang', desc: 'Ein Prüfbildschirm zeigt genau die Felder, bevor irgendetwas Kontakte, Kalender oder Wallet berührt.' },
+        { title: 'Echte Integrationen, keine Umwege', desc: 'Snapsist speichert über denselben offiziellen Weg, den Apples eigene Kontakte-, Kalender- und Wallet-Apps nutzen — keine Kopie, kein Trick.' },
+      ],
+    },
+    faq: {
+      eyebrow: 'FAQ',
+      headline: 'Fragen, die wirklich gestellt werden',
+      items: [
+        { q: 'Muss ich ein Konto erstellen?', a: 'Nein. Snapsist schreibt direkt in Apps, die schon auf deinem Handy sind — Kontakte, Kalender, Erinnerungen, Wallet. Für die Kernfunktionen gibt es kein Kontosystem.' },
+        { q: 'Wird mein Foto irgendwo gespeichert?', a: 'Dein Foto wird einmal zur Analyse gesendet und danach sofort gelöscht — der Server von Snapsist behält weder eine Kopie noch einen Verlauf dessen, was du gescannt hast.' },
+        { q: 'Was, wenn Snapsist ein Feld falsch erkennt?', a: 'Jeder Speichervorgang öffnet zuerst einen Prüfbildschirm mit genau den Feldern, die geschrieben werden. Du kannst alles bearbeiten oder abbrechen — gespeichert wird erst nach deiner Bestätigung.' },
+        { q: 'Warum öffnet Snapsist für Notizen das Teilen-Menü, statt direkt zu speichern?', a: 'Weder Apple noch Google bieten eine öffentliche Schnittstelle für ihre Notizen- / Keep-App, sodass keine Drittanbieter-App direkt hineinschreiben kann. Snapsist übergibt stattdessen eine formatierte Notiz über das Teilen-Menü — ein Fingertipp statt null, mehr Automatisierung ist technisch nicht möglich.' },
+        { q: 'Gibt es das auch für Android?', a: 'Snapsist ist derzeit nur für iOS verfügbar, über TestFlight. Erinnerungen und Apple Wallet sind ohnehin iOS-spezifische Funktionen, die auch bei einer Android-Version iOS-exklusiv blieben.' },
+        { q: 'Was kostet es?', a: 'Während der Beta kostenlos. Die Preisgestaltung danach steht noch nicht fest.' },
+      ],
+    },
+    cta: {
+      headline: 'Hör auf, abzutippen, was auf einem Foto längst steht.',
+      sub: 'Snapsist befindet sich gerade in der Testphase — tritt TestFlight bei und probiere es vor allen anderen aus.',
+      button: 'Auf TestFlight holen',
+      note: 'iOS · Kostenlos während der Beta',
+    },
+    footer: {
+      tagline: 'Ein Foto. Alle Apps automatisch aktualisiert.',
+      rights: 'Alle Rechte vorbehalten.',
     },
   },
 };

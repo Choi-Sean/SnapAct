@@ -19,6 +19,38 @@ export interface Dictionary {
     permissions: { label: string; hint: string }[];
     note: string;
     startButton: string;
+    skipButton: string;
+  };
+  auth: {
+    signupTitle: string;
+    signupSubtitle: string;
+    loginTitle: string;
+    loginSubtitle: string;
+    emailPlaceholder: string;
+    passwordPlaceholder: string;
+    signupButton: string;
+    loginButton: string;
+    switchToLogin: string;
+    switchToSignup: string;
+  };
+  pricing: {
+    title: string;
+    betaNote: string;
+    mostPopular: string;
+    perMonth: string;
+    freeName: string;
+    freeDesc: string;
+    freeFeatures: string[];
+    freeCta: string;
+    proDesc: string;
+    proFeatures: string[];
+    proCta: string;
+  };
+  account: {
+    signedOutTitle: string;
+    signedOutSubtitle: string;
+    viewPricing: string;
+    logout: string;
   };
   home: {
     subtitle: string;
@@ -210,6 +242,43 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: 'On the next screen you’ll see several permission popups — please allow all of them for everything to work.',
       startButton: 'Allow & get started',
+      skipButton: 'Try the demo first',
+    },
+    auth: {
+      signupTitle: 'Create your account',
+      signupSubtitle: 'Start free, upgrade to Pro anytime.',
+      loginTitle: 'Log in',
+      loginSubtitle: 'Welcome back.',
+      emailPlaceholder: 'Email',
+      passwordPlaceholder: 'Password (8+ characters)',
+      signupButton: 'Create account',
+      loginButton: 'Log in',
+      switchToLogin: 'Already have an account? Log in',
+      switchToSignup: "Don't have an account? Sign up",
+    },
+    pricing: {
+      title: 'Simple pricing',
+      betaNote: 'During the beta, Pro features are unlocked for everyone, free.',
+      mostPopular: 'Most popular',
+      perMonth: '/ mo',
+      freeName: 'Free',
+      freeDesc: 'Try it out, no commitment',
+      freeFeatures: ['15 photos / month', 'Contacts · Calendar · Reminders · Wallet · Notes · Maps', 'On-device history'],
+      freeCta: 'Start for free',
+      proDesc: 'For regular use',
+      proFeatures: [
+        'Unlimited photos',
+        'Batch-process multiple photos at once',
+        'History synced across devices',
+        'Priority processing',
+      ],
+      proCta: 'Start Pro',
+    },
+    account: {
+      signedOutTitle: "You're not signed in",
+      signedOutSubtitle: 'Sign up to sync your history and unlock Pro.',
+      viewPricing: 'View pricing →',
+      logout: 'Log out',
     },
     home: {
       subtitle: 'One photo → filed into the right app automatically',
@@ -435,6 +504,38 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: '다음 화면에서 권한 팝업이 여러 번 뜹니다. 모두 허용해주셔야 기능이 정상 동작해요.',
       startButton: '권한 허용하고 시작하기',
+      skipButton: '먼저 데모 써보기',
+    },
+    auth: {
+      signupTitle: '계정 만들기',
+      signupSubtitle: '무료로 시작하고, 언제든 Pro로 업그레이드하세요.',
+      loginTitle: '로그인',
+      loginSubtitle: 'Snapsist 계정으로 로그인하세요.',
+      emailPlaceholder: '이메일',
+      passwordPlaceholder: '비밀번호 (8자 이상)',
+      signupButton: '계정 만들기',
+      loginButton: '로그인',
+      switchToLogin: '이미 계정이 있으신가요? 로그인',
+      switchToSignup: '계정이 없으신가요? 가입하기',
+    },
+    pricing: {
+      title: '심플한 요금제',
+      betaNote: '베타 기간엔 Pro 기능도 전부 무료로 열려있어요.',
+      mostPopular: '가장 인기',
+      perMonth: '/ 월',
+      freeName: '무료',
+      freeDesc: '한번 써보고 싶은 분께',
+      freeFeatures: ['월 15장 처리', '연락처 · 캘린더 · 미리 알림 · Wallet · 메모 · 지도', '기기 내 기록 저장'],
+      freeCta: '무료로 시작하기',
+      proDesc: '자주 쓰는 분께',
+      proFeatures: ['무제한 처리', '여러 장 한번에 일괄 처리', '기록 클라우드 동기화', '우선 처리'],
+      proCta: 'Pro 시작하기',
+    },
+    account: {
+      signedOutTitle: '로그인되어 있지 않아요',
+      signedOutSubtitle: '가입하면 기록을 동기화하고 Pro 기능을 사용할 수 있어요.',
+      viewPricing: '요금제 보기 →',
+      logout: '로그아웃',
     },
     home: {
       subtitle: '사진 한 장 → 알맞은 앱에 자동 저장',
@@ -660,6 +761,38 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: '次の画面で権限のポップアップが何度か表示されます。すべて許可してください。',
       startButton: '許可して始める',
+      skipButton: 'まずデモを試す',
+    },
+    auth: {
+      signupTitle: 'アカウントを作成',
+      signupSubtitle: '無料で始めて、いつでもProにアップグレードできます。',
+      loginTitle: 'ログイン',
+      loginSubtitle: 'おかえりなさい。',
+      emailPlaceholder: 'メールアドレス',
+      passwordPlaceholder: 'パスワード（8文字以上）',
+      signupButton: 'アカウントを作成',
+      loginButton: 'ログイン',
+      switchToLogin: 'すでにアカウントをお持ちですか？ ログイン',
+      switchToSignup: 'アカウントをお持ちでない方は 新規登録',
+    },
+    pricing: {
+      title: 'シンプルな料金プラン',
+      betaNote: 'ベータ期間中はPro機能もすべて無料でご利用いただけます。',
+      mostPopular: '人気No.1',
+      perMonth: '/ 月',
+      freeName: '無料',
+      freeDesc: 'まず試してみたい方に',
+      freeFeatures: ['月15枚まで処理', '連絡先・カレンダー・リマインダー・Wallet・メモ・マップ', '端末内に履歴を保存'],
+      freeCta: '無料で始める',
+      proDesc: 'よく使う方に',
+      proFeatures: ['無制限に処理', '複数枚を一括処理', '履歴をデバイス間で同期', '優先処理'],
+      proCta: 'Proを始める',
+    },
+    account: {
+      signedOutTitle: 'ログインしていません',
+      signedOutSubtitle: '登録すると履歴を同期し、Pro機能を利用できます。',
+      viewPricing: '料金プランを見る →',
+      logout: 'ログアウト',
     },
     home: {
       subtitle: '写真1枚 → 適切なアプリに自動保存',
@@ -885,6 +1018,38 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: '下一屏会连续弹出几个权限请求，请全部允许，功能才能正常使用。',
       startButton: '允许并开始使用',
+      skipButton: '先试用演示',
+    },
+    auth: {
+      signupTitle: '创建账户',
+      signupSubtitle: '免费开始，随时可升级到 Pro。',
+      loginTitle: '登录',
+      loginSubtitle: '欢迎回来。',
+      emailPlaceholder: '邮箱',
+      passwordPlaceholder: '密码（至少 8 位）',
+      signupButton: '创建账户',
+      loginButton: '登录',
+      switchToLogin: '已经有账户？去登录',
+      switchToSignup: '还没有账户？去注册',
+    },
+    pricing: {
+      title: '简单的定价',
+      betaNote: '测试期间，所有人都可免费使用 Pro 功能。',
+      mostPopular: '最受欢迎',
+      perMonth: '/ 月',
+      freeName: '免费',
+      freeDesc: '想先试试看',
+      freeFeatures: ['每月处理 15 张', '通讯录 · 日历 · 提醒事项 · Wallet · 备忘录 · 地图', '记录保存在设备本地'],
+      freeCta: '免费开始',
+      proDesc: '经常使用的用户',
+      proFeatures: ['无限处理', '一次批量处理多张照片', '记录跨设备同步', '优先处理'],
+      proCta: '开始使用 Pro',
+    },
+    account: {
+      signedOutTitle: '尚未登录',
+      signedOutSubtitle: '注册后可同步记录并解锁 Pro 功能。',
+      viewPricing: '查看定价 →',
+      logout: '退出登录',
     },
     home: {
       subtitle: '一张照片 → 自动保存到合适的应用',
@@ -1110,6 +1275,47 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: 'En la siguiente pantalla verás varios avisos de permisos — permítelos todos para que todo funcione.',
       startButton: 'Permitir y empezar',
+      skipButton: 'Probar la demo primero',
+    },
+    auth: {
+      signupTitle: 'Crea tu cuenta',
+      signupSubtitle: 'Empieza gratis y mejora a Pro cuando quieras.',
+      loginTitle: 'Iniciar sesión',
+      loginSubtitle: 'Bienvenido de nuevo.',
+      emailPlaceholder: 'Correo electrónico',
+      passwordPlaceholder: 'Contraseña (8+ caracteres)',
+      signupButton: 'Crear cuenta',
+      loginButton: 'Iniciar sesión',
+      switchToLogin: '¿Ya tienes una cuenta? Inicia sesión',
+      switchToSignup: '¿No tienes una cuenta? Regístrate',
+    },
+    pricing: {
+      title: 'Precios simples',
+      betaNote: 'Durante la beta, las funciones Pro están desbloqueadas gratis para todos.',
+      mostPopular: 'Más popular',
+      perMonth: '/ mes',
+      freeName: 'Gratis',
+      freeDesc: 'Pruébalo sin compromiso',
+      freeFeatures: [
+        '15 fotos / mes',
+        'Contactos · Calendario · Recordatorios · Wallet · Notas · Mapas',
+        'Historial en el dispositivo',
+      ],
+      freeCta: 'Empezar gratis',
+      proDesc: 'Para uso habitual',
+      proFeatures: [
+        'Fotos ilimitadas',
+        'Procesa varias fotos a la vez',
+        'Historial sincronizado entre dispositivos',
+        'Procesamiento prioritario',
+      ],
+      proCta: 'Empezar con Pro',
+    },
+    account: {
+      signedOutTitle: 'No has iniciado sesión',
+      signedOutSubtitle: 'Regístrate para sincronizar tu historial y desbloquear Pro.',
+      viewPricing: 'Ver precios →',
+      logout: 'Cerrar sesión',
     },
     home: {
       subtitle: 'Una foto → archivada automáticamente en la app correcta',
@@ -1335,6 +1541,43 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: 'Plusieurs demandes d’autorisation vont s’afficher à l’écran suivant — acceptez-les toutes pour que tout fonctionne.',
       startButton: 'Autoriser et commencer',
+      skipButton: "Essayer la démo d'abord",
+    },
+    auth: {
+      signupTitle: 'Créez votre compte',
+      signupSubtitle: 'Commencez gratuitement, passez à Pro quand vous voulez.',
+      loginTitle: 'Connexion',
+      loginSubtitle: 'Content de vous revoir.',
+      emailPlaceholder: 'E-mail',
+      passwordPlaceholder: 'Mot de passe (8+ caractères)',
+      signupButton: 'Créer un compte',
+      loginButton: 'Se connecter',
+      switchToLogin: 'Déjà un compte ? Se connecter',
+      switchToSignup: "Pas encore de compte ? S'inscrire",
+    },
+    pricing: {
+      title: 'Tarifs simples',
+      betaNote: 'Pendant la bêta, les fonctionnalités Pro sont débloquées gratuitement pour tout le monde.',
+      mostPopular: 'Le plus populaire',
+      perMonth: '/ mois',
+      freeName: 'Gratuit',
+      freeDesc: 'Essayez sans engagement',
+      freeFeatures: ['15 photos / mois', 'Contacts · Calendrier · Rappels · Wallet · Notes · Plans', 'Historique sur l’appareil'],
+      freeCta: 'Commencer gratuitement',
+      proDesc: 'Pour un usage régulier',
+      proFeatures: [
+        'Photos illimitées',
+        'Traitement par lots de plusieurs photos',
+        'Historique synchronisé entre appareils',
+        'Traitement prioritaire',
+      ],
+      proCta: 'Passer à Pro',
+    },
+    account: {
+      signedOutTitle: "Vous n'êtes pas connecté",
+      signedOutSubtitle: 'Inscrivez-vous pour synchroniser votre historique et débloquer Pro.',
+      viewPricing: 'Voir les tarifs →',
+      logout: 'Se déconnecter',
     },
     home: {
       subtitle: 'Une photo → classée automatiquement dans la bonne application',
@@ -1560,6 +1803,43 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       note: 'Auf dem nächsten Bildschirm erscheinen mehrere Berechtigungsabfragen — bitte alle erlauben, damit alles funktioniert.',
       startButton: 'Erlauben und loslegen',
+      skipButton: 'Erst die Demo ausprobieren',
+    },
+    auth: {
+      signupTitle: 'Konto erstellen',
+      signupSubtitle: 'Kostenlos starten, jederzeit auf Pro upgraden.',
+      loginTitle: 'Anmelden',
+      loginSubtitle: 'Willkommen zurück.',
+      emailPlaceholder: 'E-Mail',
+      passwordPlaceholder: 'Passwort (mind. 8 Zeichen)',
+      signupButton: 'Konto erstellen',
+      loginButton: 'Anmelden',
+      switchToLogin: 'Bereits ein Konto? Anmelden',
+      switchToSignup: 'Noch kein Konto? Registrieren',
+    },
+    pricing: {
+      title: 'Einfache Preise',
+      betaNote: 'Während der Beta sind alle Pro-Funktionen für alle kostenlos freigeschaltet.',
+      mostPopular: 'Am beliebtesten',
+      perMonth: '/ Monat',
+      freeName: 'Kostenlos',
+      freeDesc: 'Unverbindlich ausprobieren',
+      freeFeatures: ['15 Fotos / Monat', 'Kontakte · Kalender · Erinnerungen · Wallet · Notizen · Karten', 'Verlauf auf dem Gerät'],
+      freeCta: 'Kostenlos starten',
+      proDesc: 'Für regelmäßige Nutzung',
+      proFeatures: [
+        'Unbegrenzte Fotos',
+        'Mehrere Fotos auf einmal verarbeiten',
+        'Verlauf geräteübergreifend synchronisiert',
+        'Bevorzugte Verarbeitung',
+      ],
+      proCta: 'Mit Pro starten',
+    },
+    account: {
+      signedOutTitle: 'Du bist nicht angemeldet',
+      signedOutSubtitle: 'Registriere dich, um deinen Verlauf zu synchronisieren und Pro freizuschalten.',
+      viewPricing: 'Preise ansehen →',
+      logout: 'Abmelden',
     },
     home: {
       subtitle: 'Ein Foto → automatisch in der richtigen App abgelegt',

@@ -7,7 +7,7 @@ import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'r
 
 import HistoryScreen from './src/HistoryScreen';
 import HomeScreen from './src/HomeScreen';
-import { addHistoryEntry, clearHistory, loadHistory } from './src/history';
+import { addHistoryEntry, clearHistory, deleteHistoryEntry, loadHistory } from './src/history';
 import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
@@ -115,6 +115,11 @@ function AppInner() {
     setHistory([]);
   }
 
+  async function handleDeleteEntry(id: string) {
+    const updated = await deleteHistoryEntry(id);
+    setHistory(updated);
+  }
+
   async function handleBatchSaved(batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) {
     const updated = await addHistoryEntry({
       type: 'batch',
@@ -134,7 +139,9 @@ function AppInner() {
     <SafeAreaView style={styles.root}>
       <StatusBar style="auto" />
       {tab === 'home' && <HomeScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
-      {tab === 'history' && <HistoryScreen entries={history} onClear={handleClearHistory} />}
+      {tab === 'history' && (
+        <HistoryScreen entries={history} onClear={handleClearHistory} onDelete={handleDeleteEntry} />
+      )}
       {tab === 'settings' && <PermissionsScreen />}
 
       <ReviewModal demoKey={reviewKey} onClose={() => setReviewKey(null)} onSaved={handleSaved} />

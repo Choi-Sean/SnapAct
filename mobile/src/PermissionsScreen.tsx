@@ -2,11 +2,14 @@ import * as Calendar from 'expo-calendar';
 import * as Contacts from 'expo-contacts';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { clearSession, loadSession, Session } from './auth';
+import AuthScreen from './AuthScreen';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
 import { Locale, LOCALE_LABELS } from './i18n/dictionaries';
+import PricingScreen from './PricingScreen';
 
 type Status = 'granted' | 'denied' | 'undetermined' | 'checking';
 
@@ -62,6 +65,18 @@ export default function PermissionsScreen() {
   };
   const [statuses, setStatuses] = useState<Record<string, Status>>({});
   const [requestingKey, setRequestingKey] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authMode, setAuthMode] = useState<'signup' | 'login' | null>(null);
+  const [pricingVisible, setPricingVisible] = useState(false);
+
+  useEffect(() => {
+    loadSession().then(setSession);
+  }, []);
+
+  async function handleLogout() {
+    await clearSession();
+    setSession(null);
+  }
 
   async function refresh() {
     const entries = await Promise.all(
@@ -95,8 +110,49 @@ export default function PermissionsScreen() {
   const deniedCount = ITEMS.filter((i) => statuses[i.key] === 'denied').length;
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>{t.permissions.title}</Text>
+
+      <View style={styles.accountCard}>
+        {session ? (
+          <>
+            <View style={styles.accountRow}>
+              <View style={[styles.avatar]}>
+                <Text style={styles.avatarText}>{session.email.charAt(0).toUpperCase()}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.accountEmail}>{session.email}</Text>
+                <Text style={styles.accountPlan}>
+                  {session.plan === 'pro' ? 'Pro' : t.pricing.freeName}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleLogout}>
+                <Text style={styles.logoutText}>{t.account.logout}</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.pricingLink} onPress={() => setPricingVisible(true)}>
+              <Text style={styles.pricingLinkText}>{t.account.viewPricing}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text style={styles.accountTitle}>{t.account.signedOutTitle}</Text>
+            <Text style={styles.accountSubtitle}>{t.account.signedOutSubtitle}</Text>
+            <View style={styles.accountButtons}>
+              <TouchableOpacity style={styles.accountButtonPrimary} onPress={() => setAuthMode('signup')}>
+                <Text style={styles.accountButtonPrimaryText}>{t.auth.signupButton}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.accountButtonSecondary} onPress={() => setAuthMode('login')}>
+                <Text style={styles.accountButtonSecondaryText}>{t.auth.loginButton}</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.pricingLink} onPress={() => setPricingVisible(true)}>
+              <Text style={styles.pricingLinkText}>{t.account.viewPricing}</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
       <Text style={styles.subtitle}>{t.permissions.subtitle}</Text>
 
       <View style={styles.list}>
@@ -160,14 +216,77 @@ export default function PermissionsScreen() {
           ))}
         </View>
       </View>
-    </View>
+
+      <AuthScreen
+        visible={authMode !== null}
+        initialMode={authMode ?? 'signup'}
+        onClose={() => setAuthMode(null)}
+        onAuthed={(s) => {
+          setSession(s);
+          setAuthMode(null);
+        }}
+      />
+      <PricingScreen
+        visible={pricingVisible}
+        onClose={() => setPricingVisible(false)}
+        onGetStarted={() => {
+          setPricingVisible(false);
+          if (!session) setAuthMode('signup');
+        }}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60, gap: 16 },
+  container: { flex: 1 },
+  content: { padding: 20, paddingTop: 60, paddingBottom: 40, gap: 16 },
   title: { fontSize: 26, fontWeight: '800', color: '#111' },
   subtitle: { fontSize: 14, color: '#666' },
+  accountCard: {
+    backgroundColor: '#f7f8fb',
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#eef0f4',
+  },
+  accountRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2563eb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  accountEmail: { fontSize: 14.5, fontWeight: '700', color: '#111' },
+  accountPlan: { fontSize: 12, color: '#2563eb', fontWeight: '700', marginTop: 1 },
+  logoutText: { fontSize: 12.5, color: '#dc2626', fontWeight: '700' },
+  accountTitle: { fontSize: 16, fontWeight: '800', color: '#111' },
+  accountSubtitle: { fontSize: 12.5, color: '#777' },
+  accountButtons: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  accountButtonPrimary: {
+    flex: 1,
+    backgroundColor: '#2563eb',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+  },
+  accountButtonPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  accountButtonSecondary: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  accountButtonSecondaryText: { color: '#333', fontWeight: '700', fontSize: 13 },
+  pricingLink: { alignSelf: 'flex-start', marginTop: 2 },
+  pricingLinkText: { color: '#2563eb', fontWeight: '700', fontSize: 12.5 },
   list: { gap: 10 },
   row: {
     flexDirection: 'row',

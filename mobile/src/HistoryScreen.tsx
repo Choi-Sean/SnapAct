@@ -5,6 +5,7 @@ import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
 import { Dictionary, t as fmt } from './i18n/dictionaries';
 import { replayAction } from './replay';
+import SwipeableRow from './SwipeableRow';
 import { HistoryEntry } from './types';
 
 const ICONS: Record<HistoryEntry['type'], EmojiName> = {
@@ -44,9 +45,10 @@ function formatFullDate(iso: string): string {
 interface Props {
   entries: HistoryEntry[];
   onClear: () => void;
+  onDelete: (id: string) => void;
 }
 
-export default function HistoryScreen({ entries, onClear }: Props) {
+export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
   const { t } = useLanguage();
   const [selected, setSelected] = useState<HistoryEntry | null>(null);
   const [replaying, setReplaying] = useState(false);
@@ -95,17 +97,19 @@ export default function HistoryScreen({ entries, onClear }: Props) {
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ gap: 10 }}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
-                <Emoji name={ICONS[item.type]} size={26} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>{item.title}</Text>
-                  <Text style={styles.rowDetail}>{item.detail}</Text>
-                </View>
-                <View style={styles.rowRight}>
-                  <Text style={styles.savedTo}>{item.savedTo}</Text>
-                  <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
-                </View>
-              </TouchableOpacity>
+              <SwipeableRow onDelete={() => onDelete(item.id)}>
+                <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
+                  <Emoji name={ICONS[item.type]} size={26} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.rowTitle}>{item.title}</Text>
+                    <Text style={styles.rowDetail}>{item.detail}</Text>
+                  </View>
+                  <View style={styles.rowRight}>
+                    <Text style={styles.savedTo}>{item.savedTo}</Text>
+                    <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
+                  </View>
+                </TouchableOpacity>
+              </SwipeableRow>
             )}
           />
 

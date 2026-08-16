@@ -42,9 +42,14 @@ export default function OnboardingScreen({ onDone }: Props) {
 
       <Text style={styles.note}>{t.onboarding.note}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleStart} disabled={requesting}>
-        {requesting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t.onboarding.startButton}</Text>}
-      </TouchableOpacity>
+      <View style={styles.bottomGroup}>
+        <TouchableOpacity style={styles.button} onPress={handleStart} disabled={requesting}>
+          {requesting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t.onboarding.startButton}</Text>}
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.skipButton} onPress={onDone} disabled={requesting}>
+          <Text style={styles.skipButtonText}>{t.onboarding.skipButton}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -59,9 +64,8 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 15, fontWeight: '700', color: '#111' },
   rowHint: { fontSize: 12, color: '#666' },
   note: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: 28 },
+  bottomGroup: { marginTop: 'auto', marginBottom: 20, width: '100%', gap: 10 },
   button: {
-    marginTop: 'auto',
-    marginBottom: 20,
     backgroundColor: '#2563eb',
     borderRadius: 12,
     paddingVertical: 14,
@@ -70,4 +74,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  skipButton: { paddingVertical: 8, alignItems: 'center' },
+  skipButtonText: { color: '#999', fontWeight: '600', fontSize: 13 },
 });

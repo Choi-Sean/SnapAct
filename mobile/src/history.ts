@@ -29,3 +29,10 @@ export async function addHistoryEntry(entry: Omit<HistoryEntry, 'id' | 'createdA
 export async function clearHistory(): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEY);
 }
+
+export async function deleteHistoryEntry(id: string): Promise<HistoryEntry[]> {
+  const current = await loadHistory();
+  const updated = current.filter((entry) => entry.id !== id);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return updated;
+}

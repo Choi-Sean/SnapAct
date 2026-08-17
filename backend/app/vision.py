@@ -45,13 +45,15 @@ _KEYWORDS: dict[Category, list[str]] = {
 
 
 def classify_image(
-    image_bytes: bytes, mock_category: str | None = None
+    image_bytes: bytes, mock_category: str | None = None, force_mock: bool = False
 ) -> tuple[Category, float, str | None]:
     """Returns (category, confidence, ocr_text). ocr_text is the raw text Vision
     read off the photo (None if nothing was detected or Vision isn't configured).
     Falls back to a mock result when no Google credentials are configured, so the
-    pipeline is testable end to end before real keys are provisioned."""
-    if not settings.vision_enabled:
+    pipeline is testable end to end before real keys are provisioned. force_mock
+    lets a caller skip the real (paid) API even when credentials are configured —
+    used when the daily spend cap has been hit."""
+    if force_mock or not settings.vision_enabled:
         category = mock_category if mock_category in VALID_CATEGORIES else "business_card"
         return category, 0.99, None  # type: ignore[return-value]
 

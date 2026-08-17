@@ -101,12 +101,14 @@ def analyze(
     confidence: float,
     media_type: str = "image/jpeg",
     ocr_text: str | None = None,
+    force_mock: bool = False,
 ) -> AnalyzeResponse:
     """ocr_text, if provided, is Vision's OCR output for the photo. When present we send
     Claude that text instead of the raw image — text tokens are far cheaper than image
     tokens, and for text-dense categories (receipts, documents) the text alone is enough
-    to extract fields from."""
-    if not settings.claude_enabled:
+    to extract fields from. force_mock skips the real (paid) API call even when Claude is
+    configured — used when the daily spend cap has been hit."""
+    if force_mock or not settings.claude_enabled:
         mock = _MOCK_RESULTS[category]
         return AnalyzeResponse(
             mock=True,

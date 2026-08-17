@@ -29,6 +29,15 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket_name: str = ""
 
+    # Abuse/cost protection. The mobile app's API_SHARED_SECRET ships inside
+    # the public JS bundle, so it can't be treated as a real secret — anyone
+    # can extract it and script calls straight to the API. These limits are
+    # the actual backstop against a runaway Vision/Claude bill until real
+    # per-account auth + quotas are required.
+    analyze_rate_limit_per_hour: int = 30
+    auth_rate_limit_per_hour: int = 10
+    daily_real_analyze_cap: int = 300
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property

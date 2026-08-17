@@ -36,7 +36,7 @@ export default function AuthForm({ mode }: Props) {
     try {
       const auth = mode === 'signup' ? await signup(email, password) : await login(email, password);
       saveSession(auth);
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

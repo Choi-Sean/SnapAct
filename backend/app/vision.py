@@ -6,14 +6,22 @@ VALID_CATEGORIES: list[Category] = [
     "receipt",
     "event_flyer",
     "document",
+    "medication",
     "other",
 ]
 
-# Keyword heuristics mapping Vision label/text hints to a category.
+# Keyword heuristics mapping Vision label/text hints to a category. Medication
+# labels are almost always in the user's own language (Korean OCR text here),
+# not the English vocabulary Vision's generic label detection returns, so that
+# entry mixes in Korean dosage/pharmacy terms alongside the English ones.
 _KEYWORDS: dict[Category, list[str]] = {
     "receipt": ["receipt", "total", "subtotal", "tax", "invoice", "cashier"],
     "business_card": ["business card", "card", "logo"],
     "event_flyer": ["flyer", "poster", "event", "ticket", "invitation"],
+    "medication": [
+        "medication", "prescription", "pharmacy", "dosage", "tablet", "capsule",
+        "복용법", "복용방법", "복용", "1일", "식전", "식후", "식후30분", "정제", "캡슐", "처방", "약국", "조제",
+    ],
     "document": ["document", "text", "paper", "letter", "form"],
 }
 

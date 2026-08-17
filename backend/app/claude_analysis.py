@@ -2,7 +2,7 @@ import base64
 import json
 
 from .config import settings
-from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload
+from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload, MedicationPayload
 
 _MOCK_RESULTS: dict[Category, dict] = {
     "business_card": {
@@ -35,6 +35,19 @@ _MOCK_RESULTS: dict[Category, dict] = {
         "suggested_action": "note",
         "summary": "General document, no structured fields confidently extracted.",
     },
+    "medication": {
+        "suggested_action": "reminder",
+        "medication": {
+            "name": "Amoxicillin 500mg",
+            "dosage": "1정",
+            "times_per_day": 3,
+            "duration_days": 7,
+            "relation_to_meal": "after_meal",
+            "specific_times": None,
+        },
+        "needs_time_selection": True,
+        "summary": "Amoxicillin 500mg, 1일 3회 식후 복용, 7일치.",
+    },
     "other": {
         "suggested_action": "none",
         "summary": "Could not confidently classify this image.",
@@ -46,16 +59,39 @@ first-pass vision model. {source_instruction}
 
 Respond with ONLY a JSON object (no markdown fences, no commentary) matching this shape:
 {{
-  "suggested_action": "contact" | "calendar" | "note" | "none",
+  "suggested_action": "contact" | "calendar" | "note" | "reminder" | "none",
   "contact": {{"name": str|null, "phone": str|null, "email": str|null, "company": str|null, "title": str|null}} | null,
   "calendar": {{"title": str|null, "location": str|null, "start_date": ISO8601|null, "end_date": ISO8601|null, "notes": str|null}} | null,
+  "medication": {{
+    "name": str|null,
+    "dosage": str|null,
+    "times_per_day": int|null,
+    "duration_days": int|null,
+    "relation_to_meal": "before_meal" | "after_meal" | "with_meal" | "unspecified" | null,
+    "specific_times": [str, ...]|null,
+    "notes": str|null
+  }} | null,
+  "needs_time_selection": bool,
   "raw_text": str | null,
   "summary": str
 }}
 
 Use "contact" for business cards, "calendar" for events/flyers with a date, "note" for
-receipts/documents worth saving as text, "none" if nothing useful can be extracted.
-Only include the "contact" or "calendar" object relevant to suggested_action; set the other to null.
+receipts/documents worth saving as text, "reminder" for medication/prescription labels with
+dosage or a schedule, "none" if nothing useful can be extracted.
+Only include the "contact", "calendar", or "medication" object relevant to suggested_action;
+set the others to null.
+
+For "reminder"/medication: "specific_times" is a list of 24h "HH:MM" strings ONLY if the label
+states an actual clock time (e.g. "매일 오전 9시" -> ["09:00"]). If the label only gives
+meal-relative timing (식전/식후/공복) or a bare frequency ("1일 3회") with no clock time, leave
+"specific_times" null.
+
+Set "needs_time_selection" to true whenever a "calendar" or "medication" object is returned but
+the source photo did not state an exact clock time (e.g. an event flyer with only a date, or
+medication with only meal-relative timing) — the app will ask the user to pick a time in that
+case. Set it to false when an exact time was found in the source, or when suggested_action is
+"contact"/"note"/"none" (no time to confirm).
 """
 
 
@@ -79,6 +115,8 @@ def analyze(
             suggested_action=mock["suggested_action"],
             contact=ContactPayload(**mock["contact"]) if "contact" in mock else None,
             calendar=CalendarPayload(**mock["calendar"]) if "calendar" in mock else None,
+            medication=MedicationPayload(**mock["medication"]) if "medication" in mock else None,
+            needs_time_selection=mock.get("needs_time_selection", False),
             summary=mock["summary"],
         )
 
@@ -116,6 +154,8 @@ def analyze(
         suggested_action=data.get("suggested_action", "none"),
         contact=ContactPayload(**data["contact"]) if data.get("contact") else None,
         calendar=CalendarPayload(**data["calendar"]) if data.get("calendar") else None,
+        medication=MedicationPayload(**data["medication"]) if data.get("medication") else None,
+        needs_time_selection=bool(data.get("needs_time_selection", False)),
         raw_text=data.get("raw_text"),
         summary=data.get("summary"),
     )

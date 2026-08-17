@@ -144,7 +144,7 @@ async def analyze(
 
     # Text-dense categories: hand Claude the OCR text instead of the image. Text tokens
     # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
-    text_only_categories = {"receipt", "document"}
+    text_only_categories = {"receipt", "document", "medication"}
     ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
 
     # Claude's image content blocks only accept raster image media types — a PDF

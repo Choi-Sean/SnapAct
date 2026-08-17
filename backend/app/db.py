@@ -121,6 +121,11 @@ def get_connection():
         user=settings.db_user,
         password=settings.db_password,
         login_timeout=15,
+        # Linux/FreeTDS defaults to an older TDS version that some hardened
+        # SQL Server hosts reject outright (reported back as a combined
+        # login-failure + connection-failure error). Windows' pymssql build
+        # doesn't hit this, which is why local dev works without it.
+        tds_version="7.4",
     )
 
 

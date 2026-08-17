@@ -30,8 +30,14 @@ def classify_image(
         return category, 0.99, None  # type: ignore[return-value]
 
     from google.cloud import vision
+    from google.oauth2 import service_account
 
-    client = vision.ImageAnnotatorClient()
+    # Loaded explicitly rather than relying on the GOOGLE_APPLICATION_CREDENTIALS
+    # env var: pydantic-settings reads .env into its own Settings object, it
+    # doesn't export the value into the real process environment, so Google's
+    # Application Default Credentials lookup would never see it otherwise.
+    credentials = service_account.Credentials.from_service_account_file(settings.google_application_credentials)
+    client = vision.ImageAnnotatorClient(credentials=credentials)
     image = vision.Image(content=image_bytes)
 
     label_response = client.label_detection(image=image)

@@ -11,16 +11,34 @@ VALID_CATEGORIES: list[Category] = [
 ]
 
 # Keyword heuristics mapping Vision label/text hints to a category. Medication
-# labels are almost always in the user's own language (Korean OCR text here),
-# not the English vocabulary Vision's generic label detection returns, so that
-# entry mixes in Korean dosage/pharmacy terms alongside the English ones.
+# labels are almost always in the user's own language, not the English
+# vocabulary Vision's generic label detection returns, so that entry covers
+# every language the app supports (en/ko/ja/zh/es/fr/de) rather than just
+# English + the one language whichever engineer wrote this happened to test
+# with. All values must be lowercase — haystack is lowercased before matching.
 _KEYWORDS: dict[Category, list[str]] = {
     "receipt": ["receipt", "total", "subtotal", "tax", "invoice", "cashier"],
     "business_card": ["business card", "card", "logo"],
     "event_flyer": ["flyer", "poster", "event", "ticket", "invitation"],
     "medication": [
+        # English
         "medication", "prescription", "pharmacy", "dosage", "tablet", "capsule",
+        "before meals", "after meals", "twice daily", "once daily", "times a day",
+        # Korean
         "복용법", "복용방법", "복용", "1일", "식전", "식후", "식후30분", "정제", "캡슐", "처방", "약국", "조제",
+        # Japanese
+        "服用", "服用方法", "用法", "食前", "食後", "錠", "カプセル", "処方", "薬局", "1日",
+        # Chinese (simplified + traditional) — 服用/用法/处方 already covered above
+        "饭前", "饭后", "餐前", "餐后", "片", "胶囊", "膠囊", "處方", "药房", "藥局", "每日", "每天",
+        # Spanish
+        "medicamento", "receta", "farmacia", "dosis", "comprimido", "cápsula",
+        "antes de las comidas", "después de las comidas", "una vez al día", "veces al día",
+        # French
+        "médicament", "ordonnance", "pharmacie", "comprimé", "gélule",
+        "avant les repas", "après les repas", "par jour", "fois par jour",
+        # German
+        "medikament", "rezept", "apotheke", "dosierung", "tablette", "kapsel",
+        "vor den mahlzeiten", "nach den mahlzeiten", "täglich", "mal täglich",
     ],
     "document": ["document", "text", "paper", "letter", "form"],
 }

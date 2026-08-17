@@ -27,7 +27,7 @@ import {
   sendSmsDemo,
   shareFileDemo,
 } from './nativeActions';
-import { DemoKey } from './types';
+import { DemoKey, ReplaySpec } from './types';
 
 function formatReceiptTable(d: Dictionary['review']['demo']): string {
   const now = new Date();
@@ -63,7 +63,7 @@ interface Props {
     detail: string;
     savedTo: string;
     fields?: { label: string; value: string }[];
-    replay?: { kind: DemoKey; payload: unknown };
+    replay?: ReplaySpec;
   }) => void;
 }
 
@@ -213,8 +213,14 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
     try {
       if (demoKey === 'business_card') {
         const payload = { name: `${firstName} ${lastName}`.trim(), phone, email };
-        await saveContact(payload, d.contactNote);
-        onSaved({ title: payload.name, detail: phone, savedTo: t.permissions.items[2].label, fields, replay: { kind: demoKey, payload } });
+        await saveContact(payload, { demo: true, note: d.contactNote });
+        onSaved({
+          title: payload.name,
+          detail: phone,
+          savedTo: t.permissions.items[2].label,
+          fields,
+          replay: { kind: demoKey, payload, demo: true },
+        });
       } else if (demoKey === 'event') {
         const start = new Date();
         const end = new Date(start.getTime() + 60 * 60 * 1000);
@@ -225,16 +231,34 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
           end_date: end.toISOString(),
           notes: d.eventNotesAuto,
         };
-        await saveEventToCalendar(payload);
-        onSaved({ title: eventTitle, detail: eventLocation || '', savedTo: t.permissions.items[3].label, fields, replay: { kind: demoKey, payload } });
+        await saveEventToCalendar(payload, true);
+        onSaved({
+          title: eventTitle,
+          detail: eventLocation || '',
+          savedTo: t.permissions.items[3].label,
+          fields,
+          replay: { kind: demoKey, payload, demo: true },
+        });
       } else if (demoKey === 'receipt') {
         const payload = { message: formatReceiptTable(d), title: d.receiptHeaderTemplate };
         await Share.share(payload);
-        onSaved({ title: d.receiptHeaderTemplate, detail: d.receiptTotal, savedTo: t.review.shareLabel, fields, replay: { kind: demoKey, payload } });
+        onSaved({
+          title: d.receiptHeaderTemplate,
+          detail: d.receiptTotal,
+          savedTo: t.review.shareLabel,
+          fields,
+          replay: { kind: demoKey, payload, demo: true },
+        });
       } else if (demoKey === 'reminder') {
         const payload = { title: reminderTitle, notes: reminderNotes, dueDate: new Date() };
-        await saveReminder(payload);
-        onSaved({ title: reminderTitle, detail: reminderNotes, savedTo: t.permissions.items[4].label, fields, replay: { kind: demoKey, payload } });
+        await saveReminder(payload, true);
+        onSaved({
+          title: reminderTitle,
+          detail: reminderNotes,
+          savedTo: t.permissions.items[4].label,
+          fields,
+          replay: { kind: demoKey, payload, demo: true },
+        });
       } else if (demoKey === 'photo') {
         const { album } = await savePhotoDemo();
         onSaved({ title: t.review.titles.photo, detail: fmt(d.photoDetailTemplate, { album }), savedTo: t.permissions.items[1].label, fields, replay: { kind: demoKey, payload: null } });

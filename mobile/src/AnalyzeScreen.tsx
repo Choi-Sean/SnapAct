@@ -233,7 +233,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     try {
       await checkFreeTierLimit();
       if (result.suggested_action === 'contact' && result.contact) {
-        await saveContact(result.contact, t.review.demo.contactNote);
+        await saveContact(result.contact);
         Alert.alert(t.home.saveDoneTitle, t.home.saveContactDoneBody);
         const imageUri = await persistImage(photo.uri);
         onSaved({

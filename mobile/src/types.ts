@@ -65,6 +65,11 @@ export interface HistoryField {
 export interface ReplaySpec {
   kind: DemoKey;
   payload: unknown;
+  // True only for the playground's fixed showcase saves (ReviewModal), which
+  // intentionally exercise every native field with filler data. Real saves
+  // (from actual photo analysis) omit this — replaying them must only ever
+  // use the data that was actually extracted, nothing decorative.
+  demo?: boolean;
 }
 
 export interface BatchSubEntry {

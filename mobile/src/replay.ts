@@ -23,13 +23,13 @@ export async function replayAction(spec: ReplaySpec, t: Dictionary): Promise<voi
   const d = t.review.demo;
   switch (spec.kind) {
     case 'business_card':
-      await saveContact(spec.payload as ContactPayload, d.contactNote);
+      await saveContact(spec.payload as ContactPayload, spec.demo ? { demo: true, note: d.contactNote } : undefined);
       return;
     case 'event':
-      await saveEventToCalendar(spec.payload as CalendarPayload);
+      await saveEventToCalendar(spec.payload as CalendarPayload, spec.demo);
       return;
     case 'reminder':
-      await saveReminder(spec.payload as { title: string; notes?: string; dueDate?: Date });
+      await saveReminder(spec.payload as { title: string; notes?: string; dueDate?: Date }, spec.demo);
       return;
     case 'receipt': {
       const { message, title } = spec.payload as { message: string; title: string };

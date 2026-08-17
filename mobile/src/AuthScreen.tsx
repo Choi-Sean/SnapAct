@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { login, Session, signup } from './auth';
 import { useLanguage } from './i18n/LanguageProvider';
@@ -51,7 +61,10 @@ export default function AuthScreen({ visible, initialMode, onClose, onAuthed }: 
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={styles.sheet}>
           <Text style={styles.title}>{mode === 'signup' ? t.auth.signupTitle : t.auth.loginTitle}</Text>
           <Text style={styles.subtitle}>{mode === 'signup' ? t.auth.signupSubtitle : t.auth.loginSubtitle}</Text>
@@ -100,7 +113,7 @@ export default function AuthScreen({ visible, initialMode, onClose, onAuthed }: 
             <Text style={styles.closeText}>{t.review.cancelButton}</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

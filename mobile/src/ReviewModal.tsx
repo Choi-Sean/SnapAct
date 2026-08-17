@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Share,
   StyleSheet,
@@ -266,7 +268,10 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
 
   return (
     <Modal visible={!!demoKey} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={styles.sheet}>
           <Text style={styles.title}>{t.review.titles[demoKey]}</Text>
           <Text style={styles.subtitle}>{t.review.subtitle}</Text>
@@ -313,7 +318,7 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

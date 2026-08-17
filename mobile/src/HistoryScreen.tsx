@@ -4,7 +4,9 @@ import {
   Alert,
   FlatList,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -348,7 +350,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
         transparent
         onRequestClose={() => setPeriodPickerOpen(false)}
       >
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.periodSheet}>
             <Text style={styles.periodSheetTitle}>{t.history.title}</Text>
 
@@ -419,7 +421,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
               <Text style={styles.periodCloseText}>{t.history.closeButton}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <ImageZoomModal uri={zoomUri} onClose={() => setZoomUri(null)} />

@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     anthropic_api_key: str = ""
     google_application_credentials: str = ""
+    google_application_credentials_json: str = ""
     claude_model: str = "claude-sonnet-5"
     api_shared_secret: str = ""
 
@@ -40,7 +41,7 @@ class Settings(BaseSettings):
 
     @property
     def vision_enabled(self) -> bool:
-        return bool(self.google_application_credentials)
+        return bool(self.google_application_credentials or self.google_application_credentials_json)
 
     @property
     def claude_enabled(self) -> bool:

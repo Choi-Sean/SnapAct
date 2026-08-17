@@ -29,6 +29,8 @@ def classify_image(
         category = mock_category if mock_category in VALID_CATEGORIES else "business_card"
         return category, 0.99, None  # type: ignore[return-value]
 
+    import json
+
     from google.cloud import vision
     from google.oauth2 import service_account
 
@@ -36,7 +38,14 @@ def classify_image(
     # env var: pydantic-settings reads .env into its own Settings object, it
     # doesn't export the value into the real process environment, so Google's
     # Application Default Credentials lookup would never see it otherwise.
-    credentials = service_account.Credentials.from_service_account_file(settings.google_application_credentials)
+    # On Railway the key file itself doesn't exist in the build (it's
+    # gitignored), so the full JSON is passed as one env var instead and
+    # parsed directly; local dev keeps using the file path.
+    if settings.google_application_credentials_json:
+        info = json.loads(settings.google_application_credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(info)
+    else:
+        credentials = service_account.Credentials.from_service_account_file(settings.google_application_credentials)
     client = vision.ImageAnnotatorClient(credentials=credentials)
     image = vision.Image(content=image_bytes)
 

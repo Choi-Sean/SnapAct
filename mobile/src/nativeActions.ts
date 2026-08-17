@@ -11,6 +11,15 @@ import { Linking, Platform } from 'react-native';
 import { API_BASE_URL, API_KEY } from './config';
 import { CalendarPayload, ContactPayload } from './types';
 
+export interface MedicationReminderSlot {
+  hour: number;
+  minute: number;
+  // Fully composed by the caller (already in the user's selected language) —
+  // this module doesn't own any locale strings itself.
+  title: string;
+  notes?: string;
+}
+
 // A tiny 1x1 PNG, embedded so the photo-save demo doesn't need a real captured photo.
 const DEMO_PNG_BYTES = new Uint8Array([
   137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0, 0,
@@ -82,7 +91,7 @@ export async function saveEventToCalendar(payload: CalendarPayload): Promise<str
 }
 
 // ---- Contact: exercises every CreateContactRecord field ----
-export async function saveContact(payload: ContactPayload): Promise<string> {
+export async function saveContact(payload: ContactPayload, note: string): Promise<string> {
   const { status } = await Contacts.requestPermissionsAsync();
   if (status !== 'granted') {
     throw new Error('Contacts permission denied.');
@@ -99,7 +108,7 @@ export async function saveContact(payload: ContactPayload): Promise<string> {
     company: payload.company ?? 'Snapsist Inc.',
     department: 'Engineering',
     jobTitle: payload.title ?? 'Product Manager',
-    note: 'Snapsist 데모로 생성된 연락처입니다.',
+    note,
     birthday: { year: 1990, month: 5, day: 12 },
     phones: payload.phone ? [{ label: 'mobile', number: payload.phone }] : undefined,
     emails: payload.email ? [{ label: 'work', address: payload.email }] : [{ label: 'work', address: 'john.smith@example.com' }],
@@ -142,6 +151,50 @@ export async function saveReminder(payload: ReminderPayload): Promise<string | u
   return reminder.id;
 }
 
+// ---- Medication reminders: one recurring daily Reminder (iOS) / Event (Android)
+// per dose-time slot, capped to exactly `durationDays` occurrences. Reminders
+// (EKReminder) don't exist on Android, so Calendar events stand in there —
+// same recurrenceRule mechanism already used by saveEventToCalendar. ----
+export async function saveMedicationReminders(slots: MedicationReminderSlot[], durationDays: number): Promise<string[]> {
+  const entityType = Platform.OS === 'ios' ? Calendar.EntityTypes.REMINDER : Calendar.EntityTypes.EVENT;
+  const calendar = await getWritableCalendar(entityType);
+  const recurrenceRule = { frequency: Calendar.Frequency.DAILY, interval: 1, occurrence: Math.max(1, durationDays) };
+  const ids: string[] = [];
+
+  for (const slot of slots) {
+    const startDate = new Date();
+    startDate.setHours(slot.hour, slot.minute, 0, 0);
+    if (startDate.getTime() < Date.now()) startDate.setDate(startDate.getDate() + 1);
+
+    if (Platform.OS === 'ios') {
+      const reminder = await calendar.createReminder({
+        title: slot.title,
+        notes: slot.notes,
+        startDate: new Date(),
+        dueDate: startDate,
+        completed: false,
+        alarms: [{ relativeOffset: 0 }],
+        recurrenceRule,
+      });
+      if (reminder.id) ids.push(reminder.id);
+    } else {
+      const event = await calendar.createEvent({
+        title: slot.title,
+        startDate,
+        endDate: new Date(startDate.getTime() + 15 * 60 * 1000),
+        allDay: false,
+        notes: slot.notes,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        availability: Calendar.Availability.BUSY,
+        alarms: [{ relativeOffset: 0 }],
+        recurrenceRule,
+      });
+      ids.push(event.id);
+    }
+  }
+  return ids;
+}
+
 // ---- Photos: saves a demo image into a "Snapsist" album ----
 export async function savePhotoDemo(): Promise<{ assetId: string; album: string }> {
   const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -164,7 +217,7 @@ export async function savePhotoDemo(): Promise<{ assetId: string; album: string 
 }
 
 // ---- Mail: opens a prefilled mail compose screen with an attachment ----
-export async function composeMailDemo(): Promise<string> {
+export async function composeMailDemo(subject: string, body: string): Promise<string> {
   const available = await MailComposer.isAvailableAsync();
   if (!available) throw new Error('이 기기에는 사용 가능한 메일 앱이 없어요.');
 
@@ -177,8 +230,8 @@ export async function composeMailDemo(): Promise<string> {
     recipients: ['demo@example.com'],
     ccRecipients: ['cc@example.com'],
     bccRecipients: ['bcc@example.com'],
-    subject: 'Snapsist 데모 메일',
-    body: '<b>Snapsist</b>에서 자동으로 채운 메일 초안입니다.',
+    subject,
+    body,
     isHtml: true,
     attachments: [file.uri],
   });
@@ -186,7 +239,7 @@ export async function composeMailDemo(): Promise<string> {
 }
 
 // ---- SMS: opens a prefilled SMS compose screen with an attachment ----
-export async function sendSmsDemo(): Promise<string> {
+export async function sendSmsDemo(message: string): Promise<string> {
   const available = await SMS.isAvailableAsync();
   if (!available) throw new Error('이 기기에서는 문자 보내기를 사용할 수 없어요.');
 
@@ -195,7 +248,7 @@ export async function sendSmsDemo(): Promise<string> {
   file.create();
   file.write(DEMO_PNG_BYTES);
 
-  const { result } = await SMS.sendSMSAsync(['+1 123-456-7894', '+1 987-654-3210'], 'Snapsist 데모 문자입니다.', {
+  const { result } = await SMS.sendSMSAsync(['+1 123-456-7894', '+1 987-654-3210'], message, {
     attachments: { uri: file.uri, mimeType: 'image/png', filename: 'snapsist.png' },
   });
   return result;
@@ -214,11 +267,11 @@ export async function openMapsDemo(): Promise<void> {
 }
 
 // ---- Files: writes a text file and opens the share sheet (Save to Files) ----
-export async function shareFileDemo(): Promise<string> {
+export async function shareFileDemo(contentPrefix: string, dialogTitle: string): Promise<string> {
   const file = new File(Paths.document, 'snapsist-note.txt');
   if (file.exists) file.delete();
   file.create();
-  file.write('Snapsist 데모 파일\n생성 시각: ' + new Date().toLocaleString());
+  file.write(contentPrefix + new Date().toLocaleString());
 
   const available = await Sharing.isAvailableAsync();
   if (!available) throw new Error('이 기기에서는 공유 기능을 사용할 수 없어요.');
@@ -226,13 +279,13 @@ export async function shareFileDemo(): Promise<string> {
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/plain',
     UTI: 'public.plain-text',
-    dialogTitle: 'Snapsist 파일 저장',
+    dialogTitle,
   });
   return file.uri;
 }
 
 // ---- Apple Wallet: downloads a signed .pkpass from the backend and offers to add it ----
-export async function addToWalletDemo(): Promise<void> {
+export async function addToWalletDemo(dialogTitle: string): Promise<void> {
   if (Platform.OS !== 'ios') throw new Error('Apple Wallet은 iOS에서만 지원돼요.');
 
   const response = await fetch(`${API_BASE_URL}/wallet/demo-pass`, {
@@ -255,7 +308,7 @@ export async function addToWalletDemo(): Promise<void> {
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/vnd.apple.pkpass',
     UTI: 'com.apple.pkpass',
-    dialogTitle: 'Apple Wallet에 추가',
+    dialogTitle,
   });
 }
 
@@ -281,15 +334,15 @@ function atobPolyfill(base64: string): string {
 }
 
 // ---- Local notification: schedules a notification using most content fields ----
-export async function scheduleNotificationDemo(): Promise<string> {
+export async function scheduleNotificationDemo(subtitle: string, body: string): Promise<string> {
   const { status } = await Notifications.requestPermissionsAsync();
   if (status !== 'granted') throw new Error('알림 권한이 거부되었어요.');
 
   return Notifications.scheduleNotificationAsync({
     content: {
       title: 'Snapsist',
-      subtitle: '데모 알림',
-      body: '이 알림은 모든 파라미터를 시연하기 위해 5초 후 도착하도록 예약됐어요.',
+      subtitle,
+      body,
       data: { source: 'snapsist-demo', screen: 'home' },
       badge: 1,
       sound: 'default',

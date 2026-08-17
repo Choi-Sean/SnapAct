@@ -1,5 +1,6 @@
-export type Category = 'business_card' | 'receipt' | 'event_flyer' | 'document' | 'other';
-export type SuggestedAction = 'contact' | 'calendar' | 'note' | 'none';
+export type Category = 'business_card' | 'receipt' | 'event_flyer' | 'document' | 'medication' | 'other';
+export type SuggestedAction = 'contact' | 'calendar' | 'note' | 'reminder' | 'none';
+export type MealRelation = 'before_meal' | 'after_meal' | 'with_meal' | 'unspecified';
 
 export interface ContactPayload {
   name?: string | null;
@@ -17,6 +18,16 @@ export interface CalendarPayload {
   notes?: string | null;
 }
 
+export interface MedicationPayload {
+  name?: string | null;
+  dosage?: string | null;
+  times_per_day?: number | null;
+  duration_days?: number | null;
+  relation_to_meal?: MealRelation | null;
+  specific_times?: string[] | null;
+  notes?: string | null;
+}
+
 export interface AnalyzeResponse {
   mock: boolean;
   category: Category;
@@ -24,6 +35,8 @@ export interface AnalyzeResponse {
   suggested_action: SuggestedAction;
   contact?: ContactPayload | null;
   calendar?: CalendarPayload | null;
+  medication?: MedicationPayload | null;
+  needs_time_selection?: boolean;
   raw_text?: string | null;
   summary?: string | null;
 }

@@ -17,10 +17,11 @@ import BatchReviewModal from './BatchReviewModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
 import { persistImage } from './imageStorage';
-import { saveContact, saveEventToCalendar } from './nativeActions';
+import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import { countThisMonth, FREE_MONTHLY_LIMIT, hasShownUpgradePrompt, markUpgradePromptShown } from './planLimits';
 import PricingScreen from './PricingScreen';
-import { AnalyzeResponse, BatchSubEntry, Category, DemoKey, HistoryEntry } from './types';
+import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
+import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload } from './types';
 
 const BATCH_MOCK_CYCLE: Category[] = ['business_card', 'event_flyer', 'receipt', 'document'];
 
@@ -44,6 +45,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricingVisible, setPricingVisible] = useState(false);
+  const [timeConfirmVisible, setTimeConfirmVisible] = useState(false);
 
   const [batchProcessing, setBatchProcessing] = useState<{ done: number; total: number } | null>(null);
   const [batchReview, setBatchReview] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
@@ -167,13 +169,71 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     }
   }
 
+  function mealRelationLabel(relation: MealRelation | null | undefined): string | null {
+    switch (relation) {
+      case 'before_meal':
+        return t.home.medicationTimingBeforeMeal;
+      case 'after_meal':
+        return t.home.medicationTimingAfterMeal;
+      case 'with_meal':
+        return t.home.medicationTimingWithMeal;
+      default:
+        return null;
+    }
+  }
+
+  function buildMedicationSlots(medication: MedicationPayload, chosenTimes?: TimeSelection[]): MedicationReminderSlot[] {
+    const name = medication.name ?? t.home.medicationName;
+    const noteParts: string[] = [];
+    if (medication.dosage) noteParts.push(medication.dosage);
+    const timingLabel = mealRelationLabel(medication.relation_to_meal);
+    if (timingLabel) noteParts.push(timingLabel);
+    const notes = noteParts.length ? noteParts.join(' · ') : undefined;
+
+    function slotTitle(index: number, total: number) {
+      return total > 1 ? `${name} (${fmt(t.home.timeConfirm.doseLabelTemplate, { n: index + 1 })})` : name;
+    }
+
+    if (medication.specific_times?.length) {
+      const times = medication.specific_times;
+      return times.map((hhmm, i) => {
+        const [h, m] = hhmm.split(':').map((v) => parseInt(v, 10));
+        return { hour: h || 0, minute: m || 0, title: slotTitle(i, times.length), notes };
+      });
+    }
+
+    const times = chosenTimes ?? [];
+    return times.map((time, i) => ({ hour: time.hour, minute: time.minute, title: slotTitle(i, times.length), notes }));
+  }
+
+  function applyTimeToCalendar(calendar: CalendarPayload, time: TimeSelection): CalendarPayload {
+    const base = calendar.start_date ? new Date(calendar.start_date) : new Date();
+    base.setHours(time.hour, time.minute, 0, 0);
+    const end = new Date(base.getTime() + 60 * 60 * 1000);
+    return { ...calendar, start_date: base.toISOString(), end_date: end.toISOString() };
+  }
+
   async function handleSave() {
+    if (!result) return;
+    if (result.needs_time_selection && (result.suggested_action === 'calendar' || result.suggested_action === 'reminder')) {
+      setTimeConfirmVisible(true);
+      return;
+    }
+    await doSave();
+  }
+
+  async function handleTimeConfirm(times: TimeSelection[]) {
+    setTimeConfirmVisible(false);
+    await doSave(times);
+  }
+
+  async function doSave(times?: TimeSelection[]) {
     if (!result || !photo) return;
     setSaving(true);
     try {
       await checkFreeTierLimit();
       if (result.suggested_action === 'contact' && result.contact) {
-        await saveContact(result.contact);
+        await saveContact(result.contact, t.review.demo.contactNote);
         Alert.alert(t.home.saveDoneTitle, t.home.saveContactDoneBody);
         const imageUri = await persistImage(photo.uri);
         onSaved({
@@ -184,14 +244,28 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
           imageUri,
         });
       } else if (result.suggested_action === 'calendar' && result.calendar) {
-        await saveEventToCalendar(result.calendar);
+        const calendarPayload = times?.length ? applyTimeToCalendar(result.calendar, times[0]) : result.calendar;
+        await saveEventToCalendar(calendarPayload);
         Alert.alert(t.home.saveDoneTitle, t.home.saveCalendarDoneBody);
         const imageUri = await persistImage(photo.uri);
         onSaved({
           type: 'event',
-          title: result.calendar.title ?? t.permissions.items[3].label,
-          detail: result.calendar.location ?? '',
+          title: calendarPayload.title ?? t.permissions.items[3].label,
+          detail: calendarPayload.location ?? '',
           savedTo: t.permissions.items[3].label,
+          imageUri,
+        });
+      } else if (result.suggested_action === 'reminder' && result.medication) {
+        const durationDays = result.medication.duration_days ?? 30;
+        const slots = buildMedicationSlots(result.medication, times);
+        await saveMedicationReminders(slots, durationDays);
+        Alert.alert(t.home.saveDoneTitle, fmt(t.home.saveReminderDoneBodyTemplate, { n: durationDays }));
+        const imageUri = await persistImage(photo.uri);
+        onSaved({
+          type: 'reminder',
+          title: result.medication.name ?? t.home.medicationName,
+          detail: result.medication.dosage ?? '',
+          savedTo: t.permissions.items[4].label,
           imageUri,
         });
       }
@@ -283,7 +357,27 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
             </View>
           )}
 
-          {(result.suggested_action === 'contact' || result.suggested_action === 'calendar') && (
+          {result.medication && (
+            <View style={styles.fieldBlock}>
+              <Text style={styles.fieldLabel}>{t.home.medicationName}: {result.medication.name}</Text>
+              <Text style={styles.fieldLabel}>{t.home.medicationDosage}: {result.medication.dosage}</Text>
+              {result.medication.times_per_day != null && (
+                <Text style={styles.fieldLabel}>
+                  {fmt(t.home.medicationFrequencyTemplate, { n: result.medication.times_per_day })}
+                </Text>
+              )}
+              {result.medication.duration_days != null && (
+                <Text style={styles.fieldLabel}>
+                  {fmt(t.home.medicationDurationTemplate, { n: result.medication.duration_days })}
+                </Text>
+              )}
+              <Text style={styles.fieldLabel}>{mealRelationLabel(result.medication.relation_to_meal) ?? t.home.medicationTimingUnspecified}</Text>
+            </View>
+          )}
+
+          {(result.suggested_action === 'contact' ||
+            result.suggested_action === 'calendar' ||
+            result.suggested_action === 'reminder') && (
             <TouchableOpacity
               style={[styles.button, styles.primaryButton]}
               onPress={handleSave}
@@ -294,7 +388,11 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.primaryButtonText}>
-                  {result.suggested_action === 'contact' ? t.home.saveToContacts : t.home.saveToCalendar}
+                  {result.suggested_action === 'contact'
+                    ? t.home.saveToContacts
+                    : result.suggested_action === 'calendar'
+                      ? t.home.saveToCalendar
+                      : t.home.saveToReminder}
                 </Text>
               )}
             </TouchableOpacity>
@@ -304,6 +402,15 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
 
       <BatchReviewModal items={batchReview} onClose={() => setBatchReview(null)} onSaved={handleBatchSaved} />
       <PricingScreen visible={pricingVisible} onClose={() => setPricingVisible(false)} onGetStarted={() => setPricingVisible(false)} />
+      <TimeConfirmModal
+        visible={timeConfirmVisible}
+        slotCount={result?.suggested_action === 'reminder' ? result.medication?.times_per_day ?? 1 : 1}
+        subtitle={
+          result?.suggested_action === 'reminder' ? t.home.timeConfirm.subtitleMedication : t.home.timeConfirm.subtitleEvent
+        }
+        onCancel={() => setTimeConfirmVisible(false)}
+        onConfirm={handleTimeConfirm}
+      />
     </ScrollView>
   );
 }

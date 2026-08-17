@@ -46,7 +46,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
 
       try {
         if (result.suggested_action === 'contact' && result.contact) {
-          await saveContact(result.contact);
+          await saveContact(result.contact, t.review.demo.contactNote);
           batchItems.push({
             photoUri,
             category: result.category,

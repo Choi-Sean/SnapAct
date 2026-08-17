@@ -213,7 +213,7 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
     try {
       if (demoKey === 'business_card') {
         const payload = { name: `${firstName} ${lastName}`.trim(), phone, email };
-        await saveContact(payload);
+        await saveContact(payload, d.contactNote);
         onSaved({ title: payload.name, detail: phone, savedTo: t.permissions.items[2].label, fields, replay: { kind: demoKey, payload } });
       } else if (demoKey === 'event') {
         const start = new Date();
@@ -239,22 +239,22 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
         const { album } = await savePhotoDemo();
         onSaved({ title: t.review.titles.photo, detail: fmt(d.photoDetailTemplate, { album }), savedTo: t.permissions.items[1].label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'mail') {
-        const status = await composeMailDemo();
+        const status = await composeMailDemo(d.mailSubjectDefault, d.mailBodyContent);
         onSaved({ title: d.mailSubjectDefault, detail: fmt(d.mailDetailTemplate, { status }), savedTo: t.home.demoButtons.mail.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'sms') {
-        const result = await sendSmsDemo();
+        const result = await sendSmsDemo(d.smsMessageDefault);
         onSaved({ title: d.smsMessageDefault, detail: fmt(d.smsDetailTemplate, { status: result }), savedTo: t.home.demoButtons.sms.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'maps') {
         await openMapsDemo();
         onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: t.home.demoButtons.maps.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'files') {
-        await shareFileDemo();
+        await shareFileDemo(d.filesContentPrefix, d.filesShareDialogTitle);
         onSaved({ title: 'snapsist-note.txt', detail: d.filesDetail, savedTo: t.home.demoButtons.files.label, fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'wallet') {
-        await addToWalletDemo();
+        await addToWalletDemo(d.walletShareDialogTitle);
         onSaved({ title: d.walletDescriptionDefault, detail: d.walletDetail, savedTo: 'Wallet', fields, replay: { kind: demoKey, payload: null } });
       } else if (demoKey === 'notification') {
-        await scheduleNotificationDemo();
+        await scheduleNotificationDemo(d.notificationSubtitleDefault, d.notificationBody);
         onSaved({ title: 'Snapsist', detail: d.notificationDetail, savedTo: t.home.demoButtons.notification.label, fields, replay: { kind: demoKey, payload: null } });
       }
     } catch (e) {

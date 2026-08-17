@@ -164,7 +164,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
     if (!entry.replay) return;
     setReplaying(true);
     try {
-      await replayAction(entry.replay);
+      await replayAction(entry.replay, t);
       Alert.alert(t.history.replayDoneTitle, fmt(t.history.replayDoneBodyTemplate, { savedTo: entry.savedTo }));
     } catch (e) {
       Alert.alert(t.history.failTitle, e instanceof Error ? e.message : String(e));
@@ -289,7 +289,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                               style={styles.miniReplayButton}
                               onPress={() =>
                                 item.replay &&
-                                replayAction(item.replay)
+                                replayAction(item.replay, t)
                                   .then(() =>
                                     Alert.alert(
                                       t.review.saveDoneTitle,

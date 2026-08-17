@@ -1,5 +1,6 @@
 import { Share } from 'react-native';
 
+import { Dictionary } from './i18n/dictionaries';
 import {
   addToWalletDemo,
   composeMailDemo,
@@ -15,11 +16,14 @@ import {
 import { CalendarPayload, ContactPayload, ReplaySpec } from './types';
 
 /** Re-runs a previously saved action with its original payload — no new AI call,
- * just replays the same native write. Useful if the user deleted the result by hand. */
-export async function replayAction(spec: ReplaySpec): Promise<void> {
+ * just replays the same native write. Useful if the user deleted the result by hand.
+ * Takes the current Dictionary so replayed content matches whatever language is
+ * selected now, not whatever was selected when the item was first saved. */
+export async function replayAction(spec: ReplaySpec, t: Dictionary): Promise<void> {
+  const d = t.review.demo;
   switch (spec.kind) {
     case 'business_card':
-      await saveContact(spec.payload as ContactPayload);
+      await saveContact(spec.payload as ContactPayload, d.contactNote);
       return;
     case 'event':
       await saveEventToCalendar(spec.payload as CalendarPayload);
@@ -36,22 +40,22 @@ export async function replayAction(spec: ReplaySpec): Promise<void> {
       await savePhotoDemo();
       return;
     case 'mail':
-      await composeMailDemo();
+      await composeMailDemo(d.mailSubjectDefault, d.mailBodyContent);
       return;
     case 'sms':
-      await sendSmsDemo();
+      await sendSmsDemo(d.smsMessageDefault);
       return;
     case 'maps':
       await openMapsDemo();
       return;
     case 'files':
-      await shareFileDemo();
+      await shareFileDemo(d.filesContentPrefix, d.filesShareDialogTitle);
       return;
     case 'wallet':
-      await addToWalletDemo();
+      await addToWalletDemo(d.walletShareDialogTitle);
       return;
     case 'notification':
-      await scheduleNotificationDemo();
+      await scheduleNotificationDemo(d.notificationSubtitleDefault, d.notificationBody);
       return;
   }
 }

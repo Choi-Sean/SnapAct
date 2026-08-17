@@ -1,3 +1,5 @@
+import { File, UploadType } from 'expo-file-system';
+
 import { API_BASE_URL, API_KEY } from './config';
 import { AnalyzeResponse, Category } from './types';
 
@@ -7,25 +9,24 @@ interface PickedPhoto {
   mimeType?: string | null;
 }
 
+// Uses expo-file-system's native multipart uploader rather than raw
+// fetch()+FormData: on the New Architecture, appending a plain
+// {uri, name, type} object to FormData throws "Unsupported FormDataPart
+// implementation" — RN's Networking module no longer recognizes that shape.
 export async function analyzePhoto(photo: PickedPhoto, mockCategory?: Category): Promise<AnalyzeResponse> {
-  const formData = new FormData();
-  formData.append('file', {
-    uri: photo.uri,
-    name: photo.fileName ?? 'photo.jpg',
-    type: photo.mimeType ?? 'image/jpeg',
-  } as unknown as Blob);
-
   const query = mockCategory ? `?mock_category=${mockCategory}` : '';
-  const response = await fetch(`${API_BASE_URL}/analyze${query}`, {
-    method: 'POST',
+  const file = new File(photo.uri);
+
+  const result = await file.upload(`${API_BASE_URL}/analyze${query}`, {
+    uploadType: UploadType.MULTIPART,
+    fieldName: 'file',
+    mimeType: photo.mimeType ?? 'image/jpeg',
     headers: { 'X-API-Key': API_KEY },
-    body: formData,
   });
 
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Analyze failed (${response.status}): ${detail}`);
+  if (result.status < 200 || result.status >= 300) {
+    throw new Error(`Analyze failed (${result.status}): ${result.body}`);
   }
 
-  return response.json();
+  return JSON.parse(result.body);
 }

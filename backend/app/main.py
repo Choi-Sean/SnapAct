@@ -1,14 +1,19 @@
 import base64
 import hmac
+import logging
+import mimetypes
+import uuid
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, db, vision, wallet
+from . import auth, claude_analysis, db, storage, vision, wallet
 from .auth import AuthResponse, LoginRequest, SignupRequest, UserOut
 from .config import settings
 from .models import AnalyzeResponse
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Snapsist API", version="0.1.0")
 
@@ -82,6 +87,20 @@ def wallet_demo_pass():
     return PlainTextResponse(base64.b64encode(pkpass_bytes).decode("ascii"))
 
 
+def _store_upload(image_bytes: bytes, content_type: str) -> None:
+    """Best-effort: every upload lands in R2 regardless of demo/logged-in status
+    or how the analysis turns out. Storage failures shouldn't block the response
+    the user is waiting on, so this only logs on error."""
+    if not settings.r2_enabled:
+        return
+    try:
+        extension = mimetypes.guess_extension(content_type) or ""
+        key = f"uploads/{uuid.uuid4()}{extension}"
+        storage.upload_image(key, image_bytes, content_type)
+    except Exception:
+        logger.exception("Failed to store upload in R2")
+
+
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(require_api_key)])
 async def analyze(
     file: UploadFile = File(...),
@@ -90,16 +109,25 @@ async def analyze(
         description="Demo-mode only: force a category (business_card|receipt|event_flyer|document|other) when no API keys are configured.",
     ),
 ):
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image.")
+    if not file.content_type:
+        raise HTTPException(status_code=400, detail="File must have a content type.")
 
     image_bytes = await file.read()
     if len(image_bytes) > MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image too large (max 10MB).")
+        raise HTTPException(status_code=413, detail="File too large (max 10MB).")
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 
-    category, confidence, ocr_text = vision.classify_image(image_bytes, mock_category=mock_category)
+    _store_upload(image_bytes, file.content_type)
+
+    is_image = file.content_type.startswith("image/")
+    if is_image:
+        category, confidence, ocr_text = vision.classify_image(image_bytes, mock_category=mock_category)
+    else:
+        # Vision's label/text detection only understands raster image bytes —
+        # PDFs and other document types skip straight to a generic bucket
+        # rather than being rejected outright.
+        category, confidence, ocr_text = "document", 0.4, None
 
     using_real_pipeline = vision.settings.vision_enabled and claude_analysis.settings.claude_enabled
 
@@ -118,6 +146,17 @@ async def analyze(
     # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
     text_only_categories = {"receipt", "document"}
     ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
+
+    # Claude's image content blocks only accept raster image media types — a PDF
+    # (or anything else without OCR text behind it) can't be sent that way.
+    if using_real_pipeline and not is_image and not ocr_text_for_claude:
+        return AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
+        )
 
     result = claude_analysis.analyze(
         image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude

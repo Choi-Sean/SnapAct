@@ -21,6 +21,11 @@ mobile/npm-debug.*
 mobile/*.log
 mobile/secrets/
 
+web/node_modules/
+web/.next/
+web/next-env.d.ts
+web/tsconfig.tsbuildinfo
+
 # OS
 .DS_Store
 Thumbs.db

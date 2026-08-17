@@ -1,6 +1,7 @@
 import re
 import time
 import uuid
+from datetime import datetime, timezone
 
 import bcrypt
 import jwt
@@ -12,6 +13,7 @@ from .db import get_connection
 
 TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+FREE_MONTHLY_LIMIT = 10  # keep in sync with mobile/src/planLimits.ts
 
 
 class SignupRequest(BaseModel):
@@ -48,6 +50,28 @@ class AuthResponse(BaseModel):
 class UserOut(BaseModel):
     email: str
     plan: str
+    paused: bool = False
+    created_at: int | None = None
+
+
+class AccountSummary(BaseModel):
+    email: str
+    plan: str
+    paused: bool
+    created_at: int
+    analyses_this_month: int
+    analyses_total: int
+    monthly_limit: int | None  # None means unlimited (pro)
+
+
+class HistoryEntryOut(BaseModel):
+    id: str
+    type: str
+    title: str
+    detail: str | None = None
+    saved_to: str | None = None
+    created_at: int
+    image_url: str | None = None
 
 
 def _make_token(user_id: str) -> str:
@@ -125,29 +149,161 @@ def _current_user_id(authorization: str = Header(default="")) -> str:
     return row[0]
 
 
+def _optional_user_id(authorization: str = Header(default="")) -> str | None:
+    """Like _current_user_id, but returns None instead of raising when no
+    (or an invalid) session is present — /analyze stays guest-accessible,
+    but logged-in requests get their usage tracked and saved to history."""
+    if not authorization.startswith("Bearer "):
+        return None
+    token = authorization.removeprefix("Bearer ").strip()
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT UserId FROM dbo.Users WHERE UserId = %s", (payload["sub"],))
+        row = cur.fetchone()
+    finally:
+        conn.close()
+    return row[0] if row else None
+
+
 def get_current_user(authorization: str = Header(default="")) -> UserOut:
     user_id = _current_user_id(authorization)
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("SELECT Email, [Plan] FROM dbo.Users WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
         row = cur.fetchone()
     finally:
         conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"])
+    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
 
 
 def cancel_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("UPDATE dbo.Users SET [Plan] = 'free' WHERE UserId = %s", (user_id,))
-        cur.execute("SELECT Email, [Plan] FROM dbo.Users WHERE UserId = %s", (user_id,))
+        cur.execute("UPDATE dbo.Users SET [Plan] = 'free', Paused = 0, PausedAt = NULL WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
         row = cur.fetchone()
         conn.commit()
     finally:
         conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"])
+    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
+
+
+def pause_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute("UPDATE dbo.Users SET Paused = 1, PausedAt = %s WHERE UserId = %s", (int(time.time()), user_id))
+        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
+        row = cur.fetchone()
+        conn.commit()
+    finally:
+        conn.close()
+    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
+
+
+def resume_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute("UPDATE dbo.Users SET Paused = 0, PausedAt = NULL WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
+        row = cur.fetchone()
+        conn.commit()
+    finally:
+        conn.close()
+    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
+
+
+def get_account_summary(user_id: str = Depends(_current_user_id)) -> AccountSummary:
+    now = datetime.now(timezone.utc)
+    month_start = int(datetime(now.year, now.month, 1, tzinfo=timezone.utc).timestamp())
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
+        user = cur.fetchone()
+        cur.execute("SELECT COUNT(*) AS n FROM dbo.HistoryEntries WHERE UserId = %s AND CreateDate >= %s", (user_id, month_start))
+        this_month = cur.fetchone()["n"]
+        cur.execute("SELECT COUNT(*) AS n FROM dbo.HistoryEntries WHERE UserId = %s", (user_id,))
+        total = cur.fetchone()["n"]
+    finally:
+        conn.close()
+
+    return AccountSummary(
+        email=user["Email"],
+        plan=user["Plan"],
+        paused=bool(user["Paused"]),
+        created_at=user["CreateDate"],
+        analyses_this_month=this_month,
+        analyses_total=total,
+        monthly_limit=None if user["Plan"] == "pro" else FREE_MONTHLY_LIMIT,
+    )
+
+
+def list_history(
+    user_id: str = Depends(_current_user_id), limit: int = 20, offset: int = 0
+) -> list[HistoryEntryOut]:
+    from . import storage
+    from .config import settings as _settings
+
+    limit = max(1, min(limit, 100))
+    conn = get_connection()
+    try:
+        cur = conn.cursor(as_dict=True)
+        cur.execute(
+            """
+            SELECT HistoryEntryId, [Type], Title, Detail, SavedTo, CreateDate
+            FROM dbo.HistoryEntries
+            WHERE UserId = %s
+            ORDER BY CreateDate DESC
+            OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """,
+            (user_id, offset, limit),
+        )
+        entries = cur.fetchall()
+        if not entries:
+            return []
+
+        entry_ids = [e["HistoryEntryId"] for e in entries]
+        placeholders = ",".join("%s" for _ in entry_ids)
+        cur.execute(
+            f"SELECT HistoryEntryId, StorageKey FROM dbo.UploadedImages WHERE HistoryEntryId IN ({placeholders})",
+            tuple(entry_ids),
+        )
+        keys_by_entry = {row["HistoryEntryId"]: row["StorageKey"] for row in cur.fetchall() if row["StorageKey"]}
+    finally:
+        conn.close()
+
+    out = []
+    for e in entries:
+        image_url = None
+        key = keys_by_entry.get(e["HistoryEntryId"])
+        if key and _settings.r2_enabled:
+            try:
+                image_url = storage.presigned_get_url(key)
+            except Exception:
+                image_url = None
+        out.append(
+            HistoryEntryOut(
+                id=e["HistoryEntryId"],
+                type=e["Type"],
+                title=e["Title"],
+                detail=e["Detail"],
+                saved_to=e["SavedTo"],
+                created_at=e["CreateDate"],
+                image_url=image_url,
+            )
+        )
+    return out
 
 
 def delete_account(user_id: str = Depends(_current_user_id)) -> None:

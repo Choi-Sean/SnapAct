@@ -1,7 +1,9 @@
 import base64
 import hmac
+import json
 import logging
 import mimetypes
+import time
 import uuid
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
@@ -9,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from . import auth, claude_analysis, db, storage, vision, wallet
-from .auth import AuthResponse, LoginRequest, SignupRequest, UserOut
+from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, UserOut
 from .config import settings
 from .models import AnalyzeResponse
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
@@ -76,6 +78,26 @@ def account_cancel_plan(user: UserOut = Depends(auth.cancel_plan)):
     return user
 
 
+@app.post("/account/pause-plan", response_model=UserOut)
+def account_pause_plan(user: UserOut = Depends(auth.pause_plan)):
+    return user
+
+
+@app.post("/account/resume-plan", response_model=UserOut)
+def account_resume_plan(user: UserOut = Depends(auth.resume_plan)):
+    return user
+
+
+@app.get("/account/summary", response_model=AccountSummary)
+def account_summary(summary: AccountSummary = Depends(auth.get_account_summary)):
+    return summary
+
+
+@app.get("/history", response_model=list[HistoryEntryOut])
+def history(entries: list[HistoryEntryOut] = Depends(auth.list_history)):
+    return entries
+
+
 @app.delete("/account", status_code=204)
 def account_delete(_: None = Depends(auth.delete_account)):
     return None
@@ -91,18 +113,55 @@ def wallet_demo_pass(request: Request):
     return PlainTextResponse(base64.b64encode(pkpass_bytes).decode("ascii"))
 
 
-def _store_upload(image_bytes: bytes, content_type: str) -> None:
+def _store_upload(image_bytes: bytes, content_type: str) -> str | None:
     """Best-effort: every upload lands in R2 regardless of demo/logged-in status
     or how the analysis turns out. Storage failures shouldn't block the response
-    the user is waiting on, so this only logs on error."""
+    the user is waiting on, so this only logs on error. Returns the R2 key so
+    callers can link it to a history entry, or None if storage isn't configured
+    or the upload failed."""
     if not settings.r2_enabled:
-        return
+        return None
     try:
         extension = mimetypes.guess_extension(content_type) or ""
         key = f"uploads/{uuid.uuid4()}{extension}"
         storage.upload_image(key, image_bytes, content_type)
+        return key
     except Exception:
         logger.exception("Failed to store upload in R2")
+        return None
+
+
+def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse, storage_key: str | None, content_type: str) -> None:
+    """Best-effort: a logged-in user's analysis is saved to their history (and
+    the R2 upload linked to it) so the web dashboard has real usage/history to
+    show. Never blocks or fails the /analyze response."""
+    try:
+        conn = db.get_connection()
+        try:
+            cur = conn.cursor()
+            entry_id = str(uuid.uuid4())
+            now = int(time.time())
+            fields_json = json.dumps(result.model_dump(exclude={"mock", "raw_text"}), default=str)
+            cur.execute(
+                """
+                INSERT INTO dbo.HistoryEntries (HistoryEntryId, UserId, [Type], Title, Detail, SavedTo, FieldsJson, CreateDate)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (entry_id, user_id, category, (result.summary or category)[:255], result.summary, result.suggested_action, fields_json, now),
+            )
+            if storage_key:
+                cur.execute(
+                    """
+                    INSERT INTO dbo.UploadedImages (UploadedImageId, UserId, HistoryEntryId, ContentType, StorageKey, SizeBytes, CreateDate)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (str(uuid.uuid4()), user_id, entry_id, content_type, storage_key, 0, now),
+                )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        logger.exception("Failed to save history entry")
 
 
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(require_api_key)])
@@ -113,6 +172,7 @@ async def analyze(
         default=None,
         description="Demo-mode only: force a category (business_card|receipt|event_flyer|document|other) when no API keys are configured.",
     ),
+    user_id: str | None = Depends(auth._optional_user_id),
 ):
     rate_limiter.check(f"analyze:{get_client_ip(request)}", settings.analyze_rate_limit_per_hour, 3600)
 
@@ -125,7 +185,7 @@ async def analyze(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 
-    _store_upload(image_bytes, file.content_type)
+    storage_key = _store_upload(image_bytes, file.content_type)
 
     # Global daily ceiling on real (paid) Vision/Claude usage — catches abuse
     # spread across many IPs that the per-IP rate limit alone wouldn't stop.
@@ -151,31 +211,35 @@ async def analyze(
     # Nothing recognizable in the photo — skip the Claude call entirely rather than
     # paying for a vision request that will just come back empty.
     if using_real_pipeline and category == "other":
-        return AnalyzeResponse(
+        result = AnalyzeResponse(
             mock=False,
             category=category,
             confidence=confidence,
             suggested_action="none",
             summary="No business card, receipt, event, or document content was recognized in this photo.",
         )
+    else:
+        # Text-dense categories: hand Claude the OCR text instead of the image. Text tokens
+        # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
+        text_only_categories = {"receipt", "document", "medication"}
+        ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
 
-    # Text-dense categories: hand Claude the OCR text instead of the image. Text tokens
-    # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
-    text_only_categories = {"receipt", "document", "medication"}
-    ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
+        # Claude's image content blocks only accept raster image media types — a PDF
+        # (or anything else without OCR text behind it) can't be sent that way.
+        if using_real_pipeline and not is_image and not ocr_text_for_claude:
+            result = AnalyzeResponse(
+                mock=False,
+                category=category,
+                confidence=confidence,
+                suggested_action="none",
+                summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
+            )
+        else:
+            result = claude_analysis.analyze(
+                image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
+            )
 
-    # Claude's image content blocks only accept raster image media types — a PDF
-    # (or anything else without OCR text behind it) can't be sent that way.
-    if using_real_pipeline and not is_image and not ocr_text_for_claude:
-        return AnalyzeResponse(
-            mock=False,
-            category=category,
-            confidence=confidence,
-            suggested_action="none",
-            summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
-        )
+    if user_id:
+        _save_history_entry(user_id, category, result, storage_key, file.content_type)
 
-    result = claude_analysis.analyze(
-        image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
-    )
     return result

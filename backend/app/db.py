@@ -19,6 +19,18 @@ _SCHEMA_STATEMENTS = [
     IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('dbo.Users'))
     CREATE UNIQUE INDEX IX_Users_Email ON dbo.Users(Email)
     """,
+    # Added after the initial schema — pause is a lighter-weight state than a
+    # real subscription-provider cancel, so it lives as a flag on Users rather
+    # than needing the (currently unused, no payment provider wired up yet)
+    # Subscriptions table.
+    """
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'Paused')
+    ALTER TABLE dbo.Users ADD Paused BIT NOT NULL DEFAULT 0
+    """,
+    """
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'PausedAt')
+    ALTER TABLE dbo.Users ADD PausedAt BIGINT NULL
+    """,
     """
     IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.Subscriptions') AND type = N'U')
     CREATE TABLE dbo.Subscriptions (
@@ -83,6 +95,18 @@ _SCHEMA_STATEMENTS = [
     # and HistoryEntries, and those already cascade into each other, so a third
     # cascading path would hit SQL Server's "multiple cascade paths" restriction.
     # Orphaned images are cleaned up explicitly in application code instead.
+    #
+    # ImageBytes was never actually used (images go to R2, not the DB) — added
+    # StorageKey to point at the R2 object instead, and relaxed ImageBytes to
+    # nullable since it's dead weight now. Kept rather than dropped in case
+    # something already relies on the column existing.
+    """
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.UploadedImages') AND name = 'StorageKey')
+    ALTER TABLE dbo.UploadedImages ADD StorageKey NVARCHAR(255) NULL
+    """,
+    """
+    ALTER TABLE dbo.UploadedImages ALTER COLUMN ImageBytes VARBINARY(MAX) NULL
+    """,
     """
     IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_UploadedImages_UserId' AND object_id = OBJECT_ID('dbo.UploadedImages'))
     CREATE INDEX IX_UploadedImages_UserId ON dbo.UploadedImages(UserId)

@@ -6,7 +6,7 @@ import mimetypes
 import time
 import uuid
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
@@ -131,6 +131,15 @@ def _store_upload(image_bytes: bytes, content_type: str) -> str | None:
         return None
 
 
+def _finalize_upload(image_bytes: bytes, content_type: str, user_id: str | None, category: str, result: AnalyzeResponse) -> None:
+    """Runs after the /analyze response has already been sent (via
+    BackgroundTasks) — the client was waiting on Vision/Claude, not on R2
+    storage or a DB write, so neither should be on the critical path."""
+    storage_key = _store_upload(image_bytes, content_type)
+    if user_id:
+        _save_history_entry(user_id, category, result, storage_key, content_type)
+
+
 def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse, storage_key: str | None, content_type: str) -> None:
     """Best-effort: a logged-in user's analysis is saved to their history (and
     the R2 upload linked to it) so the web dashboard has real usage/history to
@@ -167,6 +176,7 @@ def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse, st
 @app.post("/analyze", response_model=AnalyzeResponse, dependencies=[Depends(require_api_key)])
 async def analyze(
     request: Request,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     mock_category: str | None = Query(
         default=None,
@@ -184,8 +194,6 @@ async def analyze(
         raise HTTPException(status_code=413, detail="File too large (max 10MB).")
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
-
-    storage_key = _store_upload(image_bytes, file.content_type)
 
     # Global daily ceiling on real (paid) Vision/Claude usage — catches abuse
     # spread across many IPs that the per-IP rate limit alone wouldn't stop.
@@ -239,7 +247,6 @@ async def analyze(
                 image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
             )
 
-    if user_id:
-        _save_history_entry(user_id, category, result, storage_key, file.content_type)
+    background_tasks.add_task(_finalize_upload, image_bytes, file.content_type, user_id, category, result)
 
     return result

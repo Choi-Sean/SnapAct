@@ -77,11 +77,19 @@ def classify_image(
     client = vision.ImageAnnotatorClient(credentials=credentials)
     image = vision.Image(content=image_bytes)
 
-    label_response = client.label_detection(image=image)
-    text_response = client.text_detection(image=image)
+    # Both features in one request instead of two separate label_detection()/
+    # text_detection() calls — halves the network round-trips to Vision,
+    # which was a meaningful chunk of /analyze's latency.
+    response = client.annotate_image({
+        "image": image,
+        "features": [
+            {"type_": vision.Feature.Type.LABEL_DETECTION},
+            {"type_": vision.Feature.Type.TEXT_DETECTION},
+        ],
+    })
 
-    labels = " ".join(l.description.lower() for l in label_response.label_annotations)
-    raw_text = text_response.text_annotations[0].description if text_response.text_annotations else ""
+    labels = " ".join(l.description.lower() for l in response.label_annotations)
+    raw_text = response.text_annotations[0].description if response.text_annotations else ""
     haystack = f"{labels} {raw_text.lower()}"
 
     best_category: Category = "other"

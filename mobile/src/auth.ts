@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 import { API_BASE_URL } from './config';
 
@@ -48,12 +48,15 @@ export async function login(email: string, password: string): Promise<Session> {
   return session;
 }
 
+// Session (including the 30-day JWT) goes through SecureStore — Keychain on
+// iOS, Keystore-backed EncryptedSharedPreferences on Android — rather than
+// AsyncStorage, which persists as plain unencrypted files.
 export async function saveSession(session: Session): Promise<void> {
-  await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
 }
 
 export async function loadSession(): Promise<Session | null> {
-  const raw = await AsyncStorage.getItem(SESSION_KEY);
+  const raw = await SecureStore.getItemAsync(SESSION_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as Session;
@@ -63,7 +66,7 @@ export async function loadSession(): Promise<Session | null> {
 }
 
 export async function clearSession(): Promise<void> {
-  await AsyncStorage.removeItem(SESSION_KEY);
+  await SecureStore.deleteItemAsync(SESSION_KEY);
 }
 
 export async function cancelPlan(token: string): Promise<{ email: string; plan: string }> {

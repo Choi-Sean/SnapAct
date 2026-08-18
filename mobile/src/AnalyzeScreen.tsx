@@ -16,6 +16,7 @@ import { loadSession } from './auth';
 import BatchReviewModal from './BatchReviewModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
+import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import { countThisMonth, FREE_MONTHLY_LIMIT, hasShownUpgradePrompt, markUpgradePromptShown } from './planLimits';
@@ -87,7 +88,8 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     if (result.canceled || !result.assets?.length) return;
 
     const asset = result.assets[0];
-    setPhoto({ uri: asset.uri, fileName: asset.fileName, mimeType: asset.mimeType });
+    const resized = await resizeForUpload(asset.uri, asset.width, asset.height, asset.mimeType);
+    setPhoto({ uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType });
     setResult(null);
     setError(null);
   }
@@ -115,11 +117,12 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
       const asset = picked.assets[i];
       const mockCategory = BATCH_MOCK_CYCLE[i % BATCH_MOCK_CYCLE.length];
       try {
+        const resized = await resizeForUpload(asset.uri, asset.width, asset.height, asset.mimeType);
         const response = await analyzePhoto(
-          { uri: asset.uri, fileName: asset.fileName, mimeType: asset.mimeType },
+          { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType },
           mockCategory
         );
-        results.push({ uri: asset.uri, result: response });
+        results.push({ uri: resized.uri, result: response });
       } catch (e) {
         results.push({
           uri: asset.uri,

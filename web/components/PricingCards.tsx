@@ -15,8 +15,8 @@ export default function PricingCards() {
       period: '',
       desc: isKo ? '한번 써보고 싶은 분께' : 'Try it out, no commitment',
       features: isKo
-        ? ['월 15장 처리', '연락처 · 캘린더 · 미리 알림 · Wallet · 메모 · 지도', '기기 내 기록 저장']
-        : ['15 photos / month', 'Contacts · Calendar · Reminders · Wallet · Notes · Maps', 'On-device history'],
+        ? ['월 10장 처리', '연락처 · 캘린더 · 미리 알림', '무료 계정으로 히스토리 동기화']
+        : ['10 photos / month', 'Contacts · Calendar · Reminders', 'Free account syncs your history'],
       cta: isKo ? '무료로 시작하기' : 'Start for free',
       href: '/signup',
       highlight: false,
@@ -27,8 +27,8 @@ export default function PricingCards() {
       period: isKo ? '/ 월' : '/ mo',
       desc: isKo ? '자주 쓰는 분께' : 'For regular use',
       features: isKo
-        ? ['무제한 처리', '여러 장 한번에 일괄 처리', '기록 클라우드 동기화', '우선 처리']
-        : ['Unlimited photos', 'Batch-process multiple photos at once', 'History synced across devices', 'Priority processing'],
+        ? ['무제한 처리', '여러 장 한번에 일괄 처리']
+        : ['Unlimited photos', 'Batch-process multiple photos at once'],
       cta: isKo ? 'Pro 시작하기' : 'Start Pro',
       href: '/signup?plan=pro',
       highlight: true,

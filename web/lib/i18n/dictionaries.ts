@@ -73,7 +73,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — One photo, filed automatically',
       description:
-        'Snapsist reads a photo of a business card, receipt, event flyer, or to-do and files it straight into Contacts, Calendar, Reminders, Wallet, and more — no typing.',
+        'Snapsist reads a photo of a business card, receipt, event flyer, or medication label and files it straight into Contacts, Calendar, or Reminders — no typing. Wallet, Mail, and Maps are also built in — try them in the app.',
     },
     nav: { features: 'Integrations', how: 'How it works', integrations: 'Integrations', cta: 'Get the app' },
     hero: {
@@ -81,7 +81,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Snap it once.',
       headlineAccent: 'It files itself.',
       subheadline:
-        'Point your camera at a business card, receipt, flyer, or sticky note. Snapsist reads it and writes it straight into the apps already on your phone — Contacts, Calendar, Reminders, Wallet, Mail — no copying, no retyping.',
+        'Point your camera at a business card, receipt, flyer, or medication label. Snapsist reads it and writes it straight into Contacts, Calendar, or Reminders — no copying, no retyping. Wallet, Mail, and Maps are built in too — try them in the app.',
       ctaPrimary: 'Get on TestFlight',
       ctaSecondary: 'See how it works',
       mockCaption: 'Every field shown before it saves — nothing happens silently.',
@@ -111,16 +111,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: 'Integrations',
       headline: 'It writes to the apps you already trust',
-      sub: 'It really writes into these apps — not a copy, not a workaround.',
+      sub: 'Contacts, Calendar, and Reminders save straight from what you photograph. The rest are real, working integrations too — try them in the app’s built-in demo.',
       items: [
         { icon: 'contacts', title: 'Contacts', desc: 'Full name, company, title, phones, emails, addresses, birthday, socials.', tag: 'Fully automatic', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: 'Calendar', desc: 'Title, time, location, alerts, recurrence — a real event, not a note.', tag: 'Fully automatic', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: 'Reminders', desc: 'To-dos with due dates, locations, and alerts on iOS.', tag: 'Fully automatic', platforms: ['ios'] },
-        { icon: 'photos', title: 'Photos', desc: 'Saved straight into an album, ready when you need it.', tag: 'Fully automatic', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signed, scannable passes added straight to Wallet.', tag: 'Fully automatic', platforms: ['ios'] },
-        { icon: 'mail', title: 'Mail & Messages', desc: 'A draft appears pre-filled, ready for one tap to send.', tag: 'One tap to send', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: 'Notes', desc: 'Formatted and handed to Notes through the share sheet.', tag: 'One tap to file', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: 'Maps', desc: 'Opens the address straight in Apple or Google Maps.', tag: 'Opens instantly', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: 'Reminders', desc: 'Medication schedules and to-dos, with due dates, locations, and alerts on iOS.', tag: 'Fully automatic', platforms: ['ios'] },
+        { icon: 'photos', title: 'Photos', desc: 'Saved straight into an album, ready when you need it.', tag: 'Try it in the demo', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signed, scannable passes added straight to Wallet.', tag: 'Try it in the demo', platforms: ['ios'] },
+        { icon: 'mail', title: 'Mail & Messages', desc: 'A draft appears pre-filled, ready for one tap to send.', tag: 'Try it in the demo', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: 'Notes', desc: 'Formatted and handed to Notes through the share sheet when you batch-process photos.', tag: 'One tap to file', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: 'Maps', desc: 'Opens the address straight in Apple or Google Maps.', tag: 'Try it in the demo', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -163,7 +163,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       items: [
         {
           q: 'Do I need to create an account?',
-          a: 'No — the core features (Contacts, Calendar, Reminders, Wallet, Notes) work without one. An account is only needed for the Pro plan: unlimited photos, batch processing, and history synced across devices.',
+          a: 'No — the core features (Contacts, Calendar, Reminders) work without one, and you can try Wallet, Mail, and Maps in the app’s demo either way. Creating a free account gets you a web dashboard with synced history. Pro additionally removes the monthly photo limit and adds batch processing.',
         },
         {
           q: 'Does my photo get stored anywhere?',
@@ -179,11 +179,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
         {
           q: 'Is it available on Android?',
-          a: 'Snapsist is iOS-only for now, in TestFlight. Reminders and Apple Wallet are iOS-specific frameworks either way, so those two would stay iOS-only even with an Android build.',
+          a: 'An Android build is in development — right now you can join the iOS TestFlight. Reminders and Apple Wallet are iOS-specific frameworks either way, so those two will stay iOS-only even once Android ships.',
         },
         {
           q: 'What does it cost?',
-          a: 'Free covers 10 photos a month. Pro is $4.99/month for unlimited photos, batch processing, and synced history — and during the beta, Pro is unlocked for everyone at no cost.',
+          a: 'Free covers 10 photos a month, and a free account gets you synced history in the web dashboard. Pro is $4.99/month for unlimited photos and batch processing — and during the beta, Pro is unlocked for everyone at no cost.',
         },
         {
           q: 'Can I cancel my plan anytime?',
@@ -210,7 +210,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — 사진 한 장이면 자동으로 정리됩니다',
       description:
-        'Snapsist는 명함, 영수증, 이벤트 전단지, 할 일 메모를 사진으로 찍으면 읽어서 연락처·캘린더·미리 알림·Wallet 등에 바로 정리해줍니다. 타이핑 필요 없어요.',
+        'Snapsist는 명함, 영수증, 이벤트 전단지, 약봉투를 사진으로 찍으면 읽어서 연락처·캘린더·미리 알림에 바로 정리해줍니다. 타이핑 필요 없어요. Wallet, 메일, 지도도 내장돼 있어요 — 앱에서 직접 써보세요.',
     },
     nav: { features: '연동 기능', how: '작동 방식', integrations: '연동 기능', cta: '앱 받기' },
     hero: {
@@ -218,7 +218,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '한 번 찍으면,',
       headlineAccent: '알아서 정리됩니다.',
       subheadline:
-        '명함, 영수증, 전단지, 메모지에 카메라를 갖다 대세요. Snapsist가 읽어서 이미 쓰고 있는 앱 — 연락처, 캘린더, 미리 알림, Wallet, 메일 — 에 바로 써줍니다. 복사도, 재입력도 필요 없어요.',
+        '명함, 영수증, 전단지, 약봉투에 카메라를 갖다 대세요. Snapsist가 읽어서 연락처, 캘린더, 미리 알림에 바로 써줍니다. 복사도, 재입력도 필요 없어요. Wallet, 메일, 지도도 내장돼 있어요 — 앱에서 직접 써보세요.',
       ctaPrimary: 'TestFlight로 받기',
       ctaSecondary: '작동 방식 보기',
       mockCaption: '저장되기 전 모든 항목을 보여줍니다 — 조용히 처리되는 건 없어요.',
@@ -239,16 +239,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: '연동 기능',
       headline: '이미 쓰고 있는 앱에 바로 써줍니다',
-      sub: '진짜로 그 앱에 써줍니다 — 복사본도, 우회 방식도 아닙니다.',
+      sub: '연락처·캘린더·미리 알림은 사진에서 바로 저장됩니다. 나머지도 실제로 작동하는 진짜 연동 기능이에요 — 앱 안 데모에서 직접 써보세요.',
       items: [
         { icon: 'contacts', title: '연락처', desc: '이름, 회사, 직함, 전화, 이메일, 주소, 생일, SNS까지.', tag: '완전 자동', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: '캘린더', desc: '제목, 시간, 장소, 알림, 반복까지 — 진짜 일정으로 등록됩니다.', tag: '완전 자동', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: '미리 알림', desc: '마감일·장소·알림이 있는 할 일 (iOS).', tag: '완전 자동', platforms: ['ios'] },
-        { icon: 'photos', title: '사진', desc: '앨범에 바로 저장돼서 필요할 때 바로 찾을 수 있어요.', tag: '완전 자동', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: '서명된 패스를 Wallet에 바로 추가합니다.', tag: '완전 자동', platforms: ['ios'] },
-        { icon: 'mail', title: '메일 · 문자', desc: '내용이 채워진 초안이 뜨고, 탭 한 번이면 전송됩니다.', tag: '한 번 탭', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: '메모', desc: '정리된 형태로 공유 시트를 통해 메모 앱으로 전달됩니다.', tag: '한 번 탭', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: '지도', desc: '주소를 Apple/Google 지도에서 바로 열어줍니다.', tag: '즉시 열림', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: '미리 알림', desc: '복용 일정과 마감일·장소·알림이 있는 할 일 (iOS).', tag: '완전 자동', platforms: ['ios'] },
+        { icon: 'photos', title: '사진', desc: '앨범에 바로 저장돼서 필요할 때 바로 찾을 수 있어요.', tag: '앱 데모에서 체험', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '서명된 패스를 Wallet에 바로 추가합니다.', tag: '앱 데모에서 체험', platforms: ['ios'] },
+        { icon: 'mail', title: '메일 · 문자', desc: '내용이 채워진 초안이 뜨고, 탭 한 번이면 전송됩니다.', tag: '앱 데모에서 체험', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: '메모', desc: '일괄 처리 시, 정리된 형태로 공유 시트를 통해 메모 앱으로 전달됩니다.', tag: '한 번 탭', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: '지도', desc: '주소를 Apple/Google 지도에서 바로 열어줍니다.', tag: '앱 데모에서 체험', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -280,12 +280,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: '실제로 많이 물어보시는 것들',
       items: [
-        { q: '계정을 만들어야 하나요?', a: '아니요 — 핵심 기능(연락처, 캘린더, 미리 알림, Wallet, 메모)은 계정 없이도 다 됩니다. 계정은 Pro 플랜(무제한 처리, 일괄 처리, 기기 간 기록 동기화)을 쓸 때만 필요해요.' },
+        { q: '계정을 만들어야 하나요?', a: '아니요 — 핵심 기능(연락처, 캘린더, 미리 알림)은 계정 없이도 다 되고, Wallet·메일·지도도 앱 데모에서 계정 없이 체험할 수 있어요. 무료 계정을 만들면 웹 대시보드에서 히스토리가 동기화되고, Pro 플랜은 월 처리 한도 제거와 일괄 처리까지 추가로 제공해요.' },
         { q: '제 사진이 어딘가에 저장되나요?', a: '사진은 분석을 위해 전송된 뒤, 나중에 다시 확인할 수 있도록 안전하게 저장돼요. 로그인 상태라면 계정 히스토리에 저장되고, 로그인하지 않았다면 어떤 계정에도 연결되지 않아요. 설정에서 언제든 히스토리나 계정을 삭제할 수 있어요.' },
         { q: '항목을 잘못 인식하면 어떡하죠?', a: '저장 전에 항상 확인 화면이 먼저 뜨고, 실제로 저장될 항목을 정확히 보여줍니다. 뭐든 수정하거나 취소할 수 있고, 확인을 누르기 전엔 아무것도 저장되지 않아요.' },
         { q: '왜 메모는 바로 저장 안 하고 공유 시트를 여나요?', a: 'Apple과 Google 둘 다 Notes/Keep 앱에 쓸 수 있는 공개 API를 제공하지 않아서, 어떤 서드파티 앱도 직접 쓸 방법이 없어요. 그래서 Snapsist는 정리된 메모를 공유 시트로 넘겨줍니다 — 탭 0번이 아니라 1번이지만, 기술적으로 가능한 최선입니다.' },
-        { q: 'Android도 지원하나요?', a: '지금은 iOS 전용(TestFlight 베타)입니다. 미리 알림과 Apple Wallet은 애초에 iOS 전용 프레임워크라, Android 버전이 나와도 이 두 개는 계속 iOS에서만 됩니다.' },
-        { q: '비용은요?', a: '무료 플랜은 월 10장까지 무료예요. Pro는 월 $4.99로 무제한 처리, 일괄 처리, 기록 동기화가 되고요 — 베타 기간엔 Pro도 모두에게 무료로 열려있어요.' },
+        { q: 'Android도 지원하나요?', a: 'Android 버전은 개발 중이에요 — 지금은 iOS TestFlight 베타에 참여하실 수 있어요. 미리 알림과 Apple Wallet은 애초에 iOS 전용 프레임워크라, Android 버전이 나와도 이 두 개는 계속 iOS에서만 됩니다.' },
+        { q: '비용은요?', a: '무료 플랜은 월 10장까지 무료이고, 무료 계정을 만들면 웹 대시보드에서 히스토리도 동기화돼요. Pro는 월 $4.99로 무제한 처리와 일괄 처리가 되고요 — 베타 기간엔 Pro도 모두에게 무료로 열려있어요.' },
         { q: '언제든 해지할 수 있나요?', a: '네 — 설정에서 언제든 해지할 수 있어요. 바로 무료 플랜으로 전환되고, 이미 저장한 기록은 그대로 남아있어요.' },
         { q: '계정을 삭제할 수 있나요?', a: '네. 설정의 계정 삭제 버튼으로 계정과 데이터를 바로 영구 삭제할 수 있어요 — 따로 문의할 필요 없어요.' },
       ],
@@ -305,7 +305,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — 写真1枚で自動整理',
       description:
-        'Snapsistは名刺、レシート、イベントチラシ、メモを撮影するだけで読み取り、連絡先・カレンダー・リマインダー・Walletなどに自動で保存します。入力不要。',
+        'Snapsistは名刺、レシート、イベントチラシ、お薬手帳を撮影するだけで読み取り、連絡先・カレンダー・リマインダーに自動で保存します。入力不要。Wallet、メール、マップも搭載 — アプリ内で試せます。',
     },
     nav: { features: '連携機能', how: '使い方', integrations: '連携機能', cta: 'アプリを入手' },
     hero: {
@@ -313,7 +313,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '一度撮るだけで、',
       headlineAccent: '自動で整理されます。',
       subheadline:
-        '名刺やレシート、チラシ、メモにカメラを向けてください。Snapsistが読み取り、すでに使っているアプリ — 連絡先、カレンダー、リマインダー、Wallet、メール — にそのまま書き込みます。コピーも再入力も不要です。',
+        '名刺やレシート、チラシ、お薬手帳にカメラを向けてください。Snapsistが読み取り、連絡先、カレンダー、リマインダーにそのまま書き込みます。コピーも再入力も不要です。Wallet、メール、マップも搭載しています — アプリ内で試せます。',
       ctaPrimary: 'TestFlightで入手',
       ctaSecondary: '使い方を見る',
       mockCaption: '保存前にすべての項目を表示します — 勝手に処理されることはありません。',
@@ -334,16 +334,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: '連携機能',
       headline: 'すでに使っているアプリにそのまま書き込みます',
-      sub: '本当にそのアプリに保存されます — コピーでも回避策でもありません。',
+      sub: '連絡先・カレンダー・リマインダーは撮影した写真からそのまま保存されます。それ以外も実際に動く本物の連携機能です — アプリ内蔵のデモで試せます。',
       items: [
         { icon: 'contacts', title: '連絡先', desc: '氏名、会社、役職、電話番号、メール、住所、誕生日、SNSまで。', tag: '完全自動', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: 'カレンダー', desc: 'タイトル、時間、場所、通知、繰り返しまで — メモではなく本物の予定として登録。', tag: '完全自動', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: 'リマインダー', desc: '期限・場所・通知付きのToDo（iOS）。', tag: '完全自動', platforms: ['ios'] },
-        { icon: 'photos', title: '写真', desc: 'アルバムに直接保存され、必要なときにすぐ見つかります。', tag: '完全自動', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: '署名済みのスキャン可能なパスをWalletに直接追加。', tag: '完全自動', platforms: ['ios'] },
-        { icon: 'mail', title: 'メール・メッセージ', desc: '内容が入力済みの下書きが表示され、タップ一つで送信できます。', tag: 'ワンタップで送信', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: 'メモ', desc: '整形された内容が共有シート経由でメモアプリに渡されます。', tag: 'ワンタップで保存', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: 'マップ', desc: '住所をApple/Googleマップでそのまま開きます。', tag: 'すぐに開く', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: 'リマインダー', desc: '服薬スケジュールや、期限・場所・通知付きのToDo（iOS）。', tag: '完全自動', platforms: ['ios'] },
+        { icon: 'photos', title: '写真', desc: 'アルバムに直接保存され、必要なときにすぐ見つかります。', tag: 'アプリ内デモで体験', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '署名済みのスキャン可能なパスをWalletに直接追加。', tag: 'アプリ内デモで体験', platforms: ['ios'] },
+        { icon: 'mail', title: 'メール・メッセージ', desc: '内容が入力済みの下書きが表示され、タップ一つで送信できます。', tag: 'アプリ内デモで体験', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: 'メモ', desc: '一括処理時、整形された内容が共有シート経由でメモアプリに渡されます。', tag: 'ワンタップで保存', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: 'マップ', desc: '住所をApple/Googleマップでそのまま開きます。', tag: 'アプリ内デモで体験', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -375,12 +375,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'よくある質問',
       headline: '実際によく聞かれること',
       items: [
-        { q: 'アカウント登録は必要ですか？', a: 'いいえ — 主要機能（連絡先、カレンダー、リマインダー、Wallet、メモ）はアカウントなしで使えます。アカウントが必要なのはProプラン（無制限処理、一括処理、デバイス間の履歴同期）を使う場合だけです。' },
+        { q: 'アカウント登録は必要ですか？', a: 'いいえ — 主要機能（連絡先、カレンダー、リマインダー）はアカウントなしで使え、Wallet・メール・マップもアプリ内デモでアカウントなしで試せます。無料アカウントを作成すると、Webダッシュボードで履歴が同期されます。Proプランではさらに月間の処理上限がなくなり、一括処理も使えます。' },
         { q: '撮影した写真はどこかに保存されますか？', a: '写真は解析のために送信された後、後から確認できるよう安全に保存されます。ログイン中の場合はアカウントの履歴に保存され、ログインしていない場合はどのアカウントにも紐づけられません。設定からいつでも履歴やアカウントを削除できます。' },
         { q: '内容が間違って認識された場合は？', a: '保存前に必ず確認画面が開き、実際に書き込まれる項目が正確に表示されます。内容を編集したりキャンセルしたりでき、確定するまで何も保存されません。' },
         { q: 'なぜメモは直接保存せず共有シートを開くのですか？', a: 'AppleもGoogleもメモ/Keepアプリへの公開APIを提供していないため、どのサードパーティアプリも直接書き込む方法がありません。そのためSnapsistは整形済みのメモを共有シート経由で渡します — タップ0回ではなく1回になりますが、技術的に可能な最善の方法です。' },
-        { q: 'Androidにも対応していますか？', a: '現在はiOS専用（TestFlightベータ）です。リマインダーとApple Walletはそもそもの機能上iOS専用のため、Android版が出てもこの2つはiOSのみとなります。' },
-        { q: '料金はいくらですか？', a: '無料プランは月10枚まで無料です。Proは月額$4.99で無制限処理・一括処理・履歴同期が使えます — ベータ期間中はProも全員に無料で開放されています。' },
+        { q: 'Androidにも対応していますか？', a: 'Android版は開発中です — 現在はiOSのTestFlightベータにご参加いただけます。リマインダーとApple Walletはそもそもの機能上iOS専用のため、Android版が出てもこの2つはiOSのみとなります。' },
+        { q: '料金はいくらですか？', a: '無料プランは月10枚まで無料で、無料アカウントを作成するとWebダッシュボードで履歴も同期されます。Proは月額$4.99で無制限処理・一括処理が使えます — ベータ期間中はProも全員に無料で開放されています。' },
         { q: 'いつでも解約できますか？', a: 'はい — 設定画面からいつでも解約できます。すぐに無料プランに戻り、すでに保存した記録はそのまま残ります。' },
         { q: 'アカウントを削除できますか？', a: 'はい。設定の「アカウントを削除」からアカウントとデータをすぐに完全に削除できます — サポートへの連絡は不要です。' },
       ],
@@ -400,7 +400,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — 一张照片，自动归档',
       description:
-        'Snapsist 拍下名片、收据、活动传单或备忘录后自动识别，直接保存到通讯录、日历、提醒事项、Wallet 等应用 — 无需手动输入。',
+        'Snapsist 拍下名片、收据、活动传单或药品说明后自动识别，直接保存到通讯录、日历、提醒事项 — 无需手动输入。Wallet、邮件、地图同样内置 — 可在应用内体验。',
     },
     nav: { features: '集成功能', how: '使用方法', integrations: '集成功能', cta: '获取应用' },
     hero: {
@@ -408,7 +408,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '拍一次，',
       headlineAccent: '自动帮你整理。',
       subheadline:
-        '把镜头对准名片、收据、传单或便签。Snapsist 会读取内容，直接写入你手机里已经在用的应用 — 通讯录、日历、提醒事项、Wallet、邮件 — 无需复制粘贴，无需重新输入。',
+        '把镜头对准名片、收据、传单或药品说明。Snapsist 会读取内容，直接写入通讯录、日历、提醒事项 — 无需复制粘贴，无需重新输入。Wallet、邮件、地图也已内置 — 可在应用内体验。',
       ctaPrimary: '在 TestFlight 获取',
       ctaSecondary: '查看使用方法',
       mockCaption: '保存前会显示每一项内容 — 绝不会悄悄处理。',
@@ -429,16 +429,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: '集成功能',
       headline: '直接写入你已经信任的应用',
-      sub: '它是真的写入这些应用 — 不是副本，也不是变通方法。',
+      sub: '通讯录、日历、提醒事项会直接从你拍摄的照片保存。其余功能同样是真实可用的集成 — 可在应用内置的演示中体验。',
       items: [
         { icon: 'contacts', title: '通讯录', desc: '姓名、公司、职位、电话、邮箱、地址、生日、社交账号，全都有。', tag: '全自动', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: '日历', desc: '标题、时间、地点、提醒、重复规则 — 是真正的日程，不只是备注。', tag: '全自动', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: '提醒事项', desc: '带截止日期、地点和提醒的待办事项（iOS）。', tag: '全自动', platforms: ['ios'] },
-        { icon: 'photos', title: '照片', desc: '直接保存到相册，需要时随时可找到。', tag: '全自动', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: '已签名、可扫描的卡券直接添加到 Wallet。', tag: '全自动', platforms: ['ios'] },
-        { icon: 'mail', title: '邮件与信息', desc: '草稿会自动填好内容，轻点一下即可发送。', tag: '一键发送', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: '备忘录', desc: '整理好的内容通过分享面板传给备忘录应用。', tag: '一键归档', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: '地图', desc: '直接在苹果地图或谷歌地图中打开地址。', tag: '立即打开', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: '提醒事项', desc: '服药计划，以及带截止日期、地点和提醒的待办事项（iOS）。', tag: '全自动', platforms: ['ios'] },
+        { icon: 'photos', title: '照片', desc: '直接保存到相册，需要时随时可找到。', tag: '应用内演示体验', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: '已签名、可扫描的卡券直接添加到 Wallet。', tag: '应用内演示体验', platforms: ['ios'] },
+        { icon: 'mail', title: '邮件与信息', desc: '草稿会自动填好内容，轻点一下即可发送。', tag: '应用内演示体验', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: '备忘录', desc: '批量处理时，整理好的内容会通过分享面板传给备忘录应用。', tag: '一键归档', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: '地图', desc: '直接在苹果地图或谷歌地图中打开地址。', tag: '应用内演示体验', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -470,12 +470,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: '常见问题',
       headline: '大家真正会问的问题',
       items: [
-        { q: '需要注册账号吗？', a: '不需要。核心功能（通讯录、日历、提醒事项、Wallet、备忘录）不需要账号也能用。只有使用 Pro 套餐（无限处理、批量处理、跨设备记录同步）时才需要账号。' },
+        { q: '需要注册账号吗？', a: '不需要。核心功能（通讯录、日历、提醒事项）不需要账号也能用，Wallet、邮件、地图也可以在应用内演示中免账号体验。创建免费账号即可在网页控制面板中同步历史记录；Pro 套餐还会取消每月处理张数上限并支持批量处理。' },
         { q: '我的照片会被存储在哪里吗？', a: '照片会用于分析，随后安全存储，以便您日后查看。如果您已登录，照片会保存在账户的历史记录中；如果未登录，则不会关联任何账户。您可以随时在设置中删除历史记录或账户。' },
         { q: '如果 Snapsist 识别错了怎么办？', a: '每次保存前都会先打开确认页面，列出即将写入的具体内容。你可以修改任意内容，或直接取消 — 在你确认之前不会保存任何东西。' },
         { q: '为什么备忘录不能直接保存，而是打开分享面板？', a: '苹果和谷歌都没有为备忘录 / Keep 应用提供公开的接口，所以任何第三方应用都无法直接写入。因此 Snapsist 会通过分享面板把整理好的备忘录传递过去 — 虽然要多点一下，但这已经是技术上能做到的最好方式。' },
-        { q: '支持 Android 吗？', a: '目前仅支持 iOS（TestFlight 测试版）。提醒事项和 Apple Wallet 本身就是 iOS 专属功能，即使以后推出 Android 版本，这两项功能仍只在 iOS 上可用。' },
-        { q: '需要付费吗？', a: '免费版每月可处理 10 张照片。Pro 每月 $4.99，支持无限处理、批量处理和记录同步 — 测试期间，Pro 对所有人免费开放。' },
+        { q: '支持 Android 吗？', a: 'Android 版正在开发中 — 目前可以加入 iOS 的 TestFlight 测试版。提醒事项和 Apple Wallet 本身就是 iOS 专属功能，即使以后推出 Android 版本，这两项功能仍只在 iOS 上可用。' },
+        { q: '需要付费吗？', a: '免费版每月可处理 10 张照片，注册免费账号还能在网页控制面板同步历史记录。Pro 每月 $4.99，支持无限处理和批量处理 — 测试期间，Pro 对所有人免费开放。' },
         { q: '可以随时取消吗？', a: '可以 — 随时在设置里取消，会立即切换回免费版，已保存的记录都会保留。' },
         { q: '可以删除账户吗？', a: '可以。在设置的"删除账户"里可以立即永久删除账户和数据 — 不需要联系客服。' },
       ],
@@ -495,7 +495,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — Una foto, todo archivado automáticamente',
       description:
-        'Snapsist lee la foto de una tarjeta de presentación, un recibo, un cartel de un evento o una nota, y la guarda directamente en Contactos, Calendario, Recordatorios, Wallet y más — sin escribir nada.',
+        'Snapsist lee la foto de una tarjeta de presentación, un recibo, un cartel de un evento o el prospecto de un medicamento, y la guarda directamente en Contactos, Calendario o Recordatorios — sin escribir nada. Wallet, Correo y Mapas también están integrados — pruébalos en la app.',
     },
     nav: { features: 'Integraciones', how: 'Cómo funciona', integrations: 'Integraciones', cta: 'Obtener la app' },
     hero: {
@@ -503,7 +503,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Tómala una vez.',
       headlineAccent: 'Se archiva sola.',
       subheadline:
-        'Apunta la cámara a una tarjeta de presentación, un recibo, un cartel o una nota adhesiva. Snapsist la lee y la escribe directamente en las apps que ya tienes en tu teléfono — Contactos, Calendario, Recordatorios, Wallet, Correo — sin copiar ni volver a escribir nada.',
+        'Apunta la cámara a una tarjeta de presentación, un recibo, un cartel o el prospecto de un medicamento. Snapsist la lee y la escribe directamente en Contactos, Calendario o Recordatorios — sin copiar ni volver a escribir nada. Wallet, Correo y Mapas también están integrados — pruébalos en la app.',
       ctaPrimary: 'Consíguela en TestFlight',
       ctaSecondary: 'Ver cómo funciona',
       mockCaption: 'Se muestran todos los campos antes de guardar — nada ocurre en silencio.',
@@ -524,16 +524,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: 'Integraciones',
       headline: 'Escribe en las apps en las que ya confías',
-      sub: 'Escribe de verdad en esas apps — no es una copia, ni un truco.',
+      sub: 'Contactos, Calendario y Recordatorios se guardan directamente desde lo que fotografías. El resto también son integraciones reales y funcionales — pruébalas en la demo integrada de la app.',
       items: [
         { icon: 'contacts', title: 'Contactos', desc: 'Nombre completo, empresa, cargo, teléfonos, correos, direcciones, cumpleaños, redes sociales.', tag: 'Totalmente automático', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: 'Calendario', desc: 'Título, hora, ubicación, alertas, repetición — un evento real, no una nota.', tag: 'Totalmente automático', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: 'Recordatorios', desc: 'Tareas con fecha límite, ubicación y alertas en iOS.', tag: 'Totalmente automático', platforms: ['ios'] },
-        { icon: 'photos', title: 'Fotos', desc: 'Guardadas directamente en un álbum, listas cuando las necesites.', tag: 'Totalmente automático', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: 'Tarjetas firmadas y escaneables añadidas directamente a Wallet.', tag: 'Totalmente automático', platforms: ['ios'] },
-        { icon: 'mail', title: 'Correo y mensajes', desc: 'Aparece un borrador ya redactado, listo para enviar con un toque.', tag: 'Un toque para enviar', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: 'Notas', desc: 'Se entrega en formato ordenado a Notas mediante la hoja de compartir.', tag: 'Un toque para archivar', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: 'Mapas', desc: 'Abre la dirección directamente en Apple o Google Maps.', tag: 'Se abre al instante', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: 'Recordatorios', desc: 'Horarios de medicación y tareas con fecha límite, ubicación y alertas en iOS.', tag: 'Totalmente automático', platforms: ['ios'] },
+        { icon: 'photos', title: 'Fotos', desc: 'Guardadas directamente en un álbum, listas cuando las necesites.', tag: 'Pruébalo en la demo', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Tarjetas firmadas y escaneables añadidas directamente a Wallet.', tag: 'Pruébalo en la demo', platforms: ['ios'] },
+        { icon: 'mail', title: 'Correo y mensajes', desc: 'Aparece un borrador ya redactado, listo para enviar con un toque.', tag: 'Pruébalo en la demo', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: 'Notas', desc: 'Al procesar fotos por lotes, se entrega en formato ordenado a Notas mediante la hoja de compartir.', tag: 'Un toque para archivar', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: 'Mapas', desc: 'Abre la dirección directamente en Apple o Google Maps.', tag: 'Pruébalo en la demo', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -565,12 +565,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'Preguntas frecuentes',
       headline: 'Lo que la gente realmente pregunta',
       items: [
-        { q: '¿Necesito crear una cuenta?', a: 'No — las funciones principales (Contactos, Calendario, Recordatorios, Wallet, Notas) funcionan sin cuenta. Solo hace falta una cuenta para el plan Pro: fotos ilimitadas, procesamiento por lotes e historial sincronizado entre dispositivos.' },
+        { q: '¿Necesito crear una cuenta?', a: 'No — las funciones principales (Contactos, Calendario, Recordatorios) funcionan sin cuenta, y también puedes probar Wallet, Correo y Mapas en la demo de la app sin cuenta. Crear una cuenta gratuita te da un historial sincronizado en el panel web. El plan Pro además elimina el límite mensual de fotos y añade el procesamiento por lotes.' },
         { q: '¿Se guarda mi foto en algún sitio?', a: 'Tu foto se envía para analizarla y luego se almacena de forma segura para que puedas consultarla más tarde. Si has iniciado sesión, se guarda en el historial de tu cuenta; si no, no se vincula a ninguna cuenta. Puedes eliminar tu historial o tu cuenta cuando quieras desde Ajustes.' },
         { q: '¿Y si Snapsist reconoce mal un campo?', a: 'Cada guardado abre primero una pantalla de revisión con los campos exactos que se van a escribir. Puedes editar cualquier cosa o cancelar — no se guarda nada hasta que confirmas.' },
         { q: '¿Por qué Snapsist abre la hoja de compartir para Notas en vez de guardar directamente?', a: 'Ni Apple ni Google ofrecen una API pública para sus apps de Notas / Keep, así que ninguna app externa puede escribir directamente en ellas. Snapsist entrega en su lugar una nota ya formateada mediante la hoja de compartir — un toque en vez de cero, que es lo máximo que se puede automatizar técnicamente.' },
-        { q: '¿Está disponible en Android?', a: 'Por ahora Snapsist es solo para iOS, en TestFlight. Recordatorios y Apple Wallet son funciones exclusivas de iOS de todos modos, así que seguirían siendo solo de iOS aunque hubiera una versión para Android.' },
-        { q: '¿Cuánto cuesta?', a: 'El plan Free cubre 10 fotos al mes. Pro cuesta $4.99/mes por fotos ilimitadas, procesamiento por lotes e historial sincronizado — y durante la beta, Pro está desbloqueado gratis para todos.' },
+        { q: '¿Está disponible en Android?', a: 'La versión para Android está en desarrollo — por ahora puedes unirte a la beta de iOS en TestFlight. Recordatorios y Apple Wallet son funciones exclusivas de iOS de todos modos, así que seguirán siendo solo de iOS incluso cuando llegue Android.' },
+        { q: '¿Cuánto cuesta?', a: 'El plan Free cubre 10 fotos al mes, y una cuenta gratuita te da historial sincronizado en el panel web. Pro cuesta $4.99/mes por fotos ilimitadas y procesamiento por lotes — y durante la beta, Pro está desbloqueado gratis para todos.' },
         { q: '¿Puedo cancelar cuando quiera?', a: 'Sí — cancela desde Ajustes cuando quieras. Vuelves al plan Free al instante, y todo lo que ya guardaste se queda tal cual.' },
         { q: '¿Puedo eliminar mi cuenta?', a: 'Sí. En Ajustes hay una opción para eliminar la cuenta que borra tu cuenta y tus datos de forma permanente al instante — sin tener que contactar con soporte.' },
       ],
@@ -590,7 +590,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — Une photo, tout est classé automatiquement',
       description:
-        'Snapsist lit la photo d’une carte de visite, d’un reçu, d’une affiche d’événement ou d’un pense-bête, et l’enregistre directement dans Contacts, Calendrier, Rappels, Wallet et plus — sans rien taper.',
+        'Snapsist lit la photo d’une carte de visite, d’un reçu, d’une affiche d’événement ou d’une notice de médicament, et l’enregistre directement dans Contacts, Calendrier ou Rappels — sans rien taper. Wallet, Mail et Plans sont aussi intégrés — essayez-les dans l’app.',
     },
     nav: { features: 'Intégrations', how: 'Comment ça marche', integrations: 'Intégrations', cta: 'Obtenir l’app' },
     hero: {
@@ -598,7 +598,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Prenez la photo une fois.',
       headlineAccent: 'Elle se classe toute seule.',
       subheadline:
-        'Pointez votre appareil photo sur une carte de visite, un reçu, une affiche ou un post-it. Snapsist la lit et l’enregistre directement dans les applications déjà sur votre téléphone — Contacts, Calendrier, Rappels, Wallet, Mail — sans copier, sans ressaisir.',
+        'Pointez votre appareil photo sur une carte de visite, un reçu, une affiche ou une notice de médicament. Snapsist la lit et l’enregistre directement dans Contacts, Calendrier ou Rappels — sans copier, sans ressaisir. Wallet, Mail et Plans sont aussi intégrés — essayez-les dans l’app.',
       ctaPrimary: 'Obtenir sur TestFlight',
       ctaSecondary: 'Voir comment ça marche',
       mockCaption: 'Chaque champ est affiché avant l’enregistrement — rien ne se passe en silence.',
@@ -619,16 +619,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: 'Intégrations',
       headline: 'Elle écrit dans les applications que vous utilisez déjà',
-      sub: 'Elle écrit réellement dans ces applications — ni copie, ni contournement.',
+      sub: 'Contacts, Calendrier et Rappels s’enregistrent directement à partir de ce que vous photographiez. Les autres sont aussi de vraies intégrations fonctionnelles — essayez-les dans la démo intégrée à l’app.',
       items: [
         { icon: 'contacts', title: 'Contacts', desc: 'Nom complet, société, poste, téléphones, e-mails, adresses, anniversaire, réseaux sociaux.', tag: 'Entièrement automatique', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: 'Calendrier', desc: 'Titre, heure, lieu, alertes, récurrence — un vrai événement, pas une simple note.', tag: 'Entièrement automatique', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: 'Rappels', desc: 'Des tâches avec échéance, lieu et alertes, sous iOS.', tag: 'Entièrement automatique', platforms: ['ios'] },
-        { icon: 'photos', title: 'Photos', desc: 'Enregistrées directement dans un album, prêtes quand vous en avez besoin.', tag: 'Entièrement automatique', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: 'Des cartes signées et scannables ajoutées directement dans Wallet.', tag: 'Entièrement automatique', platforms: ['ios'] },
-        { icon: 'mail', title: 'Mail et Messages', desc: 'Un brouillon apparaît déjà rempli, prêt à être envoyé en un geste.', tag: 'Envoi en un geste', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: 'Notes', desc: 'Transmise, mise en forme, à l’app Notes via la feuille de partage.', tag: 'Classement en un geste', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: 'Plans', desc: 'Ouvre l’adresse directement dans Apple Plans ou Google Maps.', tag: 'Ouverture instantanée', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: 'Rappels', desc: 'Plans de prise de médicaments et tâches avec échéance, lieu et alertes, sous iOS.', tag: 'Entièrement automatique', platforms: ['ios'] },
+        { icon: 'photos', title: 'Photos', desc: 'Enregistrées directement dans un album, prêtes quand vous en avez besoin.', tag: 'À essayer dans la démo', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Des cartes signées et scannables ajoutées directement dans Wallet.', tag: 'À essayer dans la démo', platforms: ['ios'] },
+        { icon: 'mail', title: 'Mail et Messages', desc: 'Un brouillon apparaît déjà rempli, prêt à être envoyé en un geste.', tag: 'À essayer dans la démo', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: 'Notes', desc: 'Lors d’un traitement par lots, transmise, mise en forme, à l’app Notes via la feuille de partage.', tag: 'Classement en un geste', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: 'Plans', desc: 'Ouvre l’adresse directement dans Apple Plans ou Google Maps.', tag: 'À essayer dans la démo', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -660,12 +660,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: 'Les questions qu’on nous pose vraiment',
       items: [
-        { q: 'Dois-je créer un compte ?', a: 'Non — les fonctions principales (Contacts, Calendrier, Rappels, Wallet, Notes) fonctionnent sans compte. Un compte n’est nécessaire que pour le forfait Pro : photos illimitées, traitement par lots et historique synchronisé entre appareils.' },
+        { q: 'Dois-je créer un compte ?', a: 'Non — les fonctions principales (Contacts, Calendrier, Rappels) fonctionnent sans compte, et vous pouvez aussi essayer Wallet, Mail et Plans dans la démo de l’app sans compte. Créer un compte gratuit vous donne un historique synchronisé dans le tableau de bord web. Le forfait Pro supprime en plus la limite mensuelle de photos et ajoute le traitement par lots.' },
         { q: 'Ma photo est-elle stockée quelque part ?', a: 'Votre photo est envoyée pour être analysée, puis stockée de manière sécurisée afin que vous puissiez la consulter plus tard. Si vous êtes connecté, elle est enregistrée dans l’historique de votre compte ; sinon, elle n’est associée à aucun compte. Vous pouvez supprimer votre historique ou votre compte à tout moment depuis Réglages.' },
         { q: 'Et si Snapsist se trompe sur un champ ?', a: 'Chaque enregistrement ouvre d’abord un écran de vérification listant exactement les champs qui vont être écrits. Vous pouvez tout modifier, ou annuler — rien n’est enregistré tant que vous n’avez pas confirmé.' },
         { q: 'Pourquoi Snapsist ouvre-t-il la feuille de partage pour Notes au lieu d’enregistrer directement ?', a: 'Ni Apple ni Google ne fournissent d’API publique pour leurs applications Notes / Keep, donc aucune application tierce ne peut y écrire directement. Snapsist transmet donc une note déjà mise en forme via la feuille de partage — un geste au lieu de zéro, ce qui est le maximum qu’il soit techniquement possible d’automatiser.' },
-        { q: 'Est-ce disponible sur Android ?', a: 'Snapsist est pour l’instant réservé à iOS, sur TestFlight. Rappels et Apple Wallet sont de toute façon des fonctions propres à iOS, donc elles resteraient réservées à iOS même avec une version Android.' },
-        { q: 'Combien ça coûte ?', a: 'Le forfait Free couvre 10 photos par mois. Pro coûte 4,99 $/mois pour des photos illimitées, le traitement par lots et l’historique synchronisé — et pendant la bêta, Pro est débloqué gratuitement pour tout le monde.' },
+        { q: 'Est-ce disponible sur Android ?', a: 'Une version Android est en développement — vous pouvez rejoindre dès maintenant la bêta iOS sur TestFlight. Rappels et Apple Wallet sont de toute façon des fonctions propres à iOS, donc elles resteront réservées à iOS même une fois Android disponible.' },
+        { q: 'Combien ça coûte ?', a: 'Le forfait Free couvre 10 photos par mois, et un compte gratuit vous donne un historique synchronisé dans le tableau de bord web. Pro coûte 4,99 $/mois pour des photos illimitées et le traitement par lots — et pendant la bêta, Pro est débloqué gratuitement pour tout le monde.' },
         { q: 'Puis-je résilier à tout moment ?', a: 'Oui — résiliez depuis Réglages quand vous voulez. Vous repassez immédiatement au forfait Free, et tout ce que vous avez déjà enregistré reste tel quel.' },
         { q: 'Puis-je supprimer mon compte ?', a: 'Oui. Réglages propose une option Supprimer le compte qui efface immédiatement et définitivement votre compte et vos données — sans avoir à contacter le support.' },
       ],
@@ -685,7 +685,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     meta: {
       title: 'Snapsist — Ein Foto, automatisch abgelegt',
       description:
-        'Snapsist liest das Foto einer Visitenkarte, eines Kassenbons, eines Veranstaltungsflyers oder einer Notiz und speichert es direkt in Kontakte, Kalender, Erinnerungen, Wallet und mehr — ganz ohne Tippen.',
+        'Snapsist liest das Foto einer Visitenkarte, eines Kassenbons, eines Veranstaltungsflyers oder eines Medikamentenzettels und speichert es direkt in Kontakte, Kalender oder Erinnerungen — ganz ohne Tippen. Wallet, Mail und Karten sind ebenfalls eingebaut — probier sie in der App aus.',
     },
     nav: { features: 'Integrationen', how: 'So funktioniert’s', integrations: 'Integrationen', cta: 'App holen' },
     hero: {
@@ -693,7 +693,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Einmal fotografieren.',
       headlineAccent: 'Es legt sich von selbst ab.',
       subheadline:
-        'Richte die Kamera auf eine Visitenkarte, einen Kassenbon, einen Flyer oder einen Notizzettel. Snapsist liest ihn und schreibt ihn direkt in die Apps, die du schon auf deinem Handy hast — Kontakte, Kalender, Erinnerungen, Wallet, Mail — ohne Abschreiben, ohne Kopieren.',
+        'Richte die Kamera auf eine Visitenkarte, einen Kassenbon, einen Flyer oder einen Medikamentenzettel. Snapsist liest ihn und schreibt ihn direkt in Kontakte, Kalender oder Erinnerungen — ohne Abschreiben, ohne Kopieren. Wallet, Mail und Karten sind ebenfalls eingebaut — probier sie in der App aus.',
       ctaPrimary: 'Auf TestFlight holen',
       ctaSecondary: 'So funktioniert’s',
       mockCaption: 'Jedes Feld wird vor dem Speichern angezeigt — nichts passiert im Stillen.',
@@ -714,16 +714,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
     features: {
       eyebrow: 'Integrationen',
       headline: 'Schreibt in die Apps, denen du schon vertraust',
-      sub: 'Es schreibt wirklich in diese Apps — keine Kopie, kein Umweg.',
+      sub: 'Kontakte, Kalender und Erinnerungen speichern direkt aus dem, was du fotografierst. Auch die anderen sind echte, funktionierende Integrationen — probier sie in der App-eigenen Demo aus.',
       items: [
         { icon: 'contacts', title: 'Kontakte', desc: 'Vollständiger Name, Firma, Position, Telefonnummern, E-Mails, Adressen, Geburtstag, Social-Media-Profile.', tag: 'Vollautomatisch', platforms: ['ios', 'android'] },
         { icon: 'calendar', title: 'Kalender', desc: 'Titel, Uhrzeit, Ort, Erinnerungen, Wiederholung — ein echter Termin, keine Notiz.', tag: 'Vollautomatisch', platforms: ['ios', 'android'] },
-        { icon: 'reminders', title: 'Erinnerungen', desc: 'To-dos mit Fälligkeitsdatum, Ort und Erinnerungen unter iOS.', tag: 'Vollautomatisch', platforms: ['ios'] },
-        { icon: 'photos', title: 'Fotos', desc: 'Direkt in einem Album gespeichert, bereit, wenn du sie brauchst.', tag: 'Vollautomatisch', platforms: ['ios', 'android'] },
-        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signierte, scanbare Karten werden direkt zu Wallet hinzugefügt.', tag: 'Vollautomatisch', platforms: ['ios'] },
-        { icon: 'mail', title: 'Mail & Nachrichten', desc: 'Ein bereits ausgefüllter Entwurf erscheint, bereit zum Versenden mit einem Fingertipp.', tag: 'Ein Tipp zum Senden', platforms: ['ios', 'android'] },
-        { icon: 'notes', title: 'Notizen', desc: 'Formatiert und über das Teilen-Menü an die Notizen-App übergeben.', tag: 'Ein Tipp zum Ablegen', platforms: ['ios', 'android'] },
-        { icon: 'maps', title: 'Karten', desc: 'Öffnet die Adresse direkt in Apple oder Google Maps.', tag: 'Öffnet sofort', platforms: ['ios', 'android'] },
+        { icon: 'reminders', title: 'Erinnerungen', desc: 'Medikamentenpläne und To-dos mit Fälligkeitsdatum, Ort und Erinnerungen unter iOS.', tag: 'Vollautomatisch', platforms: ['ios'] },
+        { icon: 'photos', title: 'Fotos', desc: 'Direkt in einem Album gespeichert, bereit, wenn du sie brauchst.', tag: 'In der Demo ausprobieren', platforms: ['ios', 'android'] },
+        { icon: 'wallet', title: 'Apple Wallet', desc: 'Signierte, scanbare Karten werden direkt zu Wallet hinzugefügt.', tag: 'In der Demo ausprobieren', platforms: ['ios'] },
+        { icon: 'mail', title: 'Mail & Nachrichten', desc: 'Ein bereits ausgefüllter Entwurf erscheint, bereit zum Versenden mit einem Fingertipp.', tag: 'In der Demo ausprobieren', platforms: ['ios', 'android'] },
+        { icon: 'notes', title: 'Notizen', desc: 'Bei der Stapelverarbeitung formatiert und über das Teilen-Menü an die Notizen-App übergeben.', tag: 'Ein Tipp zum Ablegen', platforms: ['ios', 'android'] },
+        { icon: 'maps', title: 'Karten', desc: 'Öffnet die Adresse direkt in Apple oder Google Maps.', tag: 'In der Demo ausprobieren', platforms: ['ios', 'android'] },
       ],
     },
     preview: {
@@ -755,12 +755,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       eyebrow: 'FAQ',
       headline: 'Fragen, die wirklich gestellt werden',
       items: [
-        { q: 'Muss ich ein Konto erstellen?', a: 'Nein — die Kernfunktionen (Kontakte, Kalender, Erinnerungen, Wallet, Notizen) funktionieren ohne Konto. Ein Konto ist nur für den Pro-Plan nötig: unbegrenzte Fotos, Stapelverarbeitung und geräteübergreifend synchronisierter Verlauf.' },
+        { q: 'Muss ich ein Konto erstellen?', a: 'Nein — die Kernfunktionen (Kontakte, Kalender, Erinnerungen) funktionieren ohne Konto, und auch Wallet, Mail und Karten kannst du in der App-Demo ohne Konto ausprobieren. Mit einem kostenlosen Konto erhältst du einen synchronisierten Verlauf im Web-Dashboard. Der Pro-Plan entfernt zusätzlich das monatliche Foto-Limit und bringt Stapelverarbeitung.' },
         { q: 'Wird mein Foto irgendwo gespeichert?', a: 'Dein Foto wird zur Analyse gesendet und anschließend sicher gespeichert, damit du es später einsehen kannst. Bist du angemeldet, wird es im Verlauf deines Kontos gespeichert; bist du nicht angemeldet, wird es keinem Konto zugeordnet. Du kannst deinen Verlauf oder dein Konto jederzeit in den Einstellungen löschen.' },
         { q: 'Was, wenn Snapsist ein Feld falsch erkennt?', a: 'Jeder Speichervorgang öffnet zuerst einen Prüfbildschirm mit genau den Feldern, die geschrieben werden. Du kannst alles bearbeiten oder abbrechen — gespeichert wird erst nach deiner Bestätigung.' },
         { q: 'Warum öffnet Snapsist für Notizen das Teilen-Menü, statt direkt zu speichern?', a: 'Weder Apple noch Google bieten eine öffentliche Schnittstelle für ihre Notizen- / Keep-App, sodass keine Drittanbieter-App direkt hineinschreiben kann. Snapsist übergibt stattdessen eine formatierte Notiz über das Teilen-Menü — ein Fingertipp statt null, mehr Automatisierung ist technisch nicht möglich.' },
-        { q: 'Gibt es das auch für Android?', a: 'Snapsist ist derzeit nur für iOS verfügbar, über TestFlight. Erinnerungen und Apple Wallet sind ohnehin iOS-spezifische Funktionen, die auch bei einer Android-Version iOS-exklusiv blieben.' },
-        { q: 'Was kostet es?', a: 'Der Free-Plan deckt 10 Fotos im Monat ab. Pro kostet 4,99 $/Monat für unbegrenzte Fotos, Stapelverarbeitung und synchronisierten Verlauf — und während der Beta ist Pro für alle kostenlos freigeschaltet.' },
+        { q: 'Gibt es das auch für Android?', a: 'Eine Android-Version ist in Arbeit — im Moment kannst du der iOS-Beta auf TestFlight beitreten. Erinnerungen und Apple Wallet sind ohnehin iOS-spezifische Funktionen und bleiben auch nach dem Android-Start iOS-exklusiv.' },
+        { q: 'Was kostet es?', a: 'Der Free-Plan deckt 10 Fotos im Monat ab, und ein kostenloses Konto gibt dir einen synchronisierten Verlauf im Web-Dashboard. Pro kostet 4,99 $/Monat für unbegrenzte Fotos und Stapelverarbeitung — und während der Beta ist Pro für alle kostenlos freigeschaltet.' },
         { q: 'Kann ich jederzeit kündigen?', a: 'Ja — kündige jederzeit in den Einstellungen. Du wechselst sofort zurück zum Free-Plan, und alles, was du bereits gespeichert hast, bleibt erhalten.' },
         { q: 'Kann ich mein Konto löschen?', a: 'Ja. In den Einstellungen gibt es die Option „Konto löschen“, die dein Konto und deine Daten sofort dauerhaft entfernt — ganz ohne Support-Anfrage.' },
       ],

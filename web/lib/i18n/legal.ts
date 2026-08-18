@@ -36,7 +36,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Accounts',
-          body: 'An account is optional and only needed for the Pro plan. You’re responsible for keeping your login credentials secure. You can delete your account and all associated data at any time from Settings in the app — deletion is immediate and permanent.',
+          body: 'An account is optional — the core features work without one. Creating a free account gets you synced history in the web dashboard; the Pro plan additionally requires one. You’re responsible for keeping your login credentials secure. You can delete your account and all associated data at any time from Settings in the app — deletion is immediate and permanent.',
         },
         {
           heading: 'Subscriptions (Pro plan)',
@@ -164,7 +164,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '계정',
-          body: '계정은 선택 사항이며 Pro 플랜을 사용할 때만 필요합니다. 로그인 정보를 안전하게 보관할 책임은 사용자에게 있습니다. 앱의 설정에서 언제든지 계정과 관련 데이터를 삭제할 수 있으며, 삭제는 즉시 영구적으로 처리됩니다.',
+          body: '계정은 선택 사항이며, 핵심 기능은 계정 없이도 사용할 수 있습니다. 무료 계정을 만들면 웹 대시보드에서 히스토리가 동기화되고, Pro 플랜을 이용하려면 계정이 필요합니다. 로그인 정보를 안전하게 보관할 책임은 사용자에게 있습니다. 앱의 설정에서 언제든지 계정과 관련 데이터를 삭제할 수 있으며, 삭제는 즉시 영구적으로 처리됩니다.',
         },
         {
           heading: '구독 (Pro 플랜)',
@@ -286,7 +286,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'アカウント',
-          body: 'アカウントは任意で、Proプランを利用する場合にのみ必要です。ログイン情報の管理はユーザーの責任で行ってください。アプリの設定からいつでもアカウントと関連データを削除でき、削除は即時かつ完全に行われます。',
+          body: 'アカウントは任意で、主要な機能はアカウントなしでもご利用いただけます。無料アカウントを作成すると、Webダッシュボードで履歴が同期されます。Proプランをご利用の場合はアカウントが必要です。ログイン情報の管理はユーザーの責任で行ってください。アプリの設定からいつでもアカウントと関連データを削除でき、削除は即時かつ完全に行われます。',
         },
         {
           heading: 'サブスクリプション（Proプラン）',
@@ -405,7 +405,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '账户',
-          body: '账户是可选的，仅在使用 Pro 套餐时才需要。您需自行妥善保管登录凭证。您可以随时在应用的设置中删除账户及相关数据，删除会立即且永久生效。',
+          body: '账户是可选的——核心功能无需账户即可使用。创建免费账户即可在网页控制面板中同步历史记录；使用 Pro 套餐则需要账户。您需自行妥善保管登录凭证。您可以随时在应用的设置中删除账户及相关数据，删除会立即且永久生效。',
         },
         {
           heading: '订阅（Pro 套餐）',
@@ -524,7 +524,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Cuentas',
-          body: 'Crear una cuenta es opcional y solo se necesita para el plan Pro. Eres responsable de mantener seguras tus credenciales de acceso. Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde Ajustes en la app — la eliminación es inmediata y permanente.',
+          body: 'Crear una cuenta es opcional — las funciones principales funcionan sin ella. Crear una cuenta gratuita te da un historial sincronizado en el panel web; el plan Pro sí requiere una cuenta. Eres responsable de mantener seguras tus credenciales de acceso. Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde Ajustes en la app — la eliminación es inmediata y permanente.',
         },
         {
           heading: 'Suscripciones (plan Pro)',
@@ -643,7 +643,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Comptes',
-          body: 'La création d’un compte est facultative et n’est nécessaire que pour le forfait Pro. Vous êtes responsable de la sécurité de vos identifiants. Vous pouvez supprimer votre compte et toutes les données associées à tout moment depuis Réglages dans l’app — la suppression est immédiate et définitive.',
+          body: 'La création d’un compte est facultative — les fonctionnalités principales fonctionnent sans compte. Créer un compte gratuit vous donne un historique synchronisé dans le tableau de bord web ; le forfait Pro nécessite un compte. Vous êtes responsable de la sécurité de vos identifiants. Vous pouvez supprimer votre compte et toutes les données associées à tout moment depuis Réglages dans l’app — la suppression est immédiate et définitive.',
         },
         {
           heading: 'Abonnements (forfait Pro)',
@@ -762,7 +762,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Konten',
-          body: 'Ein Konto ist optional und wird nur für den Pro-Plan benötigt. Du bist selbst dafür verantwortlich, deine Anmeldedaten sicher aufzubewahren. Du kannst dein Konto und alle zugehörigen Daten jederzeit in den Einstellungen der App löschen — die Löschung erfolgt sofort und endgültig.',
+          body: 'Ein Konto ist optional — die wichtigsten Funktionen funktionieren auch ohne. Mit einem kostenlosen Konto erhältst du einen synchronisierten Verlauf im Web-Dashboard; für den Pro-Plan ist ein Konto erforderlich. Du bist selbst dafür verantwortlich, deine Anmeldedaten sicher aufzubewahren. Du kannst dein Konto und alle zugehörigen Daten jederzeit in den Einstellungen der App löschen — die Löschung erfolgt sofort und endgültig.',
         },
         {
           heading: 'Abonnements (Pro-Plan)',

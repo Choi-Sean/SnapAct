@@ -22,12 +22,35 @@ app = FastAPI(title="Snapsist API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
+    # Matches the production domain plus any Vercel preview/deployment URL
+    # (project name isn't fixed, so the exact preview hostnames vary).
+    allow_origin_regex=r"https://([a-zA-Z0-9-]+\.)*snapsist\.app|https://[a-zA-Z0-9-]+\.vercel\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10 MB
+ALLOWED_CONTENT_TYPES_PREFIX = "image/"
+ALLOWED_NON_IMAGE_CONTENT_TYPES = {"application/pdf"}
+
+
+async def _read_limited(file: UploadFile, max_bytes: int) -> bytes:
+    """Reads in chunks and aborts as soon as max_bytes is exceeded, so a
+    request can't force the server to buffer an arbitrarily large body in
+    memory first — the X-API-Key is embedded in the public app bundle, so
+    this can't rely on the caller behaving."""
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(256 * 1024)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_bytes:
+            raise HTTPException(status_code=413, detail="File too large (max 10MB).")
+        chunks.append(chunk)
+    return b"".join(chunks)
 
 
 @app.on_event("startup")
@@ -68,37 +91,49 @@ def auth_login(req: LoginRequest, request: Request):
     return auth.login(req)
 
 
-@app.get("/auth/me", response_model=UserOut)
+def check_account_rate(request: Request) -> None:
+    # Defense in depth: these all already require a valid JWT, but a leaked
+    # token (or a bug) shouldn't be able to hammer the DB without limit.
+    # Declared via the route's `dependencies=` list (not called from inside
+    # the function body) specifically so it runs BEFORE the auth dependency
+    # below it does its own DB lookup — same pattern as require_api_key.
+    rate_limiter.check(f"account:{get_client_ip(request)}", 60, 3600)
+
+
+_account_rate_limited = [Depends(check_account_rate)]
+
+
+@app.get("/auth/me", response_model=UserOut, dependencies=_account_rate_limited)
 def auth_me(user: UserOut = Depends(auth.get_current_user)):
     return user
 
 
-@app.post("/account/cancel-plan", response_model=UserOut)
+@app.post("/account/cancel-plan", response_model=UserOut, dependencies=_account_rate_limited)
 def account_cancel_plan(user: UserOut = Depends(auth.cancel_plan)):
     return user
 
 
-@app.post("/account/pause-plan", response_model=UserOut)
+@app.post("/account/pause-plan", response_model=UserOut, dependencies=_account_rate_limited)
 def account_pause_plan(user: UserOut = Depends(auth.pause_plan)):
     return user
 
 
-@app.post("/account/resume-plan", response_model=UserOut)
+@app.post("/account/resume-plan", response_model=UserOut, dependencies=_account_rate_limited)
 def account_resume_plan(user: UserOut = Depends(auth.resume_plan)):
     return user
 
 
-@app.get("/account/summary", response_model=AccountSummary)
+@app.get("/account/summary", response_model=AccountSummary, dependencies=_account_rate_limited)
 def account_summary(summary: AccountSummary = Depends(auth.get_account_summary)):
     return summary
 
 
-@app.get("/history", response_model=list[HistoryEntryOut])
+@app.get("/history", response_model=list[HistoryEntryOut], dependencies=_account_rate_limited)
 def history(entries: list[HistoryEntryOut] = Depends(auth.list_history)):
     return entries
 
 
-@app.delete("/account", status_code=204)
+@app.delete("/account", status_code=204, dependencies=_account_rate_limited)
 def account_delete(_: None = Depends(auth.delete_account)):
     return None
 
@@ -188,10 +223,13 @@ async def analyze(
 
     if not file.content_type:
         raise HTTPException(status_code=400, detail="File must have a content type.")
+    if not (
+        file.content_type.startswith(ALLOWED_CONTENT_TYPES_PREFIX)
+        or file.content_type in ALLOWED_NON_IMAGE_CONTENT_TYPES
+    ):
+        raise HTTPException(status_code=400, detail="Unsupported file type.")
 
-    image_bytes = await file.read()
-    if len(image_bytes) > MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (max 10MB).")
+    image_bytes = await _read_limited(file, MAX_IMAGE_BYTES)
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 

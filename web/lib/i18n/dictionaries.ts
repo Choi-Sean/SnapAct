@@ -167,7 +167,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
         {
           q: 'Does my photo get stored anywhere?',
-          a: 'Your photo is sent once for analysis and discarded immediately after — Snapsist’s backend doesn’t keep a copy or a history of what you’ve scanned.',
+          a: 'Your photo is sent for analysis, then stored securely so you can access it later. If you’re signed in, it’s saved to your account’s history; if not, it isn’t linked to any account. You can delete your history or account anytime from Settings.',
         },
         {
           q: 'What if Snapsist gets a field wrong?',
@@ -281,7 +281,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '실제로 많이 물어보시는 것들',
       items: [
         { q: '계정을 만들어야 하나요?', a: '아니요 — 핵심 기능(연락처, 캘린더, 미리 알림, Wallet, 메모)은 계정 없이도 다 됩니다. 계정은 Pro 플랜(무제한 처리, 일괄 처리, 기기 간 기록 동기화)을 쓸 때만 필요해요.' },
-        { q: '제 사진이 어딘가에 저장되나요?', a: '사진은 분석을 위해 한 번 전송되고 즉시 폐기됩니다 — Snapsist 백엔드는 스캔한 사진의 사본이나 기록을 보관하지 않습니다.' },
+        { q: '제 사진이 어딘가에 저장되나요?', a: '사진은 분석을 위해 전송된 뒤, 나중에 다시 확인할 수 있도록 안전하게 저장돼요. 로그인 상태라면 계정 히스토리에 저장되고, 로그인하지 않았다면 어떤 계정에도 연결되지 않아요. 설정에서 언제든 히스토리나 계정을 삭제할 수 있어요.' },
         { q: '항목을 잘못 인식하면 어떡하죠?', a: '저장 전에 항상 확인 화면이 먼저 뜨고, 실제로 저장될 항목을 정확히 보여줍니다. 뭐든 수정하거나 취소할 수 있고, 확인을 누르기 전엔 아무것도 저장되지 않아요.' },
         { q: '왜 메모는 바로 저장 안 하고 공유 시트를 여나요?', a: 'Apple과 Google 둘 다 Notes/Keep 앱에 쓸 수 있는 공개 API를 제공하지 않아서, 어떤 서드파티 앱도 직접 쓸 방법이 없어요. 그래서 Snapsist는 정리된 메모를 공유 시트로 넘겨줍니다 — 탭 0번이 아니라 1번이지만, 기술적으로 가능한 최선입니다.' },
         { q: 'Android도 지원하나요?', a: '지금은 iOS 전용(TestFlight 베타)입니다. 미리 알림과 Apple Wallet은 애초에 iOS 전용 프레임워크라, Android 버전이 나와도 이 두 개는 계속 iOS에서만 됩니다.' },
@@ -376,7 +376,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '実際によく聞かれること',
       items: [
         { q: 'アカウント登録は必要ですか？', a: 'いいえ — 主要機能（連絡先、カレンダー、リマインダー、Wallet、メモ）はアカウントなしで使えます。アカウントが必要なのはProプラン（無制限処理、一括処理、デバイス間の履歴同期）を使う場合だけです。' },
-        { q: '撮影した写真はどこかに保存されますか？', a: '写真は解析のために一度だけ送信され、直後に破棄されます — Snapsistのサーバーはスキャンした写真のコピーや履歴を保持しません。' },
+        { q: '撮影した写真はどこかに保存されますか？', a: '写真は解析のために送信された後、後から確認できるよう安全に保存されます。ログイン中の場合はアカウントの履歴に保存され、ログインしていない場合はどのアカウントにも紐づけられません。設定からいつでも履歴やアカウントを削除できます。' },
         { q: '内容が間違って認識された場合は？', a: '保存前に必ず確認画面が開き、実際に書き込まれる項目が正確に表示されます。内容を編集したりキャンセルしたりでき、確定するまで何も保存されません。' },
         { q: 'なぜメモは直接保存せず共有シートを開くのですか？', a: 'AppleもGoogleもメモ/Keepアプリへの公開APIを提供していないため、どのサードパーティアプリも直接書き込む方法がありません。そのためSnapsistは整形済みのメモを共有シート経由で渡します — タップ0回ではなく1回になりますが、技術的に可能な最善の方法です。' },
         { q: 'Androidにも対応していますか？', a: '現在はiOS専用（TestFlightベータ）です。リマインダーとApple Walletはそもそもの機能上iOS専用のため、Android版が出てもこの2つはiOSのみとなります。' },
@@ -471,7 +471,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: '大家真正会问的问题',
       items: [
         { q: '需要注册账号吗？', a: '不需要。核心功能（通讯录、日历、提醒事项、Wallet、备忘录）不需要账号也能用。只有使用 Pro 套餐（无限处理、批量处理、跨设备记录同步）时才需要账号。' },
-        { q: '我的照片会被存储在哪里吗？', a: '照片仅用于一次性分析，分析完立即删除 — Snapsist 的服务器不会保留你扫描过内容的副本或记录。' },
+        { q: '我的照片会被存储在哪里吗？', a: '照片会用于分析，随后安全存储，以便您日后查看。如果您已登录，照片会保存在账户的历史记录中；如果未登录，则不会关联任何账户。您可以随时在设置中删除历史记录或账户。' },
         { q: '如果 Snapsist 识别错了怎么办？', a: '每次保存前都会先打开确认页面，列出即将写入的具体内容。你可以修改任意内容，或直接取消 — 在你确认之前不会保存任何东西。' },
         { q: '为什么备忘录不能直接保存，而是打开分享面板？', a: '苹果和谷歌都没有为备忘录 / Keep 应用提供公开的接口，所以任何第三方应用都无法直接写入。因此 Snapsist 会通过分享面板把整理好的备忘录传递过去 — 虽然要多点一下，但这已经是技术上能做到的最好方式。' },
         { q: '支持 Android 吗？', a: '目前仅支持 iOS（TestFlight 测试版）。提醒事项和 Apple Wallet 本身就是 iOS 专属功能，即使以后推出 Android 版本，这两项功能仍只在 iOS 上可用。' },
@@ -566,7 +566,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Lo que la gente realmente pregunta',
       items: [
         { q: '¿Necesito crear una cuenta?', a: 'No — las funciones principales (Contactos, Calendario, Recordatorios, Wallet, Notas) funcionan sin cuenta. Solo hace falta una cuenta para el plan Pro: fotos ilimitadas, procesamiento por lotes e historial sincronizado entre dispositivos.' },
-        { q: '¿Se guarda mi foto en algún sitio?', a: 'Tu foto se envía una sola vez para analizarla y se descarta de inmediato — el servidor de Snapsist no conserva copia ni historial de lo que has escaneado.' },
+        { q: '¿Se guarda mi foto en algún sitio?', a: 'Tu foto se envía para analizarla y luego se almacena de forma segura para que puedas consultarla más tarde. Si has iniciado sesión, se guarda en el historial de tu cuenta; si no, no se vincula a ninguna cuenta. Puedes eliminar tu historial o tu cuenta cuando quieras desde Ajustes.' },
         { q: '¿Y si Snapsist reconoce mal un campo?', a: 'Cada guardado abre primero una pantalla de revisión con los campos exactos que se van a escribir. Puedes editar cualquier cosa o cancelar — no se guarda nada hasta que confirmas.' },
         { q: '¿Por qué Snapsist abre la hoja de compartir para Notas en vez de guardar directamente?', a: 'Ni Apple ni Google ofrecen una API pública para sus apps de Notas / Keep, así que ninguna app externa puede escribir directamente en ellas. Snapsist entrega en su lugar una nota ya formateada mediante la hoja de compartir — un toque en vez de cero, que es lo máximo que se puede automatizar técnicamente.' },
         { q: '¿Está disponible en Android?', a: 'Por ahora Snapsist es solo para iOS, en TestFlight. Recordatorios y Apple Wallet son funciones exclusivas de iOS de todos modos, así que seguirían siendo solo de iOS aunque hubiera una versión para Android.' },
@@ -661,7 +661,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Les questions qu’on nous pose vraiment',
       items: [
         { q: 'Dois-je créer un compte ?', a: 'Non — les fonctions principales (Contacts, Calendrier, Rappels, Wallet, Notes) fonctionnent sans compte. Un compte n’est nécessaire que pour le forfait Pro : photos illimitées, traitement par lots et historique synchronisé entre appareils.' },
-        { q: 'Ma photo est-elle stockée quelque part ?', a: 'Votre photo est envoyée une seule fois pour être analysée, puis immédiatement supprimée — le serveur de Snapsist ne conserve ni copie ni historique de ce que vous avez numérisé.' },
+        { q: 'Ma photo est-elle stockée quelque part ?', a: 'Votre photo est envoyée pour être analysée, puis stockée de manière sécurisée afin que vous puissiez la consulter plus tard. Si vous êtes connecté, elle est enregistrée dans l’historique de votre compte ; sinon, elle n’est associée à aucun compte. Vous pouvez supprimer votre historique ou votre compte à tout moment depuis Réglages.' },
         { q: 'Et si Snapsist se trompe sur un champ ?', a: 'Chaque enregistrement ouvre d’abord un écran de vérification listant exactement les champs qui vont être écrits. Vous pouvez tout modifier, ou annuler — rien n’est enregistré tant que vous n’avez pas confirmé.' },
         { q: 'Pourquoi Snapsist ouvre-t-il la feuille de partage pour Notes au lieu d’enregistrer directement ?', a: 'Ni Apple ni Google ne fournissent d’API publique pour leurs applications Notes / Keep, donc aucune application tierce ne peut y écrire directement. Snapsist transmet donc une note déjà mise en forme via la feuille de partage — un geste au lieu de zéro, ce qui est le maximum qu’il soit techniquement possible d’automatiser.' },
         { q: 'Est-ce disponible sur Android ?', a: 'Snapsist est pour l’instant réservé à iOS, sur TestFlight. Rappels et Apple Wallet sont de toute façon des fonctions propres à iOS, donc elles resteraient réservées à iOS même avec une version Android.' },
@@ -756,7 +756,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       headline: 'Fragen, die wirklich gestellt werden',
       items: [
         { q: 'Muss ich ein Konto erstellen?', a: 'Nein — die Kernfunktionen (Kontakte, Kalender, Erinnerungen, Wallet, Notizen) funktionieren ohne Konto. Ein Konto ist nur für den Pro-Plan nötig: unbegrenzte Fotos, Stapelverarbeitung und geräteübergreifend synchronisierter Verlauf.' },
-        { q: 'Wird mein Foto irgendwo gespeichert?', a: 'Dein Foto wird einmal zur Analyse gesendet und danach sofort gelöscht — der Server von Snapsist behält weder eine Kopie noch einen Verlauf dessen, was du gescannt hast.' },
+        { q: 'Wird mein Foto irgendwo gespeichert?', a: 'Dein Foto wird zur Analyse gesendet und anschließend sicher gespeichert, damit du es später einsehen kannst. Bist du angemeldet, wird es im Verlauf deines Kontos gespeichert; bist du nicht angemeldet, wird es keinem Konto zugeordnet. Du kannst deinen Verlauf oder dein Konto jederzeit in den Einstellungen löschen.' },
         { q: 'Was, wenn Snapsist ein Feld falsch erkennt?', a: 'Jeder Speichervorgang öffnet zuerst einen Prüfbildschirm mit genau den Feldern, die geschrieben werden. Du kannst alles bearbeiten oder abbrechen — gespeichert wird erst nach deiner Bestätigung.' },
         { q: 'Warum öffnet Snapsist für Notizen das Teilen-Menü, statt direkt zu speichern?', a: 'Weder Apple noch Google bieten eine öffentliche Schnittstelle für ihre Notizen- / Keep-App, sodass keine Drittanbieter-App direkt hineinschreiben kann. Snapsist übergibt stattdessen eine formatierte Notiz über das Teilen-Menü — ein Fingertipp statt null, mehr Automatisierung ist technisch nicht möglich.' },
         { q: 'Gibt es das auch für Android?', a: 'Snapsist ist derzeit nur für iOS verfügbar, über TestFlight. Erinnerungen und Apple Wallet sind ohnehin iOS-spezifische Funktionen, die auch bei einer Android-Version iOS-exklusiv blieben.' },

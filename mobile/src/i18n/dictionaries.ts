@@ -45,6 +45,11 @@ export interface Dictionary {
     proDesc: string;
     proFeatures: string[];
     proCta: string;
+    tokenIntro: string;
+    tier0FreeNote: string;
+    tokensLabelTemplate: string;
+    analysesEquivalentTemplate: string;
+    buyButton: string;
   };
   account: {
     signedOutTitle: string;
@@ -59,6 +64,8 @@ export interface Dictionary {
     deleteAccountButton: string;
     deleteConfirmTitle: string;
     deleteConfirmBody: string;
+    tokenBalanceTemplate: string;
+    buyTokens: string;
   };
   home: {
     subtitle: string;
@@ -325,10 +332,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         'Priority processing',
       ],
       proCta: 'Start Pro',
+      tokenIntro: 'Business cards, receipts, and event flyers use tokens. Everything else is free.',
+      tier0FreeNote: 'Medication, documents, and unrecognized photos are always free — no tokens, no account needed.',
+      tokensLabelTemplate: '{n} tokens',
+      analysesEquivalentTemplate: '≈ {n} analyses',
+      buyButton: 'Buy',
     },
     account: {
       signedOutTitle: "You're not signed in",
-      signedOutSubtitle: 'Sign up to sync your history and unlock Pro.',
+      signedOutSubtitle: 'Sign up to sync your history and get free starter tokens.',
       viewPricing: 'View pricing →',
       logout: 'Log out',
       cancelPlanButton: 'Cancel Pro plan',
@@ -339,6 +351,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: 'Delete account',
       deleteConfirmTitle: 'Delete your account?',
       deleteConfirmBody: 'This permanently deletes your account. This cannot be undone.',
+      tokenBalanceTemplate: '{n} tokens',
+      buyTokens: 'Buy tokens →',
     },
     home: {
       subtitle: 'One photo → filed into the right app automatically',
@@ -633,10 +647,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       proDesc: '자주 쓰는 분께',
       proFeatures: ['무제한 처리', '여러 장 한번에 일괄 처리', '기록 클라우드 동기화', '우선 처리'],
       proCta: 'Pro 시작하기',
+      tokenIntro: '명함·영수증·행사 전단은 토큰이 필요해요. 나머지는 전부 무료예요.',
+      tier0FreeNote: '복약·문서·미인식 사진은 언제나 무료예요 — 토큰도, 계정도 필요 없어요.',
+      tokensLabelTemplate: '토큰 {n}개',
+      analysesEquivalentTemplate: '≈ {n}회 분석',
+      buyButton: '구매',
     },
     account: {
       signedOutTitle: '로그인되어 있지 않아요',
-      signedOutSubtitle: '가입하면 기록을 동기화하고 Pro 기능을 사용할 수 있어요.',
+      signedOutSubtitle: '가입하면 기록을 동기화하고 무료 토큰을 받을 수 있어요.',
       viewPricing: '요금제 보기 →',
       logout: '로그아웃',
       cancelPlanButton: 'Pro 해지',
@@ -647,6 +666,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: '계정 삭제',
       deleteConfirmTitle: '계정을 삭제할까요?',
       deleteConfirmBody: '계정이 영구적으로 삭제돼요. 되돌릴 수 없어요.',
+      tokenBalanceTemplate: '토큰 {n}개',
+      buyTokens: '토큰 구매 →',
     },
     home: {
       subtitle: '사진 한 장 → 알맞은 앱에 자동 저장',
@@ -941,10 +962,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       proDesc: 'よく使う方に',
       proFeatures: ['無制限に処理', '複数枚を一括処理', '履歴をデバイス間で同期', '優先処理'],
       proCta: 'Proを始める',
+      tokenIntro: '名刺・レシート・イベントチラシはトークンが必要です。それ以外はすべて無料です。',
+      tier0FreeNote: '服薬・書類・未認識の写真は常に無料です — トークンもアカウントも不要です。',
+      tokensLabelTemplate: 'トークン{n}個',
+      analysesEquivalentTemplate: '≈ {n}回の解析',
+      buyButton: '購入',
     },
     account: {
       signedOutTitle: 'ログインしていません',
-      signedOutSubtitle: '登録すると履歴を同期し、Pro機能を利用できます。',
+      signedOutSubtitle: '登録すると履歴を同期し、無料のスタータートークンがもらえます。',
       viewPricing: '料金プランを見る →',
       logout: 'ログアウト',
       cancelPlanButton: 'Proを解約',
@@ -955,6 +981,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: 'アカウントを削除',
       deleteConfirmTitle: 'アカウントを削除しますか？',
       deleteConfirmBody: 'アカウントは完全に削除されます。この操作は元に戻せません。',
+      tokenBalanceTemplate: 'トークン{n}個',
+      buyTokens: 'トークンを購入 →',
     },
     home: {
       subtitle: '写真1枚 → 適切なアプリに自動保存',
@@ -1249,10 +1277,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       proDesc: '经常使用的用户',
       proFeatures: ['无限处理', '一次批量处理多张照片', '记录跨设备同步', '优先处理'],
       proCta: '开始使用 Pro',
+      tokenIntro: '名片、收据、活动传单需要消耗代币，其余全部免费。',
+      tier0FreeNote: '服药、文档和未识别的照片始终免费——无需代币，也无需账号。',
+      tokensLabelTemplate: '{n} 个代币',
+      analysesEquivalentTemplate: '≈ {n} 次分析',
+      buyButton: '购买',
     },
     account: {
       signedOutTitle: '尚未登录',
-      signedOutSubtitle: '注册后可同步记录并解锁 Pro 功能。',
+      signedOutSubtitle: '注册后可同步记录并获得免费代币。',
       viewPricing: '查看定价 →',
       logout: '退出登录',
       cancelPlanButton: '取消 Pro',
@@ -1263,6 +1296,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: '删除账户',
       deleteConfirmTitle: '要删除账户吗？',
       deleteConfirmBody: '账户将被永久删除，且无法恢复。',
+      tokenBalanceTemplate: '{n} 个代币',
+      buyTokens: '购买代币 →',
     },
     home: {
       subtitle: '一张照片 → 自动保存到合适的应用',
@@ -1566,10 +1601,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         'Procesamiento prioritario',
       ],
       proCta: 'Empezar con Pro',
+      tokenIntro: 'Las tarjetas de presentación, recibos y carteles de eventos usan tokens. Todo lo demás es gratis.',
+      tier0FreeNote: 'Medicamentos, documentos y fotos no reconocidas siempre son gratis — sin tokens ni cuenta.',
+      tokensLabelTemplate: '{n} tokens',
+      analysesEquivalentTemplate: '≈ {n} análisis',
+      buyButton: 'Comprar',
     },
     account: {
       signedOutTitle: 'No has iniciado sesión',
-      signedOutSubtitle: 'Regístrate para sincronizar tu historial y desbloquear Pro.',
+      signedOutSubtitle: 'Regístrate para sincronizar tu historial y obtener tokens gratis.',
       viewPricing: 'Ver precios →',
       logout: 'Cerrar sesión',
       cancelPlanButton: 'Cancelar Pro',
@@ -1580,6 +1620,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: 'Eliminar cuenta',
       deleteConfirmTitle: '¿Eliminar tu cuenta?',
       deleteConfirmBody: 'Esto elimina tu cuenta de forma permanente. No se puede deshacer.',
+      tokenBalanceTemplate: '{n} tokens',
+      buyTokens: 'Comprar tokens →',
     },
     home: {
       subtitle: 'Una foto → archivada automáticamente en la app correcta',
@@ -1879,10 +1921,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         'Traitement prioritaire',
       ],
       proCta: 'Passer à Pro',
+      tokenIntro: 'Les cartes de visite, reçus et affiches d’événements utilisent des jetons. Tout le reste est gratuit.',
+      tier0FreeNote: 'Médicaments, documents et photos non reconnues sont toujours gratuits — sans jetons, sans compte.',
+      tokensLabelTemplate: '{n} jetons',
+      analysesEquivalentTemplate: '≈ {n} analyses',
+      buyButton: 'Acheter',
     },
     account: {
       signedOutTitle: "Vous n'êtes pas connecté",
-      signedOutSubtitle: 'Inscrivez-vous pour synchroniser votre historique et débloquer Pro.',
+      signedOutSubtitle: 'Inscrivez-vous pour synchroniser votre historique et recevoir des jetons gratuits.',
       viewPricing: 'Voir les tarifs →',
       logout: 'Se déconnecter',
       cancelPlanButton: 'Résilier Pro',
@@ -1893,6 +1940,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: 'Supprimer le compte',
       deleteConfirmTitle: 'Supprimer votre compte ?',
       deleteConfirmBody: 'Cela supprime définitivement votre compte. Cette action est irréversible.',
+      tokenBalanceTemplate: '{n} jetons',
+      buyTokens: 'Acheter des jetons →',
     },
     home: {
       subtitle: 'Une photo → classée automatiquement dans la bonne application',
@@ -2192,10 +2241,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         'Bevorzugte Verarbeitung',
       ],
       proCta: 'Mit Pro starten',
+      tokenIntro: 'Visitenkarten, Kassenbons und Veranstaltungsflyer benötigen Token. Alles andere ist kostenlos.',
+      tier0FreeNote: 'Medikamente, Dokumente und nicht erkannte Fotos sind immer kostenlos — ohne Token, ohne Konto.',
+      tokensLabelTemplate: '{n} Token',
+      analysesEquivalentTemplate: '≈ {n} Analysen',
+      buyButton: 'Kaufen',
     },
     account: {
       signedOutTitle: 'Du bist nicht angemeldet',
-      signedOutSubtitle: 'Registriere dich, um deinen Verlauf zu synchronisieren und Pro freizuschalten.',
+      signedOutSubtitle: 'Registriere dich, um deinen Verlauf zu synchronisieren und kostenlose Starter-Token zu erhalten.',
       viewPricing: 'Preise ansehen →',
       logout: 'Abmelden',
       cancelPlanButton: 'Pro kündigen',
@@ -2206,6 +2260,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       deleteAccountButton: 'Konto löschen',
       deleteConfirmTitle: 'Dein Konto löschen?',
       deleteConfirmBody: 'Dein Konto wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.',
+      tokenBalanceTemplate: '{n} Token',
+      buyTokens: 'Token kaufen →',
     },
     home: {
       subtitle: 'Ein Foto → automatisch in der richtigen App abgelegt',

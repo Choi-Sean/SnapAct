@@ -37,6 +37,7 @@ export interface AnalyzeResponse {
   calendar?: CalendarPayload | null;
   medication?: MedicationPayload | null;
   needs_time_selection?: boolean;
+  requires_tokens?: boolean;
   raw_text?: string | null;
   summary?: string | null;
 }

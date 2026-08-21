@@ -4,12 +4,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { cancelPlan, clearSession, deleteAccount, loadSession, Session } from './auth';
+import { clearSession, deleteAccount, getAccountSummary, loadSession, Session } from './auth';
 import AuthScreen from './AuthScreen';
 import { WEB_BASE_URL } from './config';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
-import { Locale, LOCALE_LABELS } from './i18n/dictionaries';
+import { Locale, LOCALE_LABELS, t as fmt } from './i18n/dictionaries';
 import PricingScreen from './PricingScreen';
 
 type Status = 'granted' | 'denied' | 'undetermined' | 'checking';
@@ -71,28 +71,19 @@ export default function PermissionsScreen() {
   const [pricingVisible, setPricingVisible] = useState(false);
 
   useEffect(() => {
-    loadSession().then(setSession);
+    loadSession().then((s) => {
+      setSession(s);
+      if (s) {
+        getAccountSummary(s.token)
+          .then((summary) => setSession({ ...s, token_balance: summary.token_balance }))
+          .catch(() => {});
+      }
+    });
   }, []);
 
   async function handleLogout() {
     await clearSession();
     setSession(null);
-  }
-
-  function handleCancelPlan() {
-    if (!session) return;
-    Alert.alert(t.account.cancelPlanConfirmTitle, t.account.cancelPlanConfirmBody, [
-      { text: t.review.cancelButton, style: 'cancel' },
-      {
-        text: t.account.cancelPlanButton,
-        style: 'destructive',
-        onPress: async () => {
-          const user = await cancelPlan(session.token);
-          setSession({ ...session, plan: user.plan });
-          Alert.alert(t.account.cancelPlanDoneTitle, t.account.cancelPlanDoneBody);
-        },
-      },
-    ]);
   }
 
   function handleDeleteAccount() {
@@ -162,7 +153,7 @@ export default function PermissionsScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.accountEmail}>{session.email}</Text>
                 <Text style={styles.accountPlan}>
-                  {session.plan === 'pro' ? 'Pro' : t.pricing.freeName}
+                  {fmt(t.account.tokenBalanceTemplate, { n: session.token_balance })}
                 </Text>
               </View>
               <TouchableOpacity onPress={handleLogout}>
@@ -170,14 +161,9 @@ export default function PermissionsScreen() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.pricingLink} onPress={() => setPricingVisible(true)}>
-              <Text style={styles.pricingLinkText}>{t.account.viewPricing}</Text>
+              <Text style={styles.pricingLinkText}>{t.account.buyTokens}</Text>
             </TouchableOpacity>
             <View style={styles.accountDangerRow}>
-              {session.plan === 'pro' && (
-                <TouchableOpacity onPress={handleCancelPlan}>
-                  <Text style={styles.accountDangerText}>{t.account.cancelPlanButton}</Text>
-                </TouchableOpacity>
-              )}
               <TouchableOpacity onPress={handleDeleteAccount}>
                 <Text style={styles.accountDangerText}>{t.account.deleteAccountButton}</Text>
               </TouchableOpacity>

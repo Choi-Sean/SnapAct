@@ -12,14 +12,12 @@ import {
 } from 'react-native';
 
 import { analyzePhoto } from './api';
-import { loadSession } from './auth';
 import BatchReviewModal from './BatchReviewModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
 import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
-import { countThisMonth, FREE_MONTHLY_LIMIT, hasShownUpgradePrompt, markUpgradePromptShown } from './planLimits';
 import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
 import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload } from './types';
@@ -51,17 +49,6 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
   const [batchProcessing, setBatchProcessing] = useState<{ done: number; total: number } | null>(null);
   const [batchReview, setBatchReview] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
 
-  async function checkFreeTierLimit() {
-    const session = await loadSession();
-    if (!session || session.plan !== 'free') return;
-    if (countThisMonth(history) + 1 <= FREE_MONTHLY_LIMIT) return;
-    if (await hasShownUpgradePrompt()) return;
-    await markUpgradePromptShown();
-    Alert.alert(t.home.limitExceededTitle, fmt(t.home.limitExceededBody, { n: FREE_MONTHLY_LIMIT }), [
-      { text: t.history.closeButton, style: 'cancel' },
-      { text: t.pricing.proCta, onPress: () => setPricingVisible(true) },
-    ]);
-  }
 
   async function pick(source: 'camera' | 'library') {
     const permission =
@@ -164,7 +151,12 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     setError(null);
     try {
       const response = await analyzePhoto(photo);
-      setResult(response);
+      if (response.requires_tokens) {
+        setResult(null);
+        setPricingVisible(true);
+      } else {
+        setResult(response);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -234,7 +226,6 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     if (!result || !photo) return;
     setSaving(true);
     try {
-      await checkFreeTierLimit();
       if (result.suggested_action === 'contact' && result.contact) {
         await saveContact(result.contact);
         Alert.alert(t.home.saveDoneTitle, t.home.saveContactDoneBody);

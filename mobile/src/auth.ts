@@ -5,7 +5,15 @@ import { API_BASE_URL } from './config';
 export interface Session {
   token: string;
   email: string;
-  plan: string;
+  token_balance: number;
+}
+
+export interface AccountSummary {
+  email: string;
+  token_balance: number;
+  created_at: number;
+  analyses_this_month: number;
+  analyses_total: number;
 }
 
 const SESSION_KEY = 'snapsist_session';
@@ -69,11 +77,11 @@ export async function clearSession(): Promise<void> {
   await SecureStore.deleteItemAsync(SESSION_KEY);
 }
 
-export async function cancelPlan(token: string): Promise<{ email: string; plan: string }> {
-  const user = await authedRequest<{ email: string; plan: string }>('/account/cancel-plan', 'POST', token);
+export async function getAccountSummary(token: string): Promise<AccountSummary> {
+  const summary = await authedRequest<AccountSummary>('/account/summary', 'GET', token);
   const session = await loadSession();
-  if (session) await saveSession({ ...session, plan: user.plan });
-  return user;
+  if (session) await saveSession({ ...session, token_balance: summary.token_balance });
+  return summary;
 }
 
 export async function deleteAccount(token: string): Promise<void> {

@@ -1,6 +1,8 @@
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { WEB_BASE_URL } from './config';
 import { useLanguage } from './i18n/LanguageProvider';
+import { t as fmt } from './i18n/dictionaries';
 
 interface Props {
   visible: boolean;
@@ -8,68 +10,61 @@ interface Props {
   onGetStarted: () => void;
 }
 
+// Sample pricing — keep in sync with backend/app/pricing.py TOKEN_PACKAGES.
+const TOKEN_PACKAGES = [
+  { id: 'small', tokens: 100, priceUsd: 2.99 },
+  { id: 'medium', tokens: 500, priceUsd: 9.99 },
+  { id: 'large', tokens: 1500, priceUsd: 19.99 },
+];
+const TIER1_TOKEN_COST = 10;
+
 export default function PricingScreen({ visible, onClose, onGetStarted }: Props) {
   const { t } = useLanguage();
-  const plans = [
-    {
-      key: 'free',
-      name: t.pricing.freeName,
-      price: '$0',
-      period: '',
-      desc: t.pricing.freeDesc,
-      features: t.pricing.freeFeatures,
-      cta: t.pricing.freeCta,
-      highlight: false,
-    },
-    {
-      key: 'pro',
-      name: 'Pro',
-      price: '$4.99',
-      period: t.pricing.perMonth,
-      desc: t.pricing.proDesc,
-      features: t.pricing.proFeatures,
-      cta: t.pricing.proCta,
-      highlight: true,
-    },
-  ];
+
+  function handleBuy(packageId: string) {
+    // No in-app purchase flow yet — buying happens on the website, same as
+    // the account/history dashboard does today.
+    Linking.openURL(`${WEB_BASE_URL}/dashboard?buy=${packageId}`);
+    onGetStarted();
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.title}>{t.pricing.title}</Text>
-          <Text style={styles.subtitle}>{t.pricing.betaNote}</Text>
+          <Text style={styles.subtitle}>{t.pricing.tokenIntro}</Text>
 
-          <ScrollView style={{ maxHeight: 460 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingTop: 12 }}>
-            {plans.map((plan) => (
-              <View key={plan.key} style={[styles.card, plan.highlight && styles.cardHighlight]}>
-                {plan.highlight && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{t.pricing.mostPopular}</Text>
-                  </View>
-                )}
-                <Text style={styles.planName}>{plan.name}</Text>
-                <Text style={styles.planDesc}>{plan.desc}</Text>
-                <View style={styles.priceRow}>
-                  <Text style={styles.price}>{plan.price}</Text>
-                  <Text style={styles.period}>{plan.period}</Text>
-                </View>
-                <View style={styles.featureList}>
-                  {plan.features.map((f) => (
-                    <View key={f} style={styles.featureRow}>
-                      <Text style={styles.featureCheck}>✓</Text>
-                      <Text style={styles.featureText}>{f}</Text>
+          <View style={styles.freeBanner}>
+            <Text style={styles.freeBannerText}>{t.pricing.tier0FreeNote}</Text>
+          </View>
+
+          <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingTop: 12 }}>
+            {TOKEN_PACKAGES.map((pkg) => {
+              const highlight = pkg.id === 'medium';
+              return (
+                <View key={pkg.id} style={[styles.card, highlight && styles.cardHighlight]}>
+                  {highlight && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{t.pricing.mostPopular}</Text>
                     </View>
-                  ))}
+                  )}
+                  <Text style={styles.planName}>{fmt(t.pricing.tokensLabelTemplate, { n: pkg.tokens })}</Text>
+                  <Text style={styles.planDesc}>
+                    {fmt(t.pricing.analysesEquivalentTemplate, { n: Math.floor(pkg.tokens / TIER1_TOKEN_COST) })}
+                  </Text>
+                  <View style={styles.priceRow}>
+                    <Text style={styles.price}>${pkg.priceUsd}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.ctaButton, highlight && styles.ctaButtonHighlight]}
+                    onPress={() => handleBuy(pkg.id)}
+                  >
+                    <Text style={[styles.ctaText, highlight && styles.ctaTextHighlight]}>{t.pricing.buyButton}</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={[styles.ctaButton, plan.highlight && styles.ctaButtonHighlight]}
-                  onPress={onGetStarted}
-                >
-                  <Text style={[styles.ctaText, plan.highlight && styles.ctaTextHighlight]}>{plan.cta}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+              );
+            })}
           </ScrollView>
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -93,6 +88,15 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: '800', color: '#111' },
   subtitle: { fontSize: 13, color: '#777' },
+  freeBanner: {
+    marginTop: 10,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#dcfce7',
+  },
+  freeBannerText: { fontSize: 12.5, color: '#15803d', fontWeight: '600', lineHeight: 18 },
   card: {
     borderWidth: 1,
     borderColor: '#eef0f4',
@@ -114,11 +118,6 @@ const styles = StyleSheet.create({
   planDesc: { fontSize: 12.5, color: '#777', marginTop: 2 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 12 },
   price: { fontSize: 28, fontWeight: '800', color: '#111' },
-  period: { fontSize: 13, color: '#777', fontWeight: '600' },
-  featureList: { marginTop: 12, gap: 6 },
-  featureRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  featureCheck: { color: '#16a34a', fontWeight: '800', fontSize: 13 },
-  featureText: { fontSize: 13, color: '#333', flex: 1 },
   ctaButton: { marginTop: 16, backgroundColor: '#e5e7eb', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   ctaButtonHighlight: { backgroundColor: '#2563eb' },
   ctaText: { fontWeight: '700', color: '#333', fontSize: 14 },

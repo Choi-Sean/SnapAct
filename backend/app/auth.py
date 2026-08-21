@@ -10,10 +10,10 @@ from pydantic import BaseModel, field_validator
 
 from .config import settings
 from .db import get_connection
+from .pricing import STARTER_TOKENS
 
 TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-FREE_MONTHLY_LIMIT = 10  # keep in sync with mobile/src/planLimits.ts
 
 
 class SignupRequest(BaseModel):
@@ -44,24 +44,27 @@ class LoginRequest(BaseModel):
 class AuthResponse(BaseModel):
     token: str
     email: str
-    plan: str
+    token_balance: int
 
 
 class UserOut(BaseModel):
     email: str
-    plan: str
-    paused: bool = False
+    token_balance: int
     created_at: int | None = None
 
 
 class AccountSummary(BaseModel):
     email: str
-    plan: str
-    paused: bool
+    token_balance: int
     created_at: int
     analyses_this_month: int
     analyses_total: int
-    monthly_limit: int | None  # None means unlimited (pro)
+
+
+class TokenTransactionOut(BaseModel):
+    amount: int
+    reason: str
+    created_at: int
 
 
 class HistoryEntryOut(BaseModel):
@@ -71,7 +74,6 @@ class HistoryEntryOut(BaseModel):
     detail: str | None = None
     saved_to: str | None = None
     created_at: int
-    image_url: str | None = None
 
 
 def _make_token(user_id: str) -> str:
@@ -85,6 +87,7 @@ def signup(req: SignupRequest) -> AuthResponse:
 
     password_hash = bcrypt.hashpw(req.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     user_id = str(uuid.uuid4())
+    now = int(time.time())
 
     conn = get_connection()
     try:
@@ -92,15 +95,22 @@ def signup(req: SignupRequest) -> AuthResponse:
         cur.execute("SELECT UserId FROM dbo.Users WHERE Email = %s", (req.email,))
         if cur.fetchone():
             raise HTTPException(status_code=409, detail="An account with this email already exists.")
+        # TokenBalance defaults to STARTER_TOKENS via the column's schema
+        # default (see db.py) — the ledger row below just makes that starting
+        # grant visible in the account's transaction history.
         cur.execute(
             "INSERT INTO dbo.Users (UserId, Email, PasswordHash, [Plan], CreateDate) VALUES (%s, %s, %s, 'free', %s)",
-            (user_id, req.email, password_hash, int(time.time())),
+            (user_id, req.email, password_hash, now),
+        )
+        cur.execute(
+            "INSERT INTO dbo.TokenTransactions (TokenTransactionId, UserId, Amount, Reason, CreateDate) VALUES (%s, %s, %s, %s, %s)",
+            (str(uuid.uuid4()), user_id, STARTER_TOKENS, "signup_bonus", now),
         )
         conn.commit()
     finally:
         conn.close()
 
-    return AuthResponse(token=_make_token(user_id), email=req.email, plan="free")
+    return AuthResponse(token=_make_token(user_id), email=req.email, token_balance=STARTER_TOKENS)
 
 
 def login(req: LoginRequest) -> AuthResponse:
@@ -111,7 +121,7 @@ def login(req: LoginRequest) -> AuthResponse:
     try:
         cur = conn.cursor(as_dict=True)
         cur.execute(
-            "SELECT UserId, PasswordHash, [Plan] FROM dbo.Users WHERE Email = %s", (req.email.strip().lower(),)
+            "SELECT UserId, PasswordHash, TokenBalance FROM dbo.Users WHERE Email = %s", (req.email.strip().lower(),)
         )
         row = cur.fetchone()
     finally:
@@ -122,7 +132,7 @@ def login(req: LoginRequest) -> AuthResponse:
     ):
         raise HTTPException(status_code=401, detail="Incorrect email or password.")
 
-    return AuthResponse(token=_make_token(row["UserId"]), email=req.email.strip().lower(), plan=row["Plan"])
+    return AuthResponse(token=_make_token(row["UserId"]), email=req.email.strip().lower(), token_balance=row["TokenBalance"])
 
 
 def _current_user_id(authorization: str = Header(default="")) -> str:
@@ -176,50 +186,72 @@ def get_current_user(authorization: str = Header(default="")) -> UserOut:
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, TokenBalance, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
         row = cur.fetchone()
     finally:
         conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
+    return UserOut(email=row["Email"], token_balance=row["TokenBalance"], created_at=row["CreateDate"])
 
 
-def cancel_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
+def try_spend_tokens(user_id: str, amount: int, reason: str = "analysis") -> bool:
+    """Atomically deducts `amount` tokens if (and only if) the balance covers
+    it, recording a ledger row on success. Returns whether it succeeded — the
+    WHERE clause makes this safe against two concurrent requests racing on
+    the same low balance (only one UPDATE can match and decrement it)."""
     conn = get_connection()
     try:
-        cur = conn.cursor(as_dict=True)
-        cur.execute("UPDATE dbo.Users SET [Plan] = 'free', Paused = 0, PausedAt = NULL WHERE UserId = %s", (user_id,))
-        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
-        row = cur.fetchone()
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE dbo.Users SET TokenBalance = TokenBalance - %s WHERE UserId = %s AND TokenBalance >= %s",
+            (amount, user_id, amount),
+        )
+        spent = cur.rowcount > 0
+        if spent:
+            cur.execute(
+                "INSERT INTO dbo.TokenTransactions (TokenTransactionId, UserId, Amount, Reason, CreateDate) VALUES (%s, %s, %s, %s, %s)",
+                (str(uuid.uuid4()), user_id, -amount, reason, int(time.time())),
+            )
+        conn.commit()
+        return spent
+    finally:
+        conn.close()
+
+
+def credit_tokens(user_id: str, amount: int, reason: str) -> None:
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE dbo.Users SET TokenBalance = TokenBalance + %s WHERE UserId = %s", (amount, user_id))
+        cur.execute(
+            "INSERT INTO dbo.TokenTransactions (TokenTransactionId, UserId, Amount, Reason, CreateDate) VALUES (%s, %s, %s, %s, %s)",
+            (str(uuid.uuid4()), user_id, amount, reason, int(time.time())),
+        )
         conn.commit()
     finally:
         conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
 
 
-def pause_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
+def list_token_history(
+    user_id: str = Depends(_current_user_id), limit: int = 50, offset: int = 0
+) -> list[TokenTransactionOut]:
+    limit = max(1, min(limit, 200))
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("UPDATE dbo.Users SET Paused = 1, PausedAt = %s WHERE UserId = %s", (int(time.time()), user_id))
-        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
-        row = cur.fetchone()
-        conn.commit()
+        cur.execute(
+            """
+            SELECT Amount, Reason, CreateDate
+            FROM dbo.TokenTransactions
+            WHERE UserId = %s
+            ORDER BY CreateDate DESC
+            OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """,
+            (user_id, offset, limit),
+        )
+        rows = cur.fetchall()
     finally:
         conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
-
-
-def resume_plan(user_id: str = Depends(_current_user_id)) -> UserOut:
-    conn = get_connection()
-    try:
-        cur = conn.cursor(as_dict=True)
-        cur.execute("UPDATE dbo.Users SET Paused = 0, PausedAt = NULL WHERE UserId = %s", (user_id,))
-        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
-        row = cur.fetchone()
-        conn.commit()
-    finally:
-        conn.close()
-    return UserOut(email=row["Email"], plan=row["Plan"], paused=bool(row["Paused"]), created_at=row["CreateDate"])
+    return [TokenTransactionOut(amount=r["Amount"], reason=r["Reason"], created_at=r["CreateDate"]) for r in rows]
 
 
 def get_account_summary(user_id: str = Depends(_current_user_id)) -> AccountSummary:
@@ -229,7 +261,7 @@ def get_account_summary(user_id: str = Depends(_current_user_id)) -> AccountSumm
     conn = get_connection()
     try:
         cur = conn.cursor(as_dict=True)
-        cur.execute("SELECT Email, [Plan], Paused, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
+        cur.execute("SELECT Email, TokenBalance, CreateDate FROM dbo.Users WHERE UserId = %s", (user_id,))
         user = cur.fetchone()
         cur.execute("SELECT COUNT(*) AS n FROM dbo.HistoryEntries WHERE UserId = %s AND CreateDate >= %s", (user_id, month_start))
         this_month = cur.fetchone()["n"]
@@ -240,21 +272,16 @@ def get_account_summary(user_id: str = Depends(_current_user_id)) -> AccountSumm
 
     return AccountSummary(
         email=user["Email"],
-        plan=user["Plan"],
-        paused=bool(user["Paused"]),
+        token_balance=user["TokenBalance"],
         created_at=user["CreateDate"],
         analyses_this_month=this_month,
         analyses_total=total,
-        monthly_limit=None if user["Plan"] == "pro" else FREE_MONTHLY_LIMIT,
     )
 
 
 def list_history(
     user_id: str = Depends(_current_user_id), limit: int = 20, offset: int = 0
 ) -> list[HistoryEntryOut]:
-    from . import storage
-    from .config import settings as _settings
-
     limit = max(1, min(limit, 100))
     conn = get_connection()
     try:
@@ -270,40 +297,22 @@ def list_history(
             (user_id, offset, limit),
         )
         entries = cur.fetchall()
-        if not entries:
-            return []
-
-        entry_ids = [e["HistoryEntryId"] for e in entries]
-        placeholders = ",".join("%s" for _ in entry_ids)
-        cur.execute(
-            f"SELECT HistoryEntryId, StorageKey FROM dbo.UploadedImages WHERE HistoryEntryId IN ({placeholders})",
-            tuple(entry_ids),
-        )
-        keys_by_entry = {row["HistoryEntryId"]: row["StorageKey"] for row in cur.fetchall() if row["StorageKey"]}
     finally:
         conn.close()
 
-    out = []
-    for e in entries:
-        image_url = None
-        key = keys_by_entry.get(e["HistoryEntryId"])
-        if key and _settings.r2_enabled:
-            try:
-                image_url = storage.presigned_get_url(key)
-            except Exception:
-                image_url = None
-        out.append(
-            HistoryEntryOut(
-                id=e["HistoryEntryId"],
-                type=e["Type"],
-                title=e["Title"],
-                detail=e["Detail"],
-                saved_to=e["SavedTo"],
-                created_at=e["CreateDate"],
-                image_url=image_url,
-            )
+    # No image_url here on purpose — photos never leave the device now, so
+    # the server only ever has the text fields to show, never the picture.
+    return [
+        HistoryEntryOut(
+            id=e["HistoryEntryId"],
+            type=e["Type"],
+            title=e["Title"],
+            detail=e["Detail"],
+            saved_to=e["SavedTo"],
+            created_at=e["CreateDate"],
         )
-    return out
+        for e in entries
+    ]
 
 
 def delete_account(user_id: str = Depends(_current_user_id)) -> None:

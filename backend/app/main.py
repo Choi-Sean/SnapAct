@@ -2,7 +2,6 @@ import base64
 import hmac
 import json
 import logging
-import mimetypes
 import time
 import uuid
 
@@ -10,10 +9,11 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, db, storage, vision, wallet
-from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, UserOut
+from . import auth, claude_analysis, db, vision, wallet
+from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
+from .pricing import TIER1_TOKEN_COST, TOKEN_PACKAGES, is_tier0
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -108,24 +108,19 @@ def auth_me(user: UserOut = Depends(auth.get_current_user)):
     return user
 
 
-@app.post("/account/cancel-plan", response_model=UserOut, dependencies=_account_rate_limited)
-def account_cancel_plan(user: UserOut = Depends(auth.cancel_plan)):
-    return user
-
-
-@app.post("/account/pause-plan", response_model=UserOut, dependencies=_account_rate_limited)
-def account_pause_plan(user: UserOut = Depends(auth.pause_plan)):
-    return user
-
-
-@app.post("/account/resume-plan", response_model=UserOut, dependencies=_account_rate_limited)
-def account_resume_plan(user: UserOut = Depends(auth.resume_plan)):
-    return user
-
-
 @app.get("/account/summary", response_model=AccountSummary, dependencies=_account_rate_limited)
 def account_summary(summary: AccountSummary = Depends(auth.get_account_summary)):
     return summary
+
+
+@app.get("/account/token-history", response_model=list[TokenTransactionOut], dependencies=_account_rate_limited)
+def account_token_history(entries: list[TokenTransactionOut] = Depends(auth.list_token_history)):
+    return entries
+
+
+@app.get("/account/token-packages")
+def account_token_packages():
+    return {"packages": TOKEN_PACKAGES, "tier1_cost_per_analysis": TIER1_TOKEN_COST}
 
 
 @app.get("/history", response_model=list[HistoryEntryOut], dependencies=_account_rate_limited)
@@ -148,37 +143,12 @@ def wallet_demo_pass(request: Request):
     return PlainTextResponse(base64.b64encode(pkpass_bytes).decode("ascii"))
 
 
-def _store_upload(image_bytes: bytes, content_type: str) -> str | None:
-    """Best-effort: every upload lands in R2 regardless of demo/logged-in status
-    or how the analysis turns out. Storage failures shouldn't block the response
-    the user is waiting on, so this only logs on error. Returns the R2 key so
-    callers can link it to a history entry, or None if storage isn't configured
-    or the upload failed."""
-    if not settings.r2_enabled:
-        return None
-    try:
-        extension = mimetypes.guess_extension(content_type) or ""
-        key = f"uploads/{uuid.uuid4()}{extension}"
-        storage.upload_image(key, image_bytes, content_type)
-        return key
-    except Exception:
-        logger.exception("Failed to store upload in R2")
-        return None
-
-
-def _finalize_upload(image_bytes: bytes, content_type: str, user_id: str | None, category: str, result: AnalyzeResponse) -> None:
-    """Runs after the /analyze response has already been sent (via
-    BackgroundTasks) — the client was waiting on Vision/Claude, not on R2
-    storage or a DB write, so neither should be on the critical path."""
-    storage_key = _store_upload(image_bytes, content_type)
-    if user_id:
-        _save_history_entry(user_id, category, result, storage_key, content_type)
-
-
-def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse, storage_key: str | None, content_type: str) -> None:
-    """Best-effort: a logged-in user's analysis is saved to their history (and
-    the R2 upload linked to it) so the web dashboard has real usage/history to
-    show. Never blocks or fails the /analyze response."""
+def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse) -> None:
+    """Best-effort: a logged-in user's analysis is saved to their history
+    (text fields only — the photo itself is never uploaded, so there's
+    nothing to store here beyond what got extracted) so the web dashboard
+    has real usage/history to show. Never blocks or fails the /analyze
+    response; runs after the response is already sent (BackgroundTasks)."""
     try:
         conn = db.get_connection()
         try:
@@ -193,14 +163,6 @@ def _save_history_entry(user_id: str, category: str, result: AnalyzeResponse, st
                 """,
                 (entry_id, user_id, category, (result.summary or category)[:255], result.summary, result.suggested_action, fields_json, now),
             )
-            if storage_key:
-                cur.execute(
-                    """
-                    INSERT INTO dbo.UploadedImages (UploadedImageId, UserId, HistoryEntryId, ContentType, StorageKey, SizeBytes, CreateDate)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    (str(uuid.uuid4()), user_id, entry_id, content_type, storage_key, 0, now),
-                )
             conn.commit()
         finally:
             conn.close()
@@ -254,9 +216,28 @@ async def analyze(
 
     using_real_pipeline = vision.settings.vision_enabled and claude_analysis.settings.claude_enabled and not force_mock
 
-    # Nothing recognizable in the photo — skip the Claude call entirely rather than
-    # paying for a vision request that will just come back empty.
-    if using_real_pipeline and category == "other":
+    # Tier 1 (business_card/receipt/event_flyer) is the paid product — needs
+    # a signed-in account with enough token balance. Tier 0 and mock results
+    # are always free since either nothing sensitive left the device's mock
+    # path, or no real API cost was actually incurred.
+    requires_tokens = (
+        using_real_pipeline
+        and not is_tier0(category)
+        and (not user_id or not auth.try_spend_tokens(user_id, TIER1_TOKEN_COST))
+    )
+
+    if requires_tokens:
+        result = AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            requires_tokens=True,
+            summary="This category needs an account with tokens to unlock full extraction.",
+        )
+    elif using_real_pipeline and category == "other":
+        # Nothing recognizable in the photo — skip the Claude call entirely
+        # rather than paying for a vision request that will just come back empty.
         result = AnalyzeResponse(
             mock=False,
             category=category,
@@ -285,6 +266,9 @@ async def analyze(
                 image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
             )
 
-    background_tasks.add_task(_finalize_upload, image_bytes, file.content_type, user_id, category, result)
+    # The photo itself is never uploaded — only the extracted text fields are
+    # saved, and only for a signed-in user with a real (non-locked) result.
+    if user_id and not requires_tokens:
+        background_tasks.add_task(_save_history_entry, user_id, category, result)
 
     return result

@@ -31,6 +31,29 @@ _SCHEMA_STATEMENTS = [
     IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'PausedAt')
     ALTER TABLE dbo.Users ADD PausedAt BIGINT NULL
     """,
+    # Replaces the monthly Free/Pro subscription model with pay-per-use tokens.
+    # [Plan]/Paused/PausedAt/Subscriptions are left in place rather than
+    # dropped (no longer read by new code, but harmless to keep — dropping
+    # columns on a live table is riskier than leaving unused ones).
+    """
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'TokenBalance')
+    ALTER TABLE dbo.Users ADD TokenBalance BIGINT NOT NULL DEFAULT 50
+    """,
+    """
+    IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.TokenTransactions') AND type = N'U')
+    CREATE TABLE dbo.TokenTransactions (
+        TokenTransactionId NVARCHAR(36) NOT NULL PRIMARY KEY,
+        UserId NVARCHAR(36) NOT NULL,
+        Amount BIGINT NOT NULL,
+        Reason NVARCHAR(30) NOT NULL,
+        CreateDate BIGINT NOT NULL,
+        CONSTRAINT FK_TokenTransactions_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(UserId) ON DELETE CASCADE
+    )
+    """,
+    """
+    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_TokenTransactions_UserId_CreateDate' AND object_id = OBJECT_ID('dbo.TokenTransactions'))
+    CREATE INDEX IX_TokenTransactions_UserId_CreateDate ON dbo.TokenTransactions(UserId, CreateDate DESC)
+    """,
     """
     IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.Subscriptions') AND type = N'U')
     CREATE TABLE dbo.Subscriptions (

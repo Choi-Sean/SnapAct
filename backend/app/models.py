@@ -48,5 +48,9 @@ class AnalyzeResponse(BaseModel):
     # saving (no exact time was found in the source — only a date, or only
     # meal-relative medication timing). False means it's safe to save as-is.
     needs_time_selection: bool = False
+    # True when this category is paid (Tier 1) and the request couldn't be
+    # fulfilled because the caller is a guest or doesn't have enough tokens —
+    # category/confidence are still returned, but no fields were extracted.
+    requires_tokens: bool = False
     raw_text: Optional[str] = None
     summary: Optional[str] = None

@@ -1,5 +1,11 @@
 # CLAUDE.md — SnapAct
 
+> **Status note (moved 2026-08-19):** This describes a from-scratch, on-device-first,
+> native-Swift rewrite. It does not reflect the actual current app, which is a working
+> Expo/React Native + FastAPI (server-side Vision/Claude) implementation already in
+> TestFlight with real users. Kept here as a future-direction reference, not as active
+> project instructions — moved out of `.claude/` so it isn't auto-loaded as such.
+
 ## What we're building
 
 A mobile app that receives photos from the OS share sheet, figures out what the photo is, and

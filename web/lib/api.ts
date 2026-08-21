@@ -6,17 +6,27 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://loca
 interface AuthResponse {
   token: string;
   email: string;
-  plan: string;
+  token_balance: number;
 }
 
 export interface AccountSummary {
   email: string;
-  plan: string;
-  paused: boolean;
+  token_balance: number;
   created_at: number;
   analyses_this_month: number;
   analyses_total: number;
-  monthly_limit: number | null;
+}
+
+export interface TokenTransaction {
+  amount: number;
+  reason: string;
+  created_at: number;
+}
+
+export interface TokenPackage {
+  id: string;
+  tokens: number;
+  price_usd: number;
 }
 
 export interface HistoryEntry {
@@ -26,7 +36,6 @@ export interface HistoryEntry {
   detail: string | null;
   saved_to: string | null;
   created_at: number;
-  image_url: string | null;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -75,16 +84,14 @@ export function getHistory(limit = 20, offset = 0) {
   return authedRequest<HistoryEntry[]>(`/history?limit=${limit}&offset=${offset}`);
 }
 
-export function cancelPlan() {
-  return authedRequest<{ email: string; plan: string }>('/account/cancel-plan', 'POST');
+export function getTokenHistory(limit = 50, offset = 0) {
+  return authedRequest<TokenTransaction[]>(`/account/token-history?limit=${limit}&offset=${offset}`);
 }
 
-export function pausePlan() {
-  return authedRequest<{ email: string; plan: string; paused: boolean }>('/account/pause-plan', 'POST');
-}
-
-export function resumePlan() {
-  return authedRequest<{ email: string; plan: string; paused: boolean }>('/account/resume-plan', 'POST');
+export async function getTokenPackages() {
+  const res = await fetch(`${API_BASE_URL}/account/token-packages`);
+  const data = await res.json();
+  return data as { packages: TokenPackage[]; tier1_cost_per_analysis: number };
 }
 
 export function deleteAccount() {

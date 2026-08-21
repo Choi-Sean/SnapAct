@@ -6,6 +6,7 @@ import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
 import Nav from '@/components/Nav';
 import ParamPreview from '@/components/ParamPreview';
+import PrivacyShowcase from '@/components/PrivacyShowcase';
 import Reveal from '@/components/Reveal';
 import TrustBar from '@/components/TrustBar';
 import Why from '@/components/Why';
@@ -22,6 +23,9 @@ export default function Home() {
         </Reveal>
         <Reveal>
           <Features />
+        </Reveal>
+        <Reveal>
+          <PrivacyShowcase />
         </Reveal>
         <Reveal>
           <ParamPreview />

@@ -4,36 +4,17 @@ import Link from 'next/link';
 
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
+// Sample pricing — keep in sync with backend/app/pricing.py TOKEN_PACKAGES.
+const TOKEN_PACKAGES = [
+  { id: 'small', tokens: 100, priceUsd: 2.99 },
+  { id: 'medium', tokens: 500, priceUsd: 9.99 },
+  { id: 'large', tokens: 1500, priceUsd: 19.99 },
+];
+const TIER1_TOKEN_COST = 10;
+
 export default function PricingCards() {
   const { locale } = useLanguage();
   const isKo = locale === 'ko';
-
-  const plans = [
-    {
-      name: isKo ? '무료' : 'Free',
-      price: '$0',
-      period: '',
-      desc: isKo ? '한번 써보고 싶은 분께' : 'Try it out, no commitment',
-      features: isKo
-        ? ['월 10장 처리', '연락처 · 캘린더 · 미리 알림', '무료 계정으로 히스토리 동기화']
-        : ['10 photos / month', 'Contacts · Calendar · Reminders', 'Free account syncs your history'],
-      cta: isKo ? '무료로 시작하기' : 'Start for free',
-      href: '/signup',
-      highlight: false,
-    },
-    {
-      name: 'Pro',
-      price: '$4.99',
-      period: isKo ? '/ 월' : '/ mo',
-      desc: isKo ? '자주 쓰는 분께' : 'For regular use',
-      features: isKo
-        ? ['무제한 처리', '여러 장 한번에 일괄 처리']
-        : ['Unlimited photos', 'Batch-process multiple photos at once'],
-      cta: isKo ? 'Pro 시작하기' : 'Start Pro',
-      href: '/signup?plan=pro',
-      highlight: true,
-    },
-  ];
 
   return (
     <div>
@@ -42,49 +23,61 @@ export default function PricingCards() {
           {isKo ? '심플한 요금제' : 'Simple pricing'}
         </h1>
         <p className="mx-auto mt-4 max-w-md text-[15px] text-muted">
-          {isKo ? '베타 기간엔 Pro 기능도 전부 무료로 열려있어요.' : 'During the beta, Pro features are unlocked for everyone, free.'}
+          {isKo
+            ? '명함 · 영수증 · 행사 전단 분석은 토큰을 써요. 나머지는 전부 무료예요.'
+            : 'Business card, receipt, and event flyer analyses use tokens. Everything else is free.'}
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid gap-6 sm:grid-cols-2">
-        {plans.map((plan) => (
-          <div
-            key={plan.name}
-            className={`rounded-3xl border p-8 ${
-              plan.highlight ? 'border-accent bg-accent-soft/40 shadow-xl shadow-accent/10' : 'border-border bg-surface'
-            }`}
-          >
-            {plan.highlight && (
-              <span className="mb-3 inline-block rounded-full bg-accent px-3 py-1 text-[11px] font-bold text-white">
-                {isKo ? '가장 인기' : 'Most popular'}
-              </span>
-            )}
-            <h2 className="text-xl font-extrabold">{plan.name}</h2>
-            <p className="mt-1 text-[13px] text-muted">{plan.desc}</p>
-            <p className="mt-5">
-              <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
-              <span className="text-sm font-semibold text-muted">{plan.period}</span>
-            </p>
+      <div className="mx-auto mt-10 max-w-lg rounded-2xl border border-good/30 bg-good/10 px-6 py-4 text-center text-[13.5px] font-semibold text-good">
+        {isKo
+          ? '복약 · 문서 · 미인식 사진은 언제나 무료예요 — 토큰도, 계정도 필요 없어요.'
+          : 'Medication, documents, and unrecognized photos are always free — no tokens, no account needed.'}
+      </div>
 
-            <ul className="mt-6 space-y-2.5">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-[13.5px] text-text">
-                  <span className="mt-0.5 text-good">✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href={plan.href}
-              className={`mt-8 block rounded-xl py-3 text-center text-sm font-bold ${
-                plan.highlight ? 'bg-accent text-white' : 'bg-surface-alt text-text'
+      <div className="mx-auto mt-8 grid gap-6 sm:grid-cols-3">
+        {TOKEN_PACKAGES.map((pkg) => {
+          const highlight = pkg.id === 'medium';
+          return (
+            <div
+              key={pkg.id}
+              className={`rounded-3xl border p-8 ${
+                highlight ? 'border-accent bg-accent-soft/40 shadow-xl shadow-accent/10' : 'border-border bg-surface'
               }`}
             >
-              {plan.cta}
-            </Link>
-          </div>
-        ))}
+              {highlight && (
+                <span className="mb-3 inline-block rounded-full bg-accent px-3 py-1 text-[11px] font-bold text-white">
+                  {isKo ? '가장 인기' : 'Most popular'}
+                </span>
+              )}
+              <h2 className="text-2xl font-extrabold">{pkg.tokens.toLocaleString()}</h2>
+              <p className="text-[13px] text-muted">{isKo ? '토큰' : 'tokens'}</p>
+              <p className="mt-4 text-[13px] text-muted">
+                {isKo ? `분석 약 ${Math.floor(pkg.tokens / TIER1_TOKEN_COST)}회` : `≈ ${Math.floor(pkg.tokens / TIER1_TOKEN_COST)} analyses`}
+              </p>
+              <p className="mt-5">
+                <span className="text-4xl font-extrabold tracking-tight">${pkg.priceUsd}</span>
+              </p>
+
+              <button
+                disabled
+                title={isKo ? '결제 연동 준비 중이에요' : 'Payment integration coming soon'}
+                className="mt-8 block w-full cursor-not-allowed rounded-xl bg-surface-alt py-3 text-center text-sm font-bold text-muted"
+              >
+                {isKo ? '구매 (출시 예정)' : 'Buy (coming soon)'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-10 text-center">
+        <Link href="/signup" className="rounded-xl bg-accent px-6 py-3 text-sm font-bold text-white">
+          {isKo ? '무료로 시작하고 토큰 받기' : 'Sign up free and get starter tokens'}
+        </Link>
+        <p className="mt-3 text-[12.5px] text-muted">
+          {isKo ? '가입하면 무료 토큰 50개를 드려요.' : 'New accounts get 50 free tokens.'}
+        </p>
       </div>
     </div>
   );

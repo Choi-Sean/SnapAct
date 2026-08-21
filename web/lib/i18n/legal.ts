@@ -48,7 +48,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Your content',
-          body: 'You keep ownership of your photos. We use them to extract the information you asked for and store them securely so your history is available if you want to review it later — see our Privacy Policy for details. Don’t upload photos you don’t have the right to use, or that contain illegal content.',
+          body: 'You keep ownership of your photos. We use them only to extract the information you asked for, then discard them immediately — we never store a copy on our servers. See our Privacy Policy for details. Don’t upload photos you don’t have the right to use, or that contain illegal content.',
         },
         {
           heading: 'No warranty',
@@ -67,7 +67,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: 'What we collect',
-          body: 'Photos you choose to analyze (stored securely in our cloud storage — see below), your email address if you create an account, and basic usage data (which features you use, error logs) to keep the app working.',
+          body: 'Photos you choose to analyze (processed in memory only, never stored — see below), your email address if you create an account, and basic usage data (which features you use, error logs) to keep the app working.',
         },
         {
           heading: 'What we don’t collect',
@@ -75,7 +75,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'How photos are handled',
-          body: 'A photo you submit is sent to our backend and passed to Google Cloud Vision and Anthropic’s Claude API to extract information. We also store the photo in our cloud storage so it’s available if you want to review it later. If you’re signed in, it’s linked to your account and visible in your dashboard’s history; if you’re not signed in, it’s stored but not linked to any account. Deleting your account removes your photos and history immediately and permanently.',
+          body: 'A photo you submit is sent to our backend and passed to Google Cloud Vision and Anthropic’s Claude API to extract information, then immediately discarded — we never store a copy of your photo, on our servers or anywhere else. Your device keeps its own copy in the app’s local history, entirely under your control. If you’re signed in, the extracted result (category, summary, what it was saved to) syncs to your account so you can see your history from the web dashboard — but never the photo itself.',
         },
         {
           heading: 'Third parties we use',
@@ -141,7 +141,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Moderation',
-          body: 'Photos are stored securely in our cloud storage (see our Privacy Policy) and are private to your account — never visible to other users or shared publicly. We still take every report seriously and will suspend or delete any account found to violate this policy, removing the associated content.',
+          body: 'Photos are processed in memory only and never stored on our servers (see our Privacy Policy) — so there’s no persistent image content for us to host or review after processing. We still take every report seriously and will suspend or delete any account found to violate this policy.',
         },
         {
           heading: 'Age requirement',
@@ -176,7 +176,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '콘텐츠 소유권',
-          body: '사진의 소유권은 사용자에게 있습니다. 저희는 요청하신 정보를 추출하는 용도로 사진을 사용하고, 나중에 다시 확인하실 수 있도록 안전하게 저장합니다 (자세한 내용은 개인정보처리방침 참고). 사용 권한이 없는 사진이나 불법적인 내용이 담긴 사진은 업로드하지 마세요.',
+          body: '사진의 소유권은 사용자에게 있습니다. 저희는 요청하신 정보를 추출하는 용도로만 사진을 사용한 뒤 즉시 폐기합니다 — 서버에 사본을 저장하지 않습니다 (자세한 내용은 개인정보처리방침 참고). 사용 권한이 없는 사진이나 불법적인 내용이 담긴 사진은 업로드하지 마세요.',
         },
         {
           heading: '보증하지 않음',
@@ -192,7 +192,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: '수집하는 정보',
-          body: '분석을 위해 선택한 사진(클라우드 스토리지에 안전하게 저장 — 아래 참고), 계정을 만든 경우 이메일 주소, 그리고 앱이 정상적으로 동작하도록 돕는 기본적인 사용 데이터(어떤 기능을 사용했는지, 오류 로그)를 수집합니다.',
+          body: '분석을 위해 선택한 사진(메모리에서만 처리되고 저장되지 않음 — 아래 참고), 계정을 만든 경우 이메일 주소, 그리고 앱이 정상적으로 동작하도록 돕는 기본적인 사용 데이터(어떤 기능을 사용했는지, 오류 로그)를 수집합니다.',
         },
         {
           heading: '수집하지 않는 정보',
@@ -200,7 +200,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '사진 처리 방식',
-          body: '제출한 사진은 저희 서버로 전송되어 Google Cloud Vision과 Anthropic의 Claude API로 정보 추출을 위해 전달됩니다. 이후 사진은 나중에 다시 확인하실 수 있도록 클라우드 스토리지에 안전하게 저장됩니다. 로그인한 상태라면 사진이 계정에 연결되어 대시보드의 히스토리에서 확인할 수 있고, 로그인하지 않은 상태라면 저장은 되지만 어떤 계정에도 연결되지 않습니다. 계정을 삭제하면 사진과 히스토리도 즉시 영구적으로 삭제됩니다.',
+          body: '제출한 사진은 저희 서버로 전송되어 Google Cloud Vision과 Anthropic의 Claude API로 정보 추출을 위해 전달된 뒤 즉시 폐기됩니다 — 서버든 어디든 사진 사본을 저장하지 않습니다. 사진은 기기 안 앱의 히스토리에만 보관되며, 전적으로 사용자가 관리합니다. 로그인한 상태라면 분석 결과(카테고리, 요약, 저장 위치)가 계정에 동기화되어 웹 대시보드에서 히스토리를 확인할 수 있지만, 사진 자체는 절대 동기화되지 않습니다.',
         },
         {
           heading: '이용하는 제3자 서비스',
@@ -263,7 +263,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '모니터링',
-          body: '사진은 클라우드 스토리지에 안전하게 저장되며(개인정보처리방침 참고) 해당 계정에만 비공개로 남아 다른 사용자에게 노출되거나 공개적으로 공유되지 않습니다. 그럼에도 모든 신고를 진지하게 받아들이며, 이 정책을 위반한 것으로 확인된 계정은 정지하거나 삭제하고 관련 콘텐츠도 함께 삭제합니다.',
+          body: '사진은 메모리에서만 처리되며 저희 서버에 저장되지 않습니다(개인정보처리방침 참고) — 그래서 처리 이후 저희가 계속 보관하며 검토할 이미지 콘텐츠 자체가 없습니다. 그럼에도 모든 신고를 진지하게 받아들이며, 이 정책을 위반한 것으로 확인된 계정은 정지하거나 삭제합니다.',
         },
         { heading: '연령 제한', body: 'Snapsist는 만 13세 미만 아동을 대상으로 하지 않습니다. 아동 데이터에 대한 자세한 내용은 개인정보처리방침을 참고해주세요.' },
         { heading: '문의', body: 'safety@snapsist.app' },
@@ -298,7 +298,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'あなたのコンテンツ',
-          body: '写真の所有権はユーザーにあります。ご要望の情報を抽出する目的で写真を使用し、後から確認いただけるよう安全に保存します（詳しくはプライバシーポリシーをご参照ください）。利用権のない写真や、違法な内容を含む写真はアップロードしないでください。',
+          body: '写真の所有権はユーザーにあります。ご要望の情報を抽出する目的にのみ写真を使用し、その後すぐに破棄します — 弊社サーバーにコピーを保存することはありません（詳しくはプライバシーポリシーをご参照ください）。利用権のない写真や、違法な内容を含む写真はアップロードしないでください。',
         },
         {
           heading: '保証の否認',
@@ -314,7 +314,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: '収集する情報',
-          body: '分析のために選択した写真（クラウドストレージに安全に保存 — 下記参照）、アカウント作成時のメールアドレス、アプリを正常に動作させるための基本的な利用データ（使用した機能、エラーログ）を収集します。',
+          body: '分析のために選択した写真（メモリ上でのみ処理され、保存されません — 下記参照）、アカウント作成時のメールアドレス、アプリを正常に動作させるための基本的な利用データ（使用した機能、エラーログ）を収集します。',
         },
         {
           heading: '収集しない情報',
@@ -322,7 +322,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '写真の取り扱い',
-          body: '送信された写真は弊社サーバーに送られ、Google Cloud VisionおよびAnthropicのClaude APIに渡されて情報抽出が行われます。その後、後から確認いただけるようクラウドストレージに安全に保存されます。ログイン済みの場合、写真はアカウントに紐づけられ、ダッシュボードの履歴で確認できます。ログインしていない場合は保存はされますが、どのアカウントにも紐づけられません。アカウントを削除すると、写真と履歴は即座かつ完全に削除されます。',
+          body: '送信された写真は弊社サーバーに送られ、Google Cloud VisionおよびAnthropicのClaude APIに渡されて情報抽出が行われた後、直ちに破棄されます — サーバーを含め、どこにも写真のコピーは保存しません。写真は端末内のアプリの履歴にのみ保存され、完全にユーザーの管理下にあります。ログイン済みの場合、解析結果（カテゴリ、要約、保存先）はアカウントに同期され、Webダッシュボードの履歴で確認できますが、写真自体が同期されることはありません。',
         },
         {
           heading: '利用する第三者サービス',
@@ -385,7 +385,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'モニタリング',
-          body: '写真はクラウドストレージに安全に保存され（プライバシーポリシー参照）、該当アカウント内で非公開に保たれ、他のユーザーに表示されたり公開されたりすることはありません。それでもすべての通報を真剣に受け止め、本方針への違反が確認されたアカウントは停止または削除し、関連するコンテンツも削除します。',
+          body: '写真はメモリ上でのみ処理され、弊社サーバーに保存されることはありません（プライバシーポリシー参照）— そのため処理後に弊社が保持・確認し続ける画像コンテンツ自体が存在しません。それでもすべての通報を真剣に受け止め、本方針への違反が確認されたアカウントは停止または削除します。',
         },
         { heading: '年齢制限', body: 'Snapsistは13歳未満のお子様を対象としていません。お子様のデータについての詳細はプライバシーポリシーをご参照ください。' },
         { heading: 'お問い合わせ', body: 'safety@snapsist.app' },
@@ -417,7 +417,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '您的内容',
-          body: '照片的所有权归您所有。我们会将其用于提取您所需的信息，并安全存储，以便您日后查看——详见隐私政策。请勿上传您无权使用或包含违法内容的照片。',
+          body: '照片的所有权归您所有。我们仅将其用于提取您所需的信息，随后立即删除——我们绝不会在服务器上保留副本。详见隐私政策。请勿上传您无权使用或包含违法内容的照片。',
         },
         {
           heading: '不提供担保',
@@ -433,7 +433,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: '我们收集的信息',
-          body: '您选择分析的照片（安全存储在我们的云存储中，见下文）、如果创建账户则包括您的邮箱地址，以及维持应用正常运行所需的基本使用数据（使用了哪些功能、错误日志）。',
+          body: '您选择分析的照片（仅在内存中处理，不会被存储，见下文）、如果创建账户则包括您的邮箱地址，以及维持应用正常运行所需的基本使用数据（使用了哪些功能、错误日志）。',
         },
         {
           heading: '我们不会收集的信息',
@@ -441,7 +441,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '照片的处理方式',
-          body: '您提交的照片会被发送到我们的服务器，并交给 Google Cloud Vision 和 Anthropic 的 Claude API 用于提取信息。随后，照片会安全存储在我们的云存储中，以便您日后查看。如果您已登录，照片会关联到您的账户，可在控制面板的历史记录中查看；如果未登录，照片仍会被存储，但不会关联任何账户。删除账户会立即且永久删除您的照片和历史记录。',
+          body: '您提交的照片会被发送到我们的服务器，交给 Google Cloud Vision 和 Anthropic 的 Claude API 用于提取信息，随后立即删除——我们绝不会在服务器或其他任何地方保留您照片的副本。照片仅保存在您设备上应用的历史记录中，完全由您掌控。如果您已登录，分析结果（类别、摘要、保存位置）会同步到您的账户，可在网页控制面板的历史记录中查看，但照片本身绝不会被同步。',
         },
         {
           heading: '我们使用的第三方服务',
@@ -501,7 +501,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: '内容监管',
-          body: '照片会安全存储在我们的云存储中（详见隐私政策），并仅对相应账户私密可见，绝不会展示给其他用户或公开分享。即便如此，我们仍会认真对待每一份举报，并对被认定违反本政策的账户予以暂停或删除，同时删除相关内容。',
+          body: '照片仅在内存中处理，绝不会保存在我们的服务器上（详见隐私政策）——因此处理完成后，我们并没有可持续留存、审查的图像内容。即便如此，我们仍会认真对待每一份举报，并对被认定违反本政策的账户予以暂停或删除。',
         },
         { heading: '年龄要求', body: 'Snapsist 并非面向 13 岁以下儿童。关于儿童数据的详细信息，请参阅我们的隐私政策。' },
         { heading: '联系方式', body: 'safety@snapsist.app' },
@@ -536,7 +536,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Tu contenido',
-          body: 'Conservas la propiedad de tus fotos. Las usamos para extraer la información que pediste y las almacenamos de forma segura para que tu historial esté disponible si quieres revisarlo más tarde — consulta nuestra Política de privacidad para más detalles. No subas fotos que no tengas derecho a usar, ni que contengan contenido ilegal.',
+          body: 'Conservas la propiedad de tus fotos. Las usamos solo para extraer la información que pediste y luego las eliminamos de inmediato — nunca guardamos una copia en nuestros servidores. Consulta nuestra Política de privacidad para más detalles. No subas fotos que no tengas derecho a usar, ni que contengan contenido ilegal.',
         },
         {
           heading: 'Sin garantía',
@@ -552,7 +552,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: 'Qué recopilamos',
-          body: 'Las fotos que eliges analizar (almacenadas de forma segura en nuestro almacenamiento en la nube — ver más abajo), tu correo electrónico si creas una cuenta, y datos básicos de uso (qué funciones usas, registros de errores) para mantener la app funcionando.',
+          body: 'Las fotos que eliges analizar (procesadas solo en memoria, nunca almacenadas — ver más abajo), tu correo electrónico si creas una cuenta, y datos básicos de uso (qué funciones usas, registros de errores) para mantener la app funcionando.',
         },
         {
           heading: 'Qué no recopilamos',
@@ -560,7 +560,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Cómo se tratan las fotos',
-          body: 'Una foto que envías se manda a nuestro servidor y se pasa a Google Cloud Vision y a la API Claude de Anthropic para extraer información. Después, la almacenamos de forma segura en nuestro almacenamiento en la nube para que esté disponible si quieres revisarla más tarde. Si has iniciado sesión, la foto se vincula a tu cuenta y aparece en el historial de tu panel; si no has iniciado sesión, se almacena pero no se vincula a ninguna cuenta. Eliminar tu cuenta borra tus fotos y tu historial de forma inmediata y permanente.',
+          body: 'Una foto que envías se manda a nuestro servidor y se pasa a Google Cloud Vision y a la API Claude de Anthropic para extraer información, y luego se elimina de inmediato — nunca guardamos una copia de tu foto, ni en nuestros servidores ni en ningún otro sitio. Tu dispositivo conserva su propia copia en el historial local de la app, bajo tu control. Si has iniciado sesión, el resultado extraído (categoría, resumen, dónde se guardó) se sincroniza con tu cuenta para que puedas ver tu historial desde el panel web — pero nunca la foto en sí.',
         },
         {
           heading: 'Terceros que usamos',
@@ -620,7 +620,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Moderación',
-          body: 'Las fotos se almacenan de forma segura en nuestro almacenamiento en la nube (ver Política de privacidad) y son privadas de tu cuenta — nunca visibles para otros usuarios ni compartidas públicamente. Aun así, nos tomamos en serio cada denuncia y suspenderemos o eliminaremos cualquier cuenta que infrinja esta política, eliminando también el contenido asociado.',
+          body: 'Las fotos se procesan solo en memoria y nunca se almacenan en nuestros servidores (ver Política de privacidad) — así que no hay contenido de imagen persistente que podamos alojar o revisar tras el procesamiento. Aun así, nos tomamos en serio cada denuncia y suspenderemos o eliminaremos cualquier cuenta que infrinja esta política.',
         },
         { heading: 'Requisito de edad', body: 'Snapsist no está dirigida a menores de 13 años. Consulta nuestra Política de privacidad para más detalles sobre los datos de menores.' },
         { heading: 'Contacto', body: 'safety@snapsist.app' },
@@ -655,7 +655,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Votre contenu',
-          body: 'Vous conservez la propriété de vos photos. Nous les utilisons pour extraire les informations demandées et les stockons de manière sécurisée afin que votre historique reste disponible si vous souhaitez le consulter plus tard — voir notre Politique de confidentialité pour plus de détails. Ne téléversez pas de photos que vous n’avez pas le droit d’utiliser, ni contenant du contenu illégal.',
+          body: 'Vous conservez la propriété de vos photos. Nous les utilisons uniquement pour extraire les informations demandées, puis nous les supprimons immédiatement — nous ne conservons jamais de copie sur nos serveurs. Voir notre Politique de confidentialité pour plus de détails. Ne téléversez pas de photos que vous n’avez pas le droit d’utiliser, ni contenant du contenu illégal.',
         },
         {
           heading: 'Absence de garantie',
@@ -671,7 +671,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: 'Ce que nous collectons',
-          body: 'Les photos que vous choisissez d’analyser (stockées de manière sécurisée dans notre stockage cloud — voir ci-dessous), votre adresse e-mail si vous créez un compte, et des données d’usage basiques (fonctionnalités utilisées, journaux d’erreurs) pour faire fonctionner l’app.',
+          body: 'Les photos que vous choisissez d’analyser (traitées uniquement en mémoire, jamais stockées — voir ci-dessous), votre adresse e-mail si vous créez un compte, et des données d’usage basiques (fonctionnalités utilisées, journaux d’erreurs) pour faire fonctionner l’app.',
         },
         {
           heading: 'Ce que nous ne collectons pas',
@@ -679,7 +679,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Traitement des photos',
-          body: 'Une photo que vous envoyez est transmise à notre serveur et envoyée à Google Cloud Vision et à l’API Claude d’Anthropic pour en extraire les informations. Elle est ensuite stockée de manière sécurisée dans notre stockage cloud afin d’être disponible si vous souhaitez la consulter plus tard. Si vous êtes connecté, elle est associée à votre compte et visible dans l’historique de votre tableau de bord ; si vous n’êtes pas connecté, elle est stockée mais n’est associée à aucun compte. La suppression de votre compte supprime vos photos et votre historique immédiatement et définitivement.',
+          body: 'Une photo que vous envoyez est transmise à notre serveur et envoyée à Google Cloud Vision et à l’API Claude d’Anthropic pour en extraire les informations, puis immédiatement supprimée — nous ne conservons jamais de copie de votre photo, ni sur nos serveurs ni ailleurs. Votre appareil conserve sa propre copie dans l’historique local de l’app, entièrement sous votre contrôle. Si vous êtes connecté, le résultat extrait (catégorie, résumé, destination) est synchronisé avec votre compte afin que vous puissiez consulter votre historique depuis le tableau de bord web — mais jamais la photo elle-même.',
         },
         {
           heading: 'Tiers que nous utilisons',
@@ -739,7 +739,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Modération',
-          body: 'Les photos sont stockées de manière sécurisée dans notre stockage cloud (voir notre Politique de confidentialité) et restent privées à votre compte — jamais visibles par d’autres utilisateurs ni partagées publiquement. Nous prenons néanmoins chaque signalement au sérieux et suspendrons ou supprimerons tout compte reconnu en infraction avec cette politique, en supprimant également le contenu associé.',
+          body: 'Les photos sont traitées uniquement en mémoire et ne sont jamais stockées sur nos serveurs (voir notre Politique de confidentialité) — il n’y a donc aucun contenu image persistant que nous puissions héberger ou examiner après traitement. Nous prenons néanmoins chaque signalement au sérieux et suspendrons ou supprimerons tout compte reconnu en infraction avec cette politique.',
         },
         { heading: 'Âge requis', body: 'Snapsist ne s’adresse pas aux enfants de moins de 13 ans. Consultez notre Politique de confidentialité pour plus de détails sur les données des mineurs.' },
         { heading: 'Contact', body: 'safety@snapsist.app' },
@@ -774,7 +774,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Deine Inhalte',
-          body: 'Du behältst das Eigentum an deinen Fotos. Wir verwenden sie, um die gewünschten Informationen zu extrahieren, und speichern sie sicher, damit dein Verlauf verfügbar bleibt, falls du ihn später einsehen möchtest — Details dazu in unserer Datenschutzerklärung. Lade keine Fotos hoch, an denen du keine Nutzungsrechte hast oder die illegale Inhalte enthalten.',
+          body: 'Du behältst das Eigentum an deinen Fotos. Wir verwenden sie nur, um die gewünschten Informationen zu extrahieren, und löschen sie danach sofort — wir speichern niemals eine Kopie auf unseren Servern. Details dazu in unserer Datenschutzerklärung. Lade keine Fotos hoch, an denen du keine Nutzungsrechte hast oder die illegale Inhalte enthalten.',
         },
         {
           heading: 'Kein Gewährleistungsausschluss',
@@ -790,7 +790,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
       sections: [
         {
           heading: 'Was wir erfassen',
-          body: 'Fotos, die du zur Analyse auswählst (sicher in unserem Cloud-Speicher abgelegt — siehe unten), deine E-Mail-Adresse, falls du ein Konto erstellst, sowie grundlegende Nutzungsdaten (welche Funktionen du nutzt, Fehlerprotokolle), um die App am Laufen zu halten.',
+          body: 'Fotos, die du zur Analyse auswählst (nur im Arbeitsspeicher verarbeitet, niemals gespeichert — siehe unten), deine E-Mail-Adresse, falls du ein Konto erstellst, sowie grundlegende Nutzungsdaten (welche Funktionen du nutzt, Fehlerprotokolle), um die App am Laufen zu halten.',
         },
         {
           heading: 'Was wir nicht erfassen',
@@ -798,7 +798,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Umgang mit Fotos',
-          body: 'Ein von dir übermitteltes Foto wird an unseren Server gesendet und zur Informationsextraktion an Google Cloud Vision und die Claude-API von Anthropic weitergegeben. Anschließend speichern wir es sicher in unserem Cloud-Speicher, damit es verfügbar bleibt, falls du es später einsehen möchtest. Bist du angemeldet, wird das Foto mit deinem Konto verknüpft und im Verlauf deines Dashboards angezeigt; bist du nicht angemeldet, wird es gespeichert, aber keinem Konto zugeordnet. Beim Löschen deines Kontos werden deine Fotos und dein Verlauf sofort und endgültig entfernt.',
+          body: 'Ein von dir übermitteltes Foto wird an unseren Server gesendet und zur Informationsextraktion an Google Cloud Vision und die Claude-API von Anthropic weitergegeben und danach sofort gelöscht — wir speichern niemals eine Kopie deines Fotos, weder auf unseren Servern noch anderswo. Dein Gerät behält eine eigene Kopie im lokalen Verlauf der App, vollständig unter deiner Kontrolle. Bist du angemeldet, wird das extrahierte Ergebnis (Kategorie, Zusammenfassung, Speicherort) mit deinem Konto synchronisiert, damit du deinen Verlauf im Web-Dashboard einsehen kannst — aber niemals das Foto selbst.',
         },
         {
           heading: 'Von uns genutzte Drittanbieter',
@@ -858,7 +858,7 @@ export const legalDictionaries: Record<Locale, LegalDictionary> = {
         },
         {
           heading: 'Moderation',
-          body: 'Fotos werden sicher in unserem Cloud-Speicher abgelegt (siehe Datenschutzerklärung) und bleiben privat im jeweiligen Konto — für andere Nutzer nie sichtbar und nie öffentlich geteilt. Dennoch nehmen wir jede Meldung ernst und sperren oder löschen jedes Konto, das gegen diese Richtlinie verstößt, und entfernen dabei auch die zugehörigen Inhalte.',
+          body: 'Fotos werden nur im Arbeitsspeicher verarbeitet und niemals auf unseren Servern gespeichert (siehe Datenschutzerklärung) — es gibt also keine dauerhaften Bildinhalte, die wir nach der Verarbeitung vorhalten oder prüfen könnten. Dennoch nehmen wir jede Meldung ernst und sperren oder löschen jedes Konto, das gegen diese Richtlinie verstößt.',
         },
         { heading: 'Altersanforderung', body: 'Snapsist richtet sich nicht an Kinder unter 13 Jahren. Details zu Kinderdaten findest du in unserer Datenschutzerklärung.' },
         { heading: 'Kontakt', body: 'safety@snapsist.app' },

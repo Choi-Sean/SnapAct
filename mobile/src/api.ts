@@ -1,5 +1,6 @@
 import { File, UploadType } from 'expo-file-system';
 
+import { loadSession } from './auth';
 import { API_BASE_URL, API_KEY } from './config';
 import { AnalyzeResponse, Category } from './types';
 
@@ -17,11 +18,19 @@ export async function analyzePhoto(photo: PickedPhoto, mockCategory?: Category):
   const query = mockCategory ? `?mock_category=${mockCategory}` : '';
   const file = new File(photo.uri);
 
+  // Without this, the backend never learns who's calling — every request
+  // looks like a guest, Tier 1 categories always come back locked even for
+  // a logged-in user with a token balance, and nothing gets saved to the
+  // account's server-side history either.
+  const session = await loadSession();
+  const headers: Record<string, string> = { 'X-API-Key': API_KEY };
+  if (session) headers.Authorization = `Bearer ${session.token}`;
+
   const result = await file.upload(`${API_BASE_URL}/analyze${query}`, {
     uploadType: UploadType.MULTIPART,
     fieldName: 'file',
     mimeType: photo.mimeType ?? 'image/jpeg',
-    headers: { 'X-API-Key': API_KEY },
+    headers,
   });
 
   if (result.status < 200 || result.status >= 300) {

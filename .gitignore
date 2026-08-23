@@ -29,3 +29,7 @@ web/tsconfig.tsbuildinfo
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code project instructions — local-only from here on, per user request.
+CLAUDE.md
+**/CLAUDE.md

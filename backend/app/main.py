@@ -13,7 +13,7 @@ from . import auth, claude_analysis, db, vision, wallet
 from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
-from .pricing import TIER1_TOKEN_COST, TOKEN_PACKAGES, is_tier0
+from .pricing import LAYER1_TOKEN_COST, TOKEN_PACKAGES, is_layer0_category
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ def account_token_history(entries: list[TokenTransactionOut] = Depends(auth.list
 
 @app.get("/account/token-packages")
 def account_token_packages():
-    return {"packages": TOKEN_PACKAGES, "tier1_cost_per_analysis": TIER1_TOKEN_COST}
+    return {"packages": TOKEN_PACKAGES, "layer1_cost_per_analysis": LAYER1_TOKEN_COST}
 
 
 @app.get("/history", response_model=list[HistoryEntryOut], dependencies=_account_rate_limited)
@@ -216,14 +216,17 @@ async def analyze(
 
     using_real_pipeline = vision.settings.vision_enabled and claude_analysis.settings.claude_enabled and not force_mock
 
-    # Tier 1 (business_card/receipt/event_flyer) is the paid product — needs
-    # a signed-in account with enough token balance. Tier 0 and mock results
-    # are always free since either nothing sensitive left the device's mock
-    # path, or no real API cost was actually incurred.
+    # ---- LAYER 1 token gate (see backend/app/pricing.py header for the full
+    # layer map) ---------------------------------------------------------
+    # Everything below this point IS Layer 1 — Vision already ran above,
+    # this is the paid Claude step. LAYER0_CATEGORIES is free no matter
+    # which layer resolves it; the rest needs a signed-in account with
+    # enough token balance. Mock results are always free since no real API
+    # cost was actually incurred.
     requires_tokens = (
         using_real_pipeline
-        and not is_tier0(category)
-        and (not user_id or not auth.try_spend_tokens(user_id, TIER1_TOKEN_COST))
+        and not is_layer0_category(category)
+        and (not user_id or not auth.try_spend_tokens(user_id, LAYER1_TOKEN_COST))
     )
 
     if requires_tokens:

@@ -91,7 +91,7 @@ export function getTokenHistory(limit = 50, offset = 0) {
 export async function getTokenPackages() {
   const res = await fetch(`${API_BASE_URL}/account/token-packages`);
   const data = await res.json();
-  return data as { packages: TokenPackage[]; tier1_cost_per_analysis: number };
+  return data as { packages: TokenPackage[]; layer1_cost_per_analysis: number };
 }
 
 export function deleteAccount() {

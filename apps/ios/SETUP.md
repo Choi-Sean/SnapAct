@@ -58,9 +58,9 @@ generated workspace is named):
    and add the files from this folder instead: `Config.swift`,
    `ImageClassifier.swift`, `TextRecognizer.swift`,
    `MedicationExtractor.swift`, `MedicationReminderSaver.swift`,
-   `SharedSession.swift`, `Layer1Client.swift`, `LayerZeroAnalyzer.swift`,
-   `L10n.swift`, `ShareResultView.swift`, `ShareViewController.swift`,
-   `Info.plist`.
+   `PhotoMetadata.swift`, `SharedSession.swift`, `Layer1Client.swift`,
+   `LayerZeroAnalyzer.swift`, `L10n.swift`, `ShareResultView.swift`,
+   `ShareViewController.swift`, `Info.plist`.
 3. Set the target's deployment target to iOS 16.4 (matches
    `apps/expo`'s deployment target — `VNRecognizeTextRequestRevision3`
    needs iOS 16+ for ko/ja/zh anyway, see `apps/expo/src/layer0/textRecognition.ts`'s

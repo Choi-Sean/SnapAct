@@ -21,6 +21,7 @@ import { analyzeOnDevice } from './layer0/analyzeOnDevice';
 import { getLayer0Support } from './layer0/capability';
 import { LAYER1_TOKEN_COST } from './layer0/categories';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
+import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
@@ -32,6 +33,7 @@ interface Photo {
   uri: string;
   fileName?: string | null;
   mimeType?: string | null;
+  metadata?: PhotoMetadata;
 }
 
 // Shape shared with the OS "Share" sheet handoff (see mobile/App.tsx's
@@ -84,6 +86,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
       mediaTypes: ['images'],
       quality: 0.7,
       allowsEditing: false,
+      exif: true,
     };
 
     const result =
@@ -95,7 +98,12 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 
     const asset = result.assets[0];
     const resized = await resizeForUpload(asset.uri, asset.width, asset.height, asset.mimeType);
-    setPhoto({ uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType });
+    setPhoto({
+      uri: resized.uri,
+      fileName: asset.fileName,
+      mimeType: resized.mimeType,
+      metadata: extractPhotoMetadata(asset.exif),
+    });
     setResult(null);
     setError(null);
   }
@@ -225,7 +233,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   async function resolveAnalysis(target: Photo): Promise<AnalyzeResponse | null> {
     const support = getLayer0Support();
     if (support.supported) {
-      const onDeviceResult = await analyzeOnDevice(target.uri, locale);
+      const onDeviceResult = await analyzeOnDevice(target.uri, locale, target.metadata);
       if (onDeviceResult) return onDeviceResult;
       return analyzePhoto(target);
     }

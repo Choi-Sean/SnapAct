@@ -29,7 +29,7 @@ enum Layer0Outcome {
     case failed(Error)
 }
 
-func analyzeOnDevice(_ image: UIImage) async -> Layer0Outcome {
+func analyzeOnDevice(_ image: UIImage, metadata: PhotoMetadata? = nil) async -> Layer0Outcome {
     let rawText: String
     do {
         rawText = try await recognizeText(in: image)
@@ -38,13 +38,14 @@ func analyzeOnDevice(_ image: UIImage) async -> Layer0Outcome {
     }
 
     let classification = classifyText(rawText)
+    let confidence = applyMetadataNudge(category: classification.category, confidence: classification.confidence, metadata: metadata)
     guard layer0Categories.contains(classification.category) else {
         return .needsLayer1(category: classification.category)
     }
 
     var result = AnalysisResult(
         category: classification.category,
-        confidence: classification.confidence,
+        confidence: confidence,
         medication: nil,
         rawText: rawText
     )

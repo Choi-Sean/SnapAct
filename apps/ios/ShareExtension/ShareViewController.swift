@@ -29,31 +29,38 @@ class ShareViewController: UIViewController {
 
         provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { [weak self] item, _ in
             guard let self = self else { return }
-            let image: UIImage?
+            // Keep the raw bytes (not just the decoded UIImage) so
+            // PhotoMetadata.swift can read EXIF straight off them — UIImage
+            // itself doesn't retain that.
+            let rawData: Data?
             switch item {
             case let url as URL:
-                image = (try? Data(contentsOf: url)).flatMap(UIImage.init(data:))
-            case let img as UIImage:
-                image = img
+                rawData = try? Data(contentsOf: url)
             case let data as Data:
-                image = UIImage(data: data)
+                rawData = data
+            case let img as UIImage:
+                rawData = img.jpegData(compressionQuality: 1.0)
             default:
-                image = nil
+                rawData = nil
             }
+
+            let image = rawData.flatMap(UIImage.init(data:))
 
             DispatchQueue.main.async {
                 guard let image = image else {
                     self.close()
                     return
                 }
-                self.presentResult(for: image)
+                let metadata = rawData.map(extractPhotoMetadata(from:))
+                self.presentResult(for: image, metadata: metadata)
             }
         }
     }
 
-    private func presentResult(for image: UIImage) {
+    private func presentResult(for image: UIImage, metadata: PhotoMetadata?) {
         let hosting = UIHostingController(rootView: ShareResultView(
             image: image,
+            metadata: metadata,
             onDone: { [weak self] in self?.close() },
             onOpenApp: { [weak self] in self?.openMainApp() }
         ))

@@ -26,6 +26,7 @@ enum ViewState {
 
 struct ShareResultView: View {
     let image: UIImage
+    let metadata: PhotoMetadata?
     let onDone: () -> Void
     let onOpenApp: () -> Void
 
@@ -73,7 +74,7 @@ struct ShareResultView: View {
         }
         .padding()
         .task {
-            switch await analyzeOnDevice(image) {
+            switch await analyzeOnDevice(image, metadata: metadata) {
             case .resolved(let result):
                 state = .resolvedLayer0(result)
             case .needsLayer1:

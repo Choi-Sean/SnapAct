@@ -12,6 +12,7 @@ import { markLayer0RuntimeUnavailable } from './capability';
 import { LAYER0_CATEGORIES } from './categories';
 import { classifyText } from './classify';
 import { extractMedication } from './medicationExtract';
+import { applyMetadataNudge, PhotoMetadata } from './metadata';
 import { recognizeText } from './textRecognition';
 
 /**
@@ -22,8 +23,12 @@ import { recognizeText } from './textRecognition';
  * backend/app/pricing.py's LAYER0_CATEGORIES) or because the on-device OCR
  * call itself failed (in which case the failure is also recorded via
  * markLayer0RuntimeUnavailable so capability.ts reflects it).
+ *
+ * `metadata` (EXIF-derived, see metadata.ts) is optional and only nudges
+ * confidence — classifyText's keyword scoring is still the sole basis for
+ * which category wins.
  */
-export async function analyzeOnDevice(uri: string, locale: Locale): Promise<AnalyzeResponse | null> {
+export async function analyzeOnDevice(uri: string, locale: Locale, metadata?: PhotoMetadata): Promise<AnalyzeResponse | null> {
   let rawText: string;
   try {
     rawText = await recognizeText(uri, locale);
@@ -32,7 +37,9 @@ export async function analyzeOnDevice(uri: string, locale: Locale): Promise<Anal
     return null;
   }
 
-  const { category, confidence } = classifyText(rawText);
+  const classified = classifyText(rawText);
+  const category = classified.category;
+  const confidence = applyMetadataNudge(category, classified.confidence, metadata);
   if (!LAYER0_CATEGORIES.includes(category)) {
     return null;
   }

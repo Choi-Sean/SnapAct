@@ -14,12 +14,19 @@ backend/*.json
 backend/secrets/
 
 # Mobile / Node
-mobile/node_modules/
-mobile/.expo/
-mobile/dist/
-mobile/npm-debug.*
-mobile/*.log
-mobile/secrets/
+apps/expo/node_modules/
+apps/expo/.expo/
+apps/expo/dist/
+apps/expo/npm-debug.*
+apps/expo/*.log
+apps/expo/secrets/
+
+# iOS native (apps/ios/) — Xcode user state and build products
+apps/ios/**/*.xcuserstate
+apps/ios/**/xcuserdata/
+apps/ios/**/DerivedData/
+apps/ios/**/build/
+apps/ios/**/Pods/
 
 web/node_modules/
 web/.next/

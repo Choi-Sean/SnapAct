@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -30,13 +30,28 @@ interface Photo {
   mimeType?: string | null;
 }
 
+// Shape shared with the OS "Share" sheet handoff (see mobile/App.tsx's
+// useShareIntent() call) — width/height let resizeForUpload skip a decode step.
+export interface SharedAsset {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
 interface Props {
   history: HistoryEntry[];
   onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
   onSaved: (info: { type: DemoKey; title: string; detail: string; savedTo: string; imageUri?: string }) => void;
+  // Set by App.tsx when the user shared photo(s) into Snapsist from the OS
+  // share sheet. AnalyzeScreen consumes it immediately (auto-analyze, no
+  // extra taps) and calls onSharedPhotosHandled() to clear it upstream.
+  sharedPhotos?: SharedAsset[] | null;
+  onSharedPhotosHandled?: () => void;
 }
 
-export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props) {
+export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPhotos, onSharedPhotosHandled }: Props) {
   const { t } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -81,30 +96,15 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
     setError(null);
   }
 
-  async function pickMultiple() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permission.status !== 'granted') {
-      Alert.alert(t.home.permissionNeededTitle, t.home.permissionNeededBody);
-      return;
-    }
-
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-      allowsMultipleSelection: true,
-      selectionLimit: 10,
-    });
-
-    if (picked.canceled || !picked.assets?.length) return;
-
-    setBatchProcessing({ done: 0, total: picked.assets.length });
+  async function processBatchAssets(assets: SharedAsset[]) {
+    setBatchProcessing({ done: 0, total: assets.length });
     const results: { uri: string; result: AnalyzeResponse }[] = [];
 
-    for (let i = 0; i < picked.assets.length; i++) {
-      const asset = picked.assets[i];
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
       const mockCategory = BATCH_MOCK_CYCLE[i % BATCH_MOCK_CYCLE.length];
       try {
-        const resized = await resizeForUpload(asset.uri, asset.width, asset.height, asset.mimeType);
+        const resized = await resizeForUpload(asset.uri, asset.width ?? 0, asset.height ?? 0, asset.mimeType);
         const response = await analyzePhoto(
           { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType },
           mockCategory
@@ -122,12 +122,77 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved }: Props)
           },
         });
       }
-      setBatchProcessing({ done: i + 1, total: picked.assets.length });
+      setBatchProcessing({ done: i + 1, total: assets.length });
     }
 
     setBatchProcessing(null);
     setBatchReview(results);
   }
+
+  async function pickMultiple() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.status !== 'granted') {
+      Alert.alert(t.home.permissionNeededTitle, t.home.permissionNeededBody);
+      return;
+    }
+
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
+    });
+
+    if (picked.canceled || !picked.assets?.length) return;
+
+    await processBatchAssets(
+      picked.assets.map((asset) => ({
+        uri: asset.uri,
+        fileName: asset.fileName,
+        mimeType: asset.mimeType,
+        width: asset.width,
+        height: asset.height,
+      }))
+    );
+  }
+
+  // Auto-triggered when the user shares photo(s) into Snapsist from the OS
+  // share sheet (see the sharedPhotos effect below) — no extra taps, per the
+  // core "share -> instant analysis" product requirement.
+  async function handleSharedPhotos(assets: SharedAsset[]) {
+    if (!assets.length) return;
+    if (assets.length > 1) {
+      await processBatchAssets(assets);
+      return;
+    }
+    const asset = assets[0];
+    setAnalyzing(true);
+    setError(null);
+    setResult(null);
+    try {
+      const resized = await resizeForUpload(asset.uri, asset.width ?? 0, asset.height ?? 0, asset.mimeType);
+      const sharedPhoto: Photo = { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType };
+      setPhoto(sharedPhoto);
+      const response = await analyzePhoto(sharedPhoto);
+      if (response.requires_tokens) {
+        setResult(null);
+        setPricingVisible(true);
+      } else {
+        setResult(response);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  useEffect(() => {
+    if (sharedPhotos && sharedPhotos.length) {
+      handleSharedPhotos(sharedPhotos).finally(() => onSharedPhotosHandled?.());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedPhotos]);
 
   function handleBatchSaved(batchItems: BatchSubEntry[]) {
     setBatchReview(null);

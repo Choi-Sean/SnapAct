@@ -88,7 +88,17 @@
         }
       ],
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-share-intent",
+        {
+          "iosActivationRules": {
+            "NSExtensionActivationSupportsImageWithMaxCount": 10
+          },
+          "androidIntentFilters": ["image/*"],
+          "androidMultiIntentFilters": ["image/*"]
+        }
+      ]
     ],
     "extra": {
       "eas": {
@@ -96,6 +106,7 @@
       }
     },
     "owner": "seanchoi1991",
+    "scheme": "snapsist",
     "runtimeVersion": {
       "policy": "appVersion"
     },

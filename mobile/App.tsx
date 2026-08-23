@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { useShareIntent } from 'expo-share-intent';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import AnalyzeScreen from './src/AnalyzeScreen';
+import AnalyzeScreen, { SharedAsset } from './src/AnalyzeScreen';
 import DemoScreen from './src/DemoScreen';
 import HistoryScreen from './src/HistoryScreen';
 import { addHistoryEntry, clearHistory, deleteHistoryEntry, loadHistory } from './src/history';
@@ -53,6 +54,25 @@ function AppInner() {
   const [tab, setTab] = useState<Tab>('demo');
   const [reviewKey, setReviewKey] = useState<DemoKey | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [sharedPhotos, setSharedPhotos] = useState<SharedAsset[] | null>(null);
+
+  // Wires the OS "Share" sheet directly into the Analyze tab: picking
+  // Snapsist from Photos' share button lands here with hasShareIntent=true
+  // and the shared image(s) already on disk, ready to hand to AnalyzeScreen.
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
+
+  useEffect(() => {
+    if (!hasShareIntent || !shareIntent.files?.length) return;
+    const images = shareIntent.files.filter((f) => f.mimeType?.startsWith('image/'));
+    if (!images.length) {
+      resetShareIntent();
+      return;
+    }
+    setSharedPhotos(
+      images.map((f) => ({ uri: f.path, fileName: f.fileName, mimeType: f.mimeType, width: f.width, height: f.height }))
+    );
+    setTab('analyze');
+  }, [hasShareIntent, shareIntent]);
 
   useEffect(() => {
     Promise.all([loadHistory(), AsyncStorage.getItem(ONBOARDED_KEY), new Promise((r) => setTimeout(r, 700))]).then(
@@ -159,7 +179,16 @@ function AppInner() {
       <StatusBar style="auto" />
       {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
       {tab === 'analyze' && (
-        <AnalyzeScreen history={history} onBatchSaved={handleBatchSaved} onSaved={handleAnalyzeSaved} />
+        <AnalyzeScreen
+          history={history}
+          onBatchSaved={handleBatchSaved}
+          onSaved={handleAnalyzeSaved}
+          sharedPhotos={sharedPhotos}
+          onSharedPhotosHandled={() => {
+            setSharedPhotos(null);
+            resetShareIntent();
+          }}
+        />
       )}
       {tab === 'history' && (
         <HistoryScreen entries={history} onClear={handleClearHistory} onDelete={handleDeleteEntry} />

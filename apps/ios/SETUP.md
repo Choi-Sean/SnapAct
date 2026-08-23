@@ -55,10 +55,12 @@ generated workspace is named):
    Connect from needing a new identifier registered).
 2. Delete the boilerplate files Xcode generates for the new target
    (`ShareViewController.swift`, `MainInterface.storyboard`, `Info.plist`)
-   and add the files from this folder instead: `ImageClassifier.swift`,
-   `TextRecognizer.swift`, `MedicationExtractor.swift`,
-   `MedicationReminderSaver.swift`, `LayerZeroAnalyzer.swift`, `L10n.swift`,
-   `ShareResultView.swift`, `ShareViewController.swift`, `Info.plist`.
+   and add the files from this folder instead: `Config.swift`,
+   `ImageClassifier.swift`, `TextRecognizer.swift`,
+   `MedicationExtractor.swift`, `MedicationReminderSaver.swift`,
+   `SharedSession.swift`, `Layer1Client.swift`, `LayerZeroAnalyzer.swift`,
+   `L10n.swift`, `ShareResultView.swift`, `ShareViewController.swift`,
+   `Info.plist`.
 3. Set the target's deployment target to iOS 16.4 (matches
    `apps/expo`'s deployment target — `VNRecognizeTextRequestRevision3`
    needs iOS 16+ for ko/ja/zh anyway, see `apps/expo/src/layer0/textRecognition.ts`'s
@@ -73,17 +75,34 @@ generated workspace is named):
    compiles locally — EAS's cloud Mac builders will pick up the new
    target the same way they picked up expo-share-intent's.
 
-## 3. Known gaps in this first pass
+## 3. Keychain Sharing entitlement (needed for signed-in Layer 1 calls)
 
-- **No Layer 1 fallback network call.** `business_card` / `receipt` /
-  `event_flyer` currently just show "open the app" (`ShareResultView`'s
-  `.needsLayer1` case) instead of calling `backend/app/main.py`'s
-  `/analyze` directly from the extension. Doing that properly needs the
-  extension to read the signed-in session token — `apps/expo/src/auth.ts`
-  stores it via `expo-secure-store` (iOS Keychain), which the extension
-  can only read if both targets share a Keychain Access Group entitlement.
-  That's a real interop risk worth its own focused pass rather than
-  guessing the exact Keychain query attributes blind.
+`Layer1Client.swift` now calls `backend/app/main.py`'s `/analyze` directly
+for `business_card`/`receipt`/`event_flyer`, and
+`SharedSession.swift` tries to read the signed-in session token that
+`apps/expo/src/auth.ts` stores via `expo-secure-store` so a logged-in
+user's token balance still applies. This only works if **both targets
+(main app + ShareExtension) have the same Keychain Sharing entitlement**
+— by default, different bundle IDs (`com.snapact.app` vs
+`com.snapact.app.share-extension`) can't see each other's Keychain items
+even under the same Apple Developer team.
+
+In Xcode, for **both** targets: Signing & Capabilities → + Capability →
+Keychain Sharing → add the same group (e.g.
+`$(AppIdentifierPrefix)com.snapact.app`). Without this, the extension
+still works — `SharedSession.swift` just returns `nil` and every call goes
+out as a guest, which is exactly what happens for a logged-out RN user
+today (always `requires_tokens: true` for these three categories). Not
+broken, just locked more often than it needs to be until this is wired up.
+
+`SharedSession.swift`'s query was matched against
+`expo-secure-store`'s actual iOS source (its `SecureStoreModule.swift`) to
+get the service name/key encoding right, but the *runtime* behavior — does
+`SecItemCopyMatching` actually find the item once the access group is
+shared — is unverified along with everything else here.
+
+## 4. Known gaps in this first pass
+
 - **Medication reminder time picker is skipped.** The RN app
   (`apps/expo/src/AnalyzeScreen.tsx`'s `TimeConfirmModal`) prompts for a
   time when the photo doesn't have one written on it; the extension just
@@ -93,3 +112,10 @@ generated workspace is named):
   won't show up in the RN app's History tab (that's sourced from
   on-device storage the extension never writes to). Would need a shared
   App Group container both targets write to.
+- **Layer 1 results (business_card/receipt/event_flyer) are display-only.**
+  The extension shows the contact/calendar fields Claude extracted but
+  doesn't save them to Contacts/Calendar itself — there's a "Finish in
+  Snapsist" button that opens the main app for the actual save, matching
+  the "just show Layer 1's result for now" scope for this pass. Wiring
+  `CNContact`/`EKEvent` saves directly into the extension is a reasonable
+  next step once the base pipeline (and Keychain sharing above) is proven.

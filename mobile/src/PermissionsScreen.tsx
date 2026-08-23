@@ -10,6 +10,8 @@ import { WEB_BASE_URL } from './config';
 import { Emoji, EmojiName } from './Emoji';
 import { useLanguage } from './i18n/LanguageProvider';
 import { Locale, LOCALE_LABELS, t as fmt } from './i18n/dictionaries';
+import { getLayer0Support, Layer0Support } from './layer0/capability';
+import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import PricingScreen from './PricingScreen';
 
 type Status = 'granted' | 'denied' | 'undetermined' | 'checking';
@@ -69,6 +71,19 @@ export default function PermissionsScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [authMode, setAuthMode] = useState<'signup' | 'login' | null>(null);
   const [pricingVisible, setPricingVisible] = useState(false);
+  const [layer0Support, setLayer0Support] = useState<Layer0Support | null>(null);
+  const [fallbackConsent, setFallbackConsent] = useState(false);
+
+  useEffect(() => {
+    setLayer0Support(getLayer0Support());
+    getLayer1FallbackConsent().then(setFallbackConsent);
+  }, []);
+
+  async function handleRevokeFallbackConsent() {
+    await setLayer1FallbackConsent(false);
+    setFallbackConsent(false);
+    Alert.alert(t.permissions.layer0RevokedTitle, t.permissions.layer0RevokedBody);
+  }
 
   useEffect(() => {
     loadSession().then((s) => {
@@ -240,6 +255,23 @@ export default function PermissionsScreen() {
         </View>
       )}
 
+      {((layer0Support && !layer0Support.supported) || fallbackConsent) && (
+        <View style={styles.layer0Section}>
+          <Text style={styles.layer0Title}>{t.permissions.layer0Title}</Text>
+          {layer0Support && !layer0Support.supported && (
+            <Text style={styles.layer0Body}>{t.permissions.layer0UnsupportedBody}</Text>
+          )}
+          {fallbackConsent && (
+            <>
+              <Text style={styles.layer0Body}>{t.permissions.layer0ConsentedNote}</Text>
+              <TouchableOpacity onPress={handleRevokeFallbackConsent}>
+                <Text style={styles.layer0RevokeText}>{t.permissions.layer0RevokeButton}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      )}
+
       <View style={styles.langSection}>
         <Text style={styles.langTitle}>{t.permissions.languageTitle}</Text>
         <View style={styles.langGrid}>
@@ -386,6 +418,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   settingsButtonText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  layer0Section: {
+    gap: 6,
+    backgroundColor: '#fff7ed',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#fde8cd',
+  },
+  layer0Title: { fontSize: 14, fontWeight: '800', color: '#111' },
+  layer0Body: { fontSize: 12.5, color: '#9a5b1f', lineHeight: 18 },
+  layer0RevokeText: { fontSize: 12.5, color: '#2563eb', fontWeight: '700', marginTop: 2 },
   langSection: { gap: 10, marginTop: 4 },
   langTitle: { fontSize: 15, fontWeight: '800', color: '#111' },
   langGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

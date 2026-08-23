@@ -122,6 +122,13 @@ export interface Dictionary {
     batchDoneBodyTemplate: string;
     limitExceededTitle: string;
     limitExceededBody: string;
+    layer0Unsupported: {
+      title: string;
+      bodyTemplate: string;
+      cancelButton: string;
+      onceButton: string;
+      alwaysButton: string;
+    };
   };
   history: {
     title: string;
@@ -167,6 +174,12 @@ export interface Dictionary {
     legalRefund: string;
     legalChildSafety: string;
     languageTitle: string;
+    layer0Title: string;
+    layer0UnsupportedBody: string;
+    layer0ConsentedNote: string;
+    layer0RevokeButton: string;
+    layer0RevokedTitle: string;
+    layer0RevokedBody: string;
   };
   review: {
     titles: Record<DemoKey, string>;
@@ -421,6 +434,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: 'Saved the results for {n} photos to History.',
       limitExceededTitle: 'Free plan limit reached',
       limitExceededBody: 'You\'ve reached the Free plan limit of {n} photos this month. Upgrade to Pro for unlimited photos.',
+      layer0Unsupported: {
+        title: 'Use server analysis instead?',
+        bodyTemplate: 'On-device analysis isn\'t available on this device or app version. Continuing sends this photo to our server and uses {n} tokens. Continue?',
+        cancelButton: 'Cancel',
+        onceButton: 'Just this once',
+        alwaysButton: 'Always do this',
+      },
     },
     history: {
       title: 'History',
@@ -472,6 +492,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: 'Refund Policy',
       legalChildSafety: 'Child Safety',
       languageTitle: 'Language',
+      layer0Title: 'On-device analysis',
+      layer0UnsupportedBody: 'This device (or app version) can\'t run on-device analysis. Photos are analyzed on our server instead, which uses tokens.',
+      layer0ConsentedNote: 'You\'ve agreed to always use server analysis without being asked each time.',
+      layer0RevokeButton: 'Ask me every time instead',
+      layer0RevokedTitle: 'Done',
+      layer0RevokedBody: 'You\'ll be asked again before each analysis uses server processing.',
     },
     review: {
       titles: reviewTitles([
@@ -736,6 +762,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: '{n}장 처리 결과를 기록에 저장했어요.',
       limitExceededTitle: '무료 플랜 한도 초과',
       limitExceededBody: '이번 달 무료 플랜 한도인 {n}장을 초과했어요. Pro로 업그레이드하면 무제한으로 쓸 수 있어요.',
+      layer0Unsupported: {
+        title: '서버 분석으로 진행할까요?',
+        bodyTemplate: '이 기기 또는 앱 버전에서는 온디바이스 분석을 사용할 수 없어요. 계속하면 사진이 서버로 전송되고 토큰 {n}개가 사용돼요. 계속할까요?',
+        cancelButton: '취소',
+        onceButton: '이번만 계속',
+        alwaysButton: '항상 이렇게 진행',
+      },
     },
     history: {
       title: '기록',
@@ -787,6 +820,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: '환불 정책',
       legalChildSafety: '아동 안전 정책',
       languageTitle: '언어',
+      layer0Title: '온디바이스 분석',
+      layer0UnsupportedBody: '이 기기(또는 앱 버전)에서는 온디바이스 분석을 사용할 수 없어요. 대신 서버에서 사진을 분석하며, 이때 토큰이 사용돼요.',
+      layer0ConsentedNote: '앞으로 묻지 않고 항상 서버 분석을 사용하는 것에 동의하셨어요.',
+      layer0RevokeButton: '매번 다시 물어보기',
+      layer0RevokedTitle: '완료',
+      layer0RevokedBody: '앞으로 서버 분석을 사용하기 전에 다시 물어볼게요.',
     },
     review: {
       titles: reviewTitles([
@@ -1051,6 +1090,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: '{n}枚の処理結果を履歴に保存しました。',
       limitExceededTitle: '無料プランの上限に達しました',
       limitExceededBody: '今月の無料プランの上限（{n}枚）に達しました。Proにアップグレードすると無制限に使えます。',
+      layer0Unsupported: {
+        title: 'サーバー分析に進みますか？',
+        bodyTemplate: 'この端末またはアプリのバージョンではオンデバイス分析が利用できません。続行すると写真がサーバーに送信され、トークンを{n}個使用します。続けますか？',
+        cancelButton: 'キャンセル',
+        onceButton: '今回だけ続ける',
+        alwaysButton: '常にこうする',
+      },
     },
     history: {
       title: '履歴',
@@ -1102,6 +1148,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: '返金ポリシー',
       legalChildSafety: '児童保護',
       languageTitle: '言語',
+      layer0Title: 'オンデバイス分析',
+      layer0UnsupportedBody: 'この端末（またはアプリのバージョン）ではオンデバイス分析を利用できません。代わりにサーバーで写真を分析し、トークンを使用します。',
+      layer0ConsentedNote: '今後は確認なしで常にサーバー分析を使用することに同意しました。',
+      layer0RevokeButton: '毎回確認するようにする',
+      layer0RevokedTitle: '完了',
+      layer0RevokedBody: 'サーバー分析を使う前に、次回から再度確認します。',
     },
     review: {
       titles: reviewTitles([
@@ -1366,6 +1418,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: '已将 {n} 张照片的处理结果保存到记录。',
       limitExceededTitle: '已达免费版上限',
       limitExceededBody: '本月已达免费版 {n} 张的上限。升级到 Pro 即可无限使用。',
+      layer0Unsupported: {
+        title: '要改用服务器分析吗？',
+        bodyTemplate: '此设备或应用版本不支持设备端分析。继续将把照片发送到服务器，并消耗 {n} 个代币。要继续吗？',
+        cancelButton: '取消',
+        onceButton: '仅此一次',
+        alwaysButton: '始终这样做',
+      },
     },
     history: {
       title: '记录',
@@ -1417,6 +1476,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: '退款政策',
       legalChildSafety: '儿童安全',
       languageTitle: '语言',
+      layer0Title: '设备端分析',
+      layer0UnsupportedBody: '此设备（或应用版本）无法运行设备端分析。照片将改为在服务器上分析，这会消耗代币。',
+      layer0ConsentedNote: '你已同意始终使用服务器分析，不再逐次询问。',
+      layer0RevokeButton: '改为每次都询问我',
+      layer0RevokedTitle: '完成',
+      layer0RevokedBody: '下次使用服务器分析前，我们会再次询问你。',
     },
     review: {
       titles: reviewTitles([
@@ -1690,6 +1755,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: 'Se guardaron los resultados de {n} fotos en el historial.',
       limitExceededTitle: 'Límite del plan Free alcanzado',
       limitExceededBody: 'Has alcanzado el límite de {n} fotos al mes del plan Free. Mejora a Pro para fotos ilimitadas.',
+      layer0Unsupported: {
+        title: '¿Usar el análisis del servidor?',
+        bodyTemplate: 'El análisis en el dispositivo no está disponible en este dispositivo o versión de la app. Si continúas, la foto se enviará a nuestro servidor y se usarán {n} tokens. ¿Continuar?',
+        cancelButton: 'Cancelar',
+        onceButton: 'Solo esta vez',
+        alwaysButton: 'Hacerlo siempre así',
+      },
     },
     history: {
       title: 'Historial',
@@ -1741,6 +1813,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: 'Política de reembolsos',
       legalChildSafety: 'Seguridad infantil',
       languageTitle: 'Idioma',
+      layer0Title: 'Análisis en el dispositivo',
+      layer0UnsupportedBody: 'Este dispositivo (o versión de la app) no puede ejecutar el análisis en el dispositivo. Las fotos se analizan en nuestro servidor en su lugar, lo que usa tokens.',
+      layer0ConsentedNote: 'Aceptaste usar siempre el análisis del servidor sin que se te pregunte cada vez.',
+      layer0RevokeButton: 'Preguntarme cada vez',
+      layer0RevokedTitle: 'Listo',
+      layer0RevokedBody: 'Volveremos a preguntarte antes de cada análisis que use el servidor.',
     },
     review: {
       titles: reviewTitles([
@@ -2010,6 +2088,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: 'Les résultats de {n} photos ont été enregistrés dans l’historique.',
       limitExceededTitle: 'Limite du forfait Free atteinte',
       limitExceededBody: 'Vous avez atteint la limite de {n} photos par mois du forfait Free. Passez à Pro pour un nombre illimité de photos.',
+      layer0Unsupported: {
+        title: 'Utiliser l\'analyse serveur ?',
+        bodyTemplate: 'L\'analyse sur l\'appareil n\'est pas disponible sur cet appareil ou cette version de l\'app. Continuer enverra cette photo à notre serveur et utilisera {n} jetons. Continuer ?',
+        cancelButton: 'Annuler',
+        onceButton: 'Juste cette fois',
+        alwaysButton: 'Toujours faire ainsi',
+      },
     },
     history: {
       title: 'Historique',
@@ -2061,6 +2146,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: 'Politique de remboursement',
       legalChildSafety: 'Sécurité des enfants',
       languageTitle: 'Langue',
+      layer0Title: 'Analyse sur l\'appareil',
+      layer0UnsupportedBody: 'Cet appareil (ou cette version de l\'app) ne peut pas exécuter l\'analyse sur l\'appareil. Les photos sont analysées sur notre serveur à la place, ce qui utilise des jetons.',
+      layer0ConsentedNote: 'Vous avez accepté d\'utiliser toujours l\'analyse serveur sans qu\'on vous le demande à chaque fois.',
+      layer0RevokeButton: 'Me redemander à chaque fois',
+      layer0RevokedTitle: 'Terminé',
+      layer0RevokedBody: 'On vous redemandera avant chaque analyse utilisant le serveur.',
     },
     review: {
       titles: reviewTitles([
@@ -2330,6 +2421,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
       batchDoneBodyTemplate: 'Ergebnisse von {n} Fotos wurden im Verlauf gespeichert.',
       limitExceededTitle: 'Limit des kostenlosen Plans erreicht',
       limitExceededBody: 'Du hast das monatliche Limit von {n} Fotos im kostenlosen Plan erreicht. Upgrade auf Pro für unbegrenzte Fotos.',
+      layer0Unsupported: {
+        title: 'Serveranalyse verwenden?',
+        bodyTemplate: 'Analyse auf dem Gerät ist auf diesem Gerät oder dieser App-Version nicht verfügbar. Wenn du fortfährst, wird dieses Foto an unseren Server gesendet und {n} Token werden verwendet. Fortfahren?',
+        cancelButton: 'Abbrechen',
+        onceButton: 'Nur dieses Mal',
+        alwaysButton: 'Immer so machen',
+      },
     },
     history: {
       title: 'Verlauf',
@@ -2381,6 +2479,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalRefund: 'Rückerstattungsrichtlinie',
       legalChildSafety: 'Kinderschutz',
       languageTitle: 'Sprache',
+      layer0Title: 'Analyse auf dem Gerät',
+      layer0UnsupportedBody: 'Dieses Gerät (oder diese App-Version) kann keine Analyse auf dem Gerät ausführen. Fotos werden stattdessen auf unserem Server analysiert, wobei Token verbraucht werden.',
+      layer0ConsentedNote: 'Du hast zugestimmt, immer die Serveranalyse zu verwenden, ohne jedes Mal gefragt zu werden.',
+      layer0RevokeButton: 'Mich stattdessen jedes Mal fragen',
+      layer0RevokedTitle: 'Erledigt',
+      layer0RevokedBody: 'Wir fragen dich vor jeder Analyse, die den Server verwendet, wieder.',
     },
     review: {
       titles: reviewTitles([

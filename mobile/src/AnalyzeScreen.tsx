@@ -17,6 +17,10 @@ import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
 import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
+import { analyzeOnDevice } from './layer0/analyzeOnDevice';
+import { getLayer0Support } from './layer0/capability';
+import { LAYER1_TOKEN_COST } from './layer0/categories';
+import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
@@ -52,7 +56,7 @@ interface Props {
 }
 
 export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPhotos, onSharedPhotosHandled }: Props) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -173,7 +177,8 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
       const resized = await resizeForUpload(asset.uri, asset.width ?? 0, asset.height ?? 0, asset.mimeType);
       const sharedPhoto: Photo = { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType };
       setPhoto(sharedPhoto);
-      const response = await analyzePhoto(sharedPhoto);
+      const response = await resolveAnalysis(sharedPhoto);
+      if (!response) return;
       if (response.requires_tokens) {
         setResult(null);
         setPricingVisible(true);
@@ -210,12 +215,49 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     });
   }
 
+  // Tries Layer 0 (on-device) first; only reaches Layer 1 (../api.ts's
+  // analyzePhoto, the server) when Layer 0 genuinely can't resolve this
+  // photo — either the category needs Claude (business_card/receipt/
+  // event_flyer, see layer0/categories.ts) or the device/build can't run
+  // Layer 0 at all. The latter case is a real capability gap, so it's
+  // gated behind the consent prompt below rather than silently falling
+  // through. Returns null if the user declined the fallback prompt.
+  async function resolveAnalysis(target: Photo): Promise<AnalyzeResponse | null> {
+    const support = getLayer0Support();
+    if (support.supported) {
+      const onDeviceResult = await analyzeOnDevice(target.uri, locale);
+      if (onDeviceResult) return onDeviceResult;
+      return analyzePhoto(target);
+    }
+
+    if (await getLayer1FallbackConsent()) {
+      return analyzePhoto(target);
+    }
+
+    const choice = await new Promise<'cancel' | 'once' | 'always'>((resolve) => {
+      Alert.alert(
+        t.home.layer0Unsupported.title,
+        fmt(t.home.layer0Unsupported.bodyTemplate, { n: LAYER1_TOKEN_COST }),
+        [
+          { text: t.home.layer0Unsupported.cancelButton, style: 'cancel', onPress: () => resolve('cancel') },
+          { text: t.home.layer0Unsupported.onceButton, onPress: () => resolve('once') },
+          { text: t.home.layer0Unsupported.alwaysButton, onPress: () => resolve('always') },
+        ]
+      );
+    });
+
+    if (choice === 'cancel') return null;
+    if (choice === 'always') await setLayer1FallbackConsent(true);
+    return analyzePhoto(target);
+  }
+
   async function handleAnalyze() {
     if (!photo) return;
     setAnalyzing(true);
     setError(null);
     try {
-      const response = await analyzePhoto(photo);
+      const response = await resolveAnalysis(photo);
+      if (!response) return;
       if (response.requires_tokens) {
         setResult(null);
         setPricingVisible(true);

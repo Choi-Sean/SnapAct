@@ -10,6 +10,12 @@ interface PickedPhoto {
   mimeType?: string | null;
 }
 
+// ---- LAYER 1 (server) call ----------------------------------------------
+// Sends the photo to backend/app/main.py's /analyze — Google Vision +
+// Claude, token-gated for non-free categories. Callers should try
+// mobile/src/layer0/analyzeOnDevice.ts first (see AnalyzeScreen.tsx's
+// resolveAnalysis) and only fall through to this when Layer 0 can't handle
+// the photo itself.
 // Uses expo-file-system's native multipart uploader rather than raw
 // fetch()+FormData: on the New Architecture, appending a plain
 // {uri, name, type} object to FormData throws "Unsupported FormDataPart
@@ -19,7 +25,7 @@ export async function analyzePhoto(photo: PickedPhoto, mockCategory?: Category):
   const file = new File(photo.uri);
 
   // Without this, the backend never learns who's calling — every request
-  // looks like a guest, Tier 1 categories always come back locked even for
+  // looks like a guest, Layer 1 categories always come back locked even for
   // a logged-in user with a token balance, and nothing gets saved to the
   // account's server-side history either.
   const session = await loadSession();

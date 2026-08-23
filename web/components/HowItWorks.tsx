@@ -24,6 +24,16 @@ export default function HowItWorks() {
           </li>
         ))}
       </ol>
+
+      <div className="mt-16 grid gap-4 sm:grid-cols-2">
+        {t.how.ways.map((way) => (
+          <div key={way.title} className="rounded-2xl border border-border bg-surface p-6">
+            <span className="text-2xl">{way.icon}</span>
+            <h3 className="mt-3 text-base font-bold">{way.title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">{way.desc}</p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

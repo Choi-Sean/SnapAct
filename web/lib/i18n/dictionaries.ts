@@ -29,6 +29,7 @@ export interface Dictionary {
     eyebrow: string;
     headline: string;
     steps: { title: string; desc: string }[];
+    ways: { icon: string; title: string; desc: string }[];
   };
   features: {
     eyebrow: string;
@@ -105,6 +106,18 @@ export const dictionaries: Record<Locale, Dictionary> = {
         {
           title: 'It saves itself',
           desc: 'Check the details, tap once, and it’s already in the right app on your phone — no exporting, no copy-paste.',
+        },
+      ],
+      ways: [
+        {
+          icon: '📤',
+          title: 'Share from Photos',
+          desc: 'Tap Share on any photo, pick Snapsist, and analysis starts instantly — no need to even open the app first.',
+        },
+        {
+          icon: '📸',
+          title: 'Snap or pick in the app',
+          desc: 'Open Snapsist, take a photo or choose one from your library, and it reads it the same way.',
         },
       ],
     },
@@ -235,6 +248,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: 'AI가 대신 읽어드려요', desc: '이게 뭔지 알아서 판단하고, 이름·날짜·금액·주소 같은 정보를 자동으로 찾아내요.' },
         { title: '알아서 저장돼요', desc: '내용 확인하고 탭 한 번이면, 이미 휴대폰의 알맞은 앱에 들어가 있어요 — 내보내기도, 복사·붙여넣기도 필요 없어요.' },
       ],
+      ways: [
+        { icon: '📤', title: '사진 앱에서 공유', desc: '아무 사진에서나 공유 버튼을 누르고 Snapsist를 선택하면, 앱을 열 필요도 없이 바로 분석이 시작돼요.' },
+        { icon: '📸', title: '앱에서 촬영하거나 선택', desc: 'Snapsist를 열어서 사진을 찍거나 갤러리에서 고르면, 똑같은 방식으로 읽어드려요.' },
+      ],
     },
     features: {
       eyebrow: '연동 기능',
@@ -329,6 +346,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: '撮影', desc: '名刺やレシート、チラシなど保存したいものを撮影するか、ライブラリから選んでください。' },
         { title: 'AIが代わりに読み取ります', desc: '何の写真かを自動で判断し、名前・日付・金額・住所などの情報を自動で抽出します。' },
         { title: '自動で保存されます', desc: '内容を確認してタップするだけで、スマホの適切なアプリにすでに反映されています — 書き出しもコピペも不要です。' },
+      ],
+      ways: [
+        { icon: '📤', title: '写真アプリから共有', desc: 'どの写真でも共有ボタンをタップしてSnapsistを選ぶだけで、アプリを開かなくてもすぐに解析が始まります。' },
+        { icon: '📸', title: 'アプリ内で撮影・選択', desc: 'Snapsistを開いて撮影するかライブラリから選ぶと、同じように読み取ります。' },
       ],
     },
     features: {
@@ -425,6 +446,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: 'AI 自动帮你读取', desc: '它会判断这是什么内容，并自动提取姓名、日期、金额、地址等细节。' },
         { title: '自动保存', desc: '确认内容后轻点一下，它就已经出现在手机里对应的应用中 — 无需导出，无需复制粘贴。' },
       ],
+      ways: [
+        { icon: '📤', title: '从相册分享', desc: '在任意照片上点击分享，选择 Snapsist，无需先打开应用，分析立即开始。' },
+        { icon: '📸', title: '在应用内拍摄或选择', desc: '打开 Snapsist，拍照或从相册中选择，识别方式完全一样。' },
+      ],
     },
     features: {
       eyebrow: '集成功能',
@@ -519,6 +544,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: 'Toma la foto', desc: 'Haz una foto o elige una de tu galería — una tarjeta, un recibo, un cartel, lo que necesites guardar.' },
         { title: 'La IA la lee por ti', desc: 'Descubre de qué se trata y extrae los detalles — nombres, fechas, importes, direcciones — automáticamente.' },
         { title: 'Se guarda sola', desc: 'Revisa los datos, toca una vez, y ya está en la app correcta de tu teléfono — sin exportar, sin copiar y pegar.' },
+      ],
+      ways: [
+        { icon: '📤', title: 'Comparte desde Fotos', desc: 'Toca Compartir en cualquier foto, elige Snapsist, y el análisis empieza al instante — ni siquiera hace falta abrir la app primero.' },
+        { icon: '📸', title: 'Haz la foto o elígela en la app', desc: 'Abre Snapsist, toma una foto o elige una de tu galería, y la lee igual.' },
       ],
     },
     features: {
@@ -615,6 +644,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: 'L’IA la lit pour vous', desc: 'Elle détermine de quoi il s’agit et en extrait les informations — noms, dates, montants, adresses — automatiquement.' },
         { title: 'Elle s’enregistre toute seule', desc: 'Vérifiez les informations, appuyez une fois, et c’est déjà dans la bonne application de votre téléphone — sans export, sans copier-coller.' },
       ],
+      ways: [
+        { icon: '📤', title: 'Partagez depuis Photos', desc: 'Appuyez sur Partager sur n’importe quelle photo, choisissez Snapsist, et l’analyse démarre aussitôt — pas besoin même d’ouvrir l’app d’abord.' },
+        { icon: '📸', title: 'Photographiez ou choisissez dans l’app', desc: 'Ouvrez Snapsist, prenez une photo ou choisissez-en une dans votre photothèque, et elle la lit de la même façon.' },
+      ],
     },
     features: {
       eyebrow: 'Intégrations',
@@ -709,6 +742,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         { title: 'Fotografieren', desc: 'Mach ein Foto oder wähle eins aus deiner Mediathek — eine Visitenkarte, ein Kassenbon, ein Flyer, was auch immer gespeichert werden soll.' },
         { title: 'Die KI liest es für dich', desc: 'Sie erkennt, worum es sich handelt, und extrahiert automatisch die Details — Namen, Daten, Beträge, Adressen.' },
         { title: 'Es speichert sich von selbst', desc: 'Details prüfen, einmal tippen — und schon steht es in der richtigen App auf deinem Handy, ganz ohne Export, ohne Kopieren und Einfügen.' },
+      ],
+      ways: [
+        { icon: '📤', title: 'Aus Fotos teilen', desc: 'Bei jedem Foto auf Teilen tippen, Snapsist auswählen — die Analyse startet sofort, du musst die App nicht mal vorher öffnen.' },
+        { icon: '📸', title: 'In der App fotografieren oder auswählen', desc: 'Snapsist öffnen, ein Foto machen oder eins aus der Mediathek wählen — gelesen wird es genauso.' },
       ],
     },
     features: {

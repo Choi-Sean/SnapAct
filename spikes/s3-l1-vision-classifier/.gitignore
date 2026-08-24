@@ -1,0 +1,7 @@
+# Image datasets are NOT committed — they include downloaded passport/credit-card
+# sets and licensed Roboflow/Places365 data. Reproduce with the scripts + your own photos.
+data/
+data_real/
+data_mixed/
+*.mlmodelc
+# The trained model artifact (L1Classifier.mlmodel) IS committed as the deliverable.

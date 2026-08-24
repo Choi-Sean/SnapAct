@@ -75,7 +75,7 @@ generated workspace is named):
    compiles locally — EAS's cloud Mac builders will pick up the new
    target the same way they picked up expo-share-intent's.
 
-## 3. Keychain Sharing entitlement (needed for signed-in Layer 1 calls)
+## 3. Keychain Sharing entitlement (REQUIRED — extension is unusable without it)
 
 `Layer1Client.swift` now calls `backend/app/main.py`'s `/analyze` directly
 for `business_card`/`receipt`/`event_flyer`, and
@@ -87,13 +87,19 @@ user's token balance still applies. This only works if **both targets
 `com.snapact.app.share-extension`) can't see each other's Keychain items
 even under the same Apple Developer team.
 
+**This used to be optional ("locked more often than it needs to be").
+It no longer is.** Since the 2026-08-24 session, real analysis requires
+an account everywhere (`AnalyzeScreen.tsx`'s auth gate, mirrored here in
+`ShareResultView.swift`'s `.task` — see the `guard loadSharedSession() !=
+nil else { state = .needsAuth }` check). If this entitlement isn't set up
+on both targets, `loadSharedSession()` always returns `nil`, so the
+extension shows "sign in first" for every user, every time — even one
+who's fully logged into the main app. This step is now blocking, not a
+nice-to-have.
+
 In Xcode, for **both** targets: Signing & Capabilities → + Capability →
 Keychain Sharing → add the same group (e.g.
-`$(AppIdentifierPrefix)com.snapact.app`). Without this, the extension
-still works — `SharedSession.swift` just returns `nil` and every call goes
-out as a guest, which is exactly what happens for a logged-out RN user
-today (always `requires_tokens: true` for these three categories). Not
-broken, just locked more often than it needs to be until this is wired up.
+`$(AppIdentifierPrefix)com.snapact.app`).
 
 `SharedSession.swift`'s query was matched against
 `expo-secure-store`'s actual iOS source (its `SecureStoreModule.swift`) to

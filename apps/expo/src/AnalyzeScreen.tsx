@@ -21,6 +21,7 @@ import { analyzeOnDevice } from './layer0/analyzeOnDevice';
 import { getLayer0Support } from './layer0/capability';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
+import { runVisionGate } from './layer0/visionGate';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
@@ -233,12 +234,33 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 
   // Tries Layer 0 (on-device) first; only reaches Layer 1 (../api.ts's
   // analyzePhoto, the server) when Layer 0 genuinely can't resolve this
-  // photo — either the category needs Claude (business_card/receipt/
-  // event_flyer, see layer0/categories.ts) or the device/build can't run
-  // Layer 0 at all. The latter case is a real capability gap, so it's
-  // gated behind the consent prompt below rather than silently falling
-  // through. Returns null if the user declined the fallback prompt.
+  // photo — either the category needs deeper extraction than regex/keyword
+  // matching can do (business_card/receipt/event_flyer, see
+  // layer0/categories.ts — deferred to a future Layer 2) or the device/
+  // build can't run Layer 0 at all. The latter case is a real capability
+  // gap, so it's gated behind the consent prompt below rather than
+  // silently falling through. Returns null if the user declined the
+  // fallback prompt, or if the vision gate blocked the photo outright.
   async function resolveAnalysis(target: Photo): Promise<AnalyzeResponse | null> {
+    // Layer 1 vision blocking gate (visionGate.ts) — on-device, BEFORE any
+    // OCR or upload. A Tier 0 photo (ID / payment card / passport / ...)
+    // must never leave the device, so a block short-circuits here and
+    // nothing downstream ever sees it. `unavailable` (Expo Go, module not
+    // yet built, or a non-iOS device — this classifier is iOS-only) falls
+    // through untouched to the existing Layer 0/1 flow below.
+    const gate = await runVisionGate(target.uri);
+    if (gate.kind === 'block') {
+      Alert.alert(
+        t.home.visionGateBlockedTitle,
+        fmt(t.home.visionGateBlockedBodyTemplate, { category: gate.top, percent: Math.round(gate.p * 100) })
+      );
+      return null;
+    }
+    if (__DEV__ && gate.kind === 'route') {
+      // Visibility while testing: what the on-device model actually routed to.
+      console.log(`[visionGate] route -> ${gate.category} (${gate.confidence.toFixed(2)})`, gate.scores);
+    }
+
     const support = getLayer0Support();
     if (support.supported) {
       const onDeviceResult = await analyzeOnDevice(target.uri, locale, target.metadata);

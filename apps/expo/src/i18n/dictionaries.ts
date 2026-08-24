@@ -125,6 +125,8 @@ export interface Dictionary {
       onceButton: string;
       alwaysButton: string;
     };
+    visionGateBlockedTitle: string;
+    visionGateBlockedBodyTemplate: string;
   };
   history: {
     title: string;
@@ -437,6 +439,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         onceButton: 'Just this once',
         alwaysButton: 'Always do this',
       },
+      visionGateBlockedTitle: 'Blocked on device',
+      visionGateBlockedBodyTemplate: 'This photo looks like a sensitive document ({category}, {percent}%) and was not uploaded — nothing was sent to our server.',
     },
     history: {
       title: 'History',
@@ -765,6 +769,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         onceButton: '이번만 계속',
         alwaysButton: '항상 이렇게 진행',
       },
+      visionGateBlockedTitle: '기기에서 차단됨',
+      visionGateBlockedBodyTemplate: '이 사진은 민감한 문서로 보여서({category}, {percent}%) 업로드되지 않았어요 — 서버로 아무것도 전송되지 않았습니다.',
     },
     history: {
       title: '기록',
@@ -1102,6 +1108,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         onceButton: 'Solo esta vez',
         alwaysButton: 'Hacerlo siempre así',
       },
+      visionGateBlockedTitle: 'Bloqueado en el dispositivo',
+      visionGateBlockedBodyTemplate: 'Esta foto parece un documento sensible ({category}, {percent}%) y no se subió — no se envió nada a nuestro servidor.',
     },
     history: {
       title: 'Historial',

@@ -146,24 +146,6 @@ def analyze(
             resolved_layer="L5c",
         ), True
 
-    import anthropic
-
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-
-    if ocr_text:
-        prompt = _PROMPT_HEADER.format(
-            category=category,
-            source_instruction="Below is the OCR text Vision extracted from the photo. Read it and extract structured data.",
-        )
-        content = [{"type": "text", "text": f'{prompt}\nOCR text:\n"""\n{ocr_text}\n"""'}]
-    else:
-        prompt = _PROMPT_HEADER.format(category=category, source_instruction="Look at the image and extract structured data.")
-        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
-        content = [
-            {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_b64}},
-            {"type": "text", "text": prompt},
-        ]
-
     # Claude can fail in ways that have nothing to do with our schema: a
     # network/rate-limit error from the API call itself, or (seen in
     # production with a real payment-card photo sent as "business_card" —
@@ -186,13 +168,35 @@ def analyze(
 
     # Everything from here down is wrapped in one broad try/except as a final
     # safety net (below the specific except clauses, which exist so the log
-    # message says *what* went wrong). A real production 500 got through the
-    # narrower version of this: the specific excepts covered a failed API
-    # call and a non-JSON response, but not e.g. message.content coming back
-    # in an unexpected shape while building `text`, which sat unguarded
-    # between those two try blocks. Nothing after this point should ever be
-    # allowed to reach main.py as an unhandled exception again.
+    # message says *what* went wrong). This is what actually crashed in
+    # production: anthropic==0.34.2 (pinned in requirements.txt) constructs
+    # its internal httpx client with a `proxies` kwarg that newer httpx
+    # versions (unpinned, so pip resolved latest) removed -- Anthropic(...)
+    # itself raised TypeError before ever reaching a try block, since client
+    # construction used to happen outside this function's error handling
+    # entirely. Fixed properly by pinning a current anthropic version (see
+    # requirements.txt), but client construction is now inside the safety
+    # net too so a similar dependency mismatch degrades gracefully instead
+    # of crashing raw next time.
     try:
+        import anthropic
+
+        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+
+        if ocr_text:
+            prompt = _PROMPT_HEADER.format(
+                category=category,
+                source_instruction="Below is the OCR text Vision extracted from the photo. Read it and extract structured data.",
+            )
+            content = [{"type": "text", "text": f'{prompt}\nOCR text:\n"""\n{ocr_text}\n"""'}]
+        else:
+            prompt = _PROMPT_HEADER.format(category=category, source_instruction="Look at the image and extract structured data.")
+            image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+            content = [
+                {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_b64}},
+                {"type": "text", "text": prompt},
+            ]
+
         message = client.messages.create(
             model=settings.claude_model,
             max_tokens=1024,

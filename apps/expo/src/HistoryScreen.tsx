@@ -328,7 +328,13 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
         </>
       )}
 
-      <Modal visible={!!selected} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
+      {/* Two RN <Modal>s visible at once is unreliable across platforms — each
+          mounts its own native window, and stacking isn't guaranteed, which is
+          why tapping the thumbnail to zoom (ImageZoomModal, also a <Modal>)
+          wasn't reliably showing on top of this sheet. Hiding the sheet
+          whenever the zoom is open (and it reappears once zoom closes, since
+          `selected` is untouched) keeps only one Modal visible at a time. */}
+      <Modal visible={!!selected && !zoomUri} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             {selected && (

@@ -489,7 +489,13 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
         // demo receipt preview uses — a real analysis should look like what
         // the demo already showed. Other "note" categories (general
         // documents) just share the AI summary, same as before.
-        const receiptTable = result.category === 'receipt' && result.receipt ? formatReceiptTable(result.receipt, t) : null;
+        // Checked on result.receipt alone, not category === 'receipt': Vision's
+        // first-pass category guess (backend/app/vision.py) can be wrong (the
+        // same photo has flipped between "receipt" and "business_card" in
+        // testing) but Claude still correctly recognizes and extracts real
+        // receipt content regardless of what category it was told — using
+        // its actual output instead of the label it was pre-classified with.
+        const receiptTable = result.receipt ? formatReceiptTable(result.receipt, t) : null;
         const message = receiptTable ?? result.summary ?? result.raw_text ?? '';
         await Share.share({ message, title: t.batch.noteShareTitle });
         const imageUri = await persistImage(photo.uri);

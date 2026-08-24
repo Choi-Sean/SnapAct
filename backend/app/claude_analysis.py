@@ -81,7 +81,10 @@ _MOCK_RESULTS: dict[Category, dict] = {
 }
 
 _PROMPT_HEADER = """You are analyzing a photo that was pre-classified as "{category}" by a
-first-pass vision model. {source_instruction}
+first-pass vision model. That first pass can be wrong (e.g. a store receipt
+sometimes gets mislabeled "business_card") — decide suggested_action and
+which payload to fill from what the photo/text actually shows, not from
+this label. {source_instruction}
 
 Respond with ONLY a JSON object (no markdown fences, no commentary) matching this shape:
 {{

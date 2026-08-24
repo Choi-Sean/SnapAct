@@ -73,7 +73,9 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             analysisFailed: result.analysis_failed,
           });
         } else if (result.suggested_action === 'note') {
-          const receiptTable = result.category === 'receipt' && result.receipt ? formatReceiptTable(result.receipt, t) : null;
+          // Checked on result.receipt alone, not category === 'receipt' -- see
+          // AnalyzeScreen.tsx's matching comment.
+          const receiptTable = result.receipt ? formatReceiptTable(result.receipt, t) : null;
           const message = receiptTable ?? result.summary ?? result.raw_text ?? '';
           await Share.share({ message, title: t.batch.noteShareTitle });
           batchItems.push({

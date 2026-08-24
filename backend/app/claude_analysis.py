@@ -184,30 +184,35 @@ def analyze(
             analysis_failed=True,
         ), False
 
+    # Everything from here down is wrapped in one broad try/except as a final
+    # safety net (below the specific except clauses, which exist so the log
+    # message says *what* went wrong). A real production 500 got through the
+    # narrower version of this: the specific excepts covered a failed API
+    # call and a non-JSON response, but not e.g. message.content coming back
+    # in an unexpected shape while building `text`, which sat unguarded
+    # between those two try blocks. Nothing after this point should ever be
+    # allowed to reach main.py as an unhandled exception again.
     try:
         message = client.messages.create(
             model=settings.claude_model,
             max_tokens=1024,
             messages=[{"role": "user", "content": content}],
         )
-    except anthropic.APIError as e:
-        return _fallback(f"API error: {e}")
 
-    text = "".join(block.text for block in message.content if block.type == "text").strip()
-    # Defensive: the prompt says "no markdown fences", but strip them if
-    # Claude adds them anyway rather than failing on it.
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.lower().startswith("json"):
-            text = text[4:]
-        text = text.strip()
+        text = "".join(block.text for block in message.content if block.type == "text").strip()
+        # Defensive: the prompt says "no markdown fences", but strip them if
+        # Claude adds them anyway rather than failing on it.
+        if text.startswith("```"):
+            text = text.strip("`")
+            if text.lower().startswith("json"):
+                text = text[4:]
+            text = text.strip()
 
-    try:
-        data = json.loads(text)
-    except (json.JSONDecodeError, ValueError) as e:
-        return _fallback(f"non-JSON response ({e}): {text[:200]!r}")
+        try:
+            data = json.loads(text)
+        except (json.JSONDecodeError, ValueError) as e:
+            return _fallback(f"non-JSON response ({e}): {text[:200]!r}")
 
-    try:
         return AnalyzeResponse(
             mock=False,
             category=category,
@@ -222,7 +227,8 @@ def analyze(
             resolved_layer="L5c",
             tokens_spent=LAYER2_TOKEN_COST,
         ), True
-    except (AttributeError, TypeError, ValueError) as e:
-        # Valid JSON but the wrong shape (e.g. a bare string/array instead of
-        # the requested object, or a field of the wrong type).
-        return _fallback(f"unexpected JSON shape ({e}): {text[:200]!r}")
+    except anthropic.APIError as e:
+        return _fallback(f"API error: {e}")
+    except Exception as e:  # noqa: BLE001 - intentional final safety net, see comment above
+        logger.exception("Unexpected error in Claude L5c call for category=%s", category)
+        return _fallback(f"unexpected error ({type(e).__name__}): {e}")

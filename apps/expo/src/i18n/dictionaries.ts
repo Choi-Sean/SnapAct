@@ -120,7 +120,7 @@ export interface Dictionary {
     limitExceededBody: string;
     layer0Unsupported: {
       title: string;
-      bodyTemplate: string;
+      body: string;
       cancelButton: string;
       onceButton: string;
       alwaysButton: string;
@@ -342,7 +342,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       proCta: 'Start Pro',
       tokenIntro: 'Business cards, receipts, and event flyers use tokens. Everything else is free.',
-      tier0FreeNote: 'Medication, documents, and unrecognized photos are always free — no tokens, no account needed.',
+      tier0FreeNote: 'Every analysis is free right now — no tokens, no account needed.',
       tokensLabelTemplate: '{n} tokens',
       analysesEquivalentTemplate: '≈ {n} analyses',
       buyButton: 'Buy',
@@ -432,7 +432,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       limitExceededBody: 'You\'ve reached the Free plan limit of {n} photos this month. Upgrade to Pro for unlimited photos.',
       layer0Unsupported: {
         title: 'Use server analysis instead?',
-        bodyTemplate: 'On-device analysis isn\'t available on this device or app version. Continuing sends this photo to our server and uses {n} tokens. Continue?',
+        body: 'On-device analysis isn\'t available on this device or app version. Continuing sends this photo to our server instead — it\'s still free, just not on-device. Continue?',
         cancelButton: 'Cancel',
         onceButton: 'Just this once',
         alwaysButton: 'Always do this',
@@ -489,7 +489,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalChildSafety: 'Child Safety',
       languageTitle: 'Language',
       layer0Title: 'On-device analysis',
-      layer0UnsupportedBody: 'This device (or app version) can\'t run on-device analysis. Photos are analyzed on our server instead, which uses tokens.',
+      layer0UnsupportedBody: 'This device (or app version) can\'t run on-device analysis. Photos are analyzed on our server instead — still free, but the photo leaves your device for that analysis.',
       layer0ConsentedNote: 'You\'ve agreed to always use server analysis without being asked each time.',
       layer0RevokeButton: 'Ask me every time instead',
       layer0RevokedTitle: 'Done',
@@ -670,7 +670,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       proFeatures: ['무제한 처리', '여러 장 한번에 일괄 처리', '기록 클라우드 동기화', '우선 처리'],
       proCta: 'Pro 시작하기',
       tokenIntro: '명함·영수증·행사 전단은 토큰이 필요해요. 나머지는 전부 무료예요.',
-      tier0FreeNote: '복약·문서·미인식 사진은 언제나 무료예요 — 토큰도, 계정도 필요 없어요.',
+      tier0FreeNote: '지금은 모든 분석이 무료예요 — 토큰도, 계정도 필요 없어요.',
       tokensLabelTemplate: '토큰 {n}개',
       analysesEquivalentTemplate: '≈ {n}회 분석',
       buyButton: '구매',
@@ -760,7 +760,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       limitExceededBody: '이번 달 무료 플랜 한도인 {n}장을 초과했어요. Pro로 업그레이드하면 무제한으로 쓸 수 있어요.',
       layer0Unsupported: {
         title: '서버 분석으로 진행할까요?',
-        bodyTemplate: '이 기기 또는 앱 버전에서는 온디바이스 분석을 사용할 수 없어요. 계속하면 사진이 서버로 전송되고 토큰 {n}개가 사용돼요. 계속할까요?',
+        body: '이 기기 또는 앱 버전에서는 온디바이스 분석을 사용할 수 없어요. 계속하면 사진이 서버로 전송돼요 — 여전히 무료고, 온디바이스가 아닐 뿐이에요. 계속할까요?',
         cancelButton: '취소',
         onceButton: '이번만 계속',
         alwaysButton: '항상 이렇게 진행',
@@ -817,7 +817,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalChildSafety: '아동 안전 정책',
       languageTitle: '언어',
       layer0Title: '온디바이스 분석',
-      layer0UnsupportedBody: '이 기기(또는 앱 버전)에서는 온디바이스 분석을 사용할 수 없어요. 대신 서버에서 사진을 분석하며, 이때 토큰이 사용돼요.',
+      layer0UnsupportedBody: '이 기기(또는 앱 버전)에서는 온디바이스 분석을 사용할 수 없어요. 대신 서버에서 사진을 분석해요 — 여전히 무료지만, 그 분석을 위해 사진이 기기 밖으로 나가요.',
       layer0ConsentedNote: '앞으로 묻지 않고 항상 서버 분석을 사용하는 것에 동의하셨어요.',
       layer0RevokeButton: '매번 다시 물어보기',
       layer0RevokedTitle: '완료',
@@ -1007,7 +1007,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       ],
       proCta: 'Empezar con Pro',
       tokenIntro: 'Las tarjetas de presentación, recibos y carteles de eventos usan tokens. Todo lo demás es gratis.',
-      tier0FreeNote: 'Medicamentos, documentos y fotos no reconocidas siempre son gratis — sin tokens ni cuenta.',
+      tier0FreeNote: 'Todo análisis es gratis por ahora — sin tokens ni cuenta.',
       tokensLabelTemplate: '{n} tokens',
       analysesEquivalentTemplate: '≈ {n} análisis',
       buyButton: 'Comprar',
@@ -1097,7 +1097,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       limitExceededBody: 'Has alcanzado el límite de {n} fotos al mes del plan Free. Mejora a Pro para fotos ilimitadas.',
       layer0Unsupported: {
         title: '¿Usar el análisis del servidor?',
-        bodyTemplate: 'El análisis en el dispositivo no está disponible en este dispositivo o versión de la app. Si continúas, la foto se enviará a nuestro servidor y se usarán {n} tokens. ¿Continuar?',
+        body: 'El análisis en el dispositivo no está disponible en este dispositivo o versión de la app. Si continúas, la foto se enviará a nuestro servidor en su lugar — sigue siendo gratis, solo que no en el dispositivo. ¿Continuar?',
         cancelButton: 'Cancelar',
         onceButton: 'Solo esta vez',
         alwaysButton: 'Hacerlo siempre así',
@@ -1154,7 +1154,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       legalChildSafety: 'Seguridad infantil',
       languageTitle: 'Idioma',
       layer0Title: 'Análisis en el dispositivo',
-      layer0UnsupportedBody: 'Este dispositivo (o versión de la app) no puede ejecutar el análisis en el dispositivo. Las fotos se analizan en nuestro servidor en su lugar, lo que usa tokens.',
+      layer0UnsupportedBody: 'Este dispositivo (o versión de la app) no puede ejecutar el análisis en el dispositivo. Las fotos se analizan en nuestro servidor en su lugar — sigue siendo gratis, pero la foto sale de tu dispositivo para ese análisis.',
       layer0ConsentedNote: 'Aceptaste usar siempre el análisis del servidor sin que se te pregunte cada vez.',
       layer0RevokeButton: 'Preguntarme cada vez',
       layer0RevokedTitle: 'Listo',

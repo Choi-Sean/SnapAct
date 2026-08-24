@@ -2,11 +2,12 @@
 // LAYER 0 — on-device medication field extraction (apps/expo/src/layer0/)
 // ============================================================================
 // Regex/keyword based, not an LLM — this is the tradeoff for a medication
-// photo never leaving the device. It will miss things Claude's Layer 1
-// extraction (backend/app/claude_analysis.py) would catch; it's shipped
-// anyway because for this specific category, "resolved on-device with a
-// gap" beats "fully accurate but sent to the server" per the product's
-// privacy stance on medication/prescription photos.
+// photo never leaving the device. There's no AI-based extraction anywhere
+// in the current version (see backend/app/pricing.py's header for why —
+// that's deferred to a future Layer 2), so this same approach is mirrored
+// server-side too (backend/app/medication_extract.py) for the Layer 1
+// fallback path. Keep all three (this file, MedicationExtractor.swift,
+// medication_extract.py) in sync.
 import { MealRelation, MedicationPayload } from '../types';
 
 interface MealKeywords {
@@ -25,7 +26,11 @@ const MEAL_KEYWORDS: MealKeywords = {
 
 const DOSAGE_RE = /(\d+(?:[.,]\d+)?\s?(?:mg|mcg|ml|g|iu))\b|(\d+\s?(?:정|캡슐|錠|カプセル|片|粒|胶囊|膠囊))/i;
 const FREQUENCY_RE = /(\d+)\s*(?:times a day|times daily|회|回|次|veces al día|fois par jour|mal täglich)/i;
-const DURATION_RE = /(\d+)\s*(?:days?|일분|일치|일간|일|日分|日間|日|天|días?|jours?|tage)\b/i;
+// Tried in order: the specific-suffix pattern first, so "7일분" (duration)
+// doesn't lose to an earlier, unrelated "1일 3회" (frequency) in the same
+// text matching the bare "일"/"日"/"天" fallback instead.
+const DURATION_SPECIFIC_RE = /(\d+)\s*(?:days?|일분|일치|일간|日分|日間|días?|jours?|tage)\b/i;
+const DURATION_BARE_RE = /(\d+)\s*(?:일|日|天)\b/i;
 const HHMM_RE = /\b([01]?\d|2[0-3]):([0-5]\d)\b/g;
 const KOREAN_AMPM_RE = /(오전|오후)\s*(\d{1,2})\s*시/g;
 
@@ -67,7 +72,7 @@ export function extractMedication(rawText: string): MedicationPayload {
   const haystack = rawText.toLowerCase();
   const dosageMatch = rawText.match(DOSAGE_RE);
   const frequencyMatch = haystack.match(FREQUENCY_RE);
-  const durationMatch = haystack.match(DURATION_RE);
+  const durationMatch = haystack.match(DURATION_SPECIFIC_RE) ?? haystack.match(DURATION_BARE_RE);
   const specificTimes = extractSpecificTimes(rawText);
 
   return {

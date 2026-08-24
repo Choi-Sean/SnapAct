@@ -9,12 +9,12 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, db, payments, vision, wallet
+from . import auth, db, medication_extract, payments, vision, wallet
 from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
 from .payments import CheckoutRequest, CheckoutResponse
-from .pricing import LAYER1_TOKEN_COST, TOKEN_PACKAGES, is_layer0_category
+from .pricing import LAYER2_TOKEN_COST, TOKEN_PACKAGES
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,6 @@ def health():
     return {
         "status": "ok",
         "vision_enabled": vision.settings.vision_enabled,
-        "claude_enabled": claude_analysis.settings.claude_enabled,
         "auth_enabled": bool(settings.api_shared_secret),
         "wallet_enabled": settings.wallet_enabled,
         "accounts_enabled": bool(settings.jwt_secret),
@@ -121,7 +120,9 @@ def account_token_history(entries: list[TokenTransactionOut] = Depends(auth.list
 
 @app.get("/account/token-packages")
 def account_token_packages():
-    return {"packages": TOKEN_PACKAGES, "layer1_cost_per_analysis": LAYER1_TOKEN_COST}
+    # layer2_cost_per_analysis is a forward reference, not an active charge —
+    # see pricing.py's header. Nothing on /analyze spends tokens right now.
+    return {"packages": TOKEN_PACKAGES, "layer2_cost_per_analysis": LAYER2_TOKEN_COST}
 
 
 # ---- Web-only checkout (see payments.py's header — never wired into the
@@ -212,15 +213,16 @@ async def analyze(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 
-    # Global daily ceiling on real (paid) Vision/Claude usage — catches abuse
-    # spread across many IPs that the per-IP rate limit alone wouldn't stop.
-    # Once hit, every request for the rest of the UTC day gets the mock
-    # pipeline instead of erroring, so the app keeps working in demo mode.
-    would_spend = vision.settings.vision_enabled or claude_analysis.settings.claude_enabled
+    # Global daily ceiling on real (paid) Vision usage — catches abuse spread
+    # across many IPs that the per-IP rate limit alone wouldn't stop. Once
+    # hit, every request for the rest of the UTC day gets the mock pipeline
+    # instead of erroring, so the app keeps working in demo mode.
+    would_spend = vision.settings.vision_enabled
     within_cap = daily_spend_cap.try_consume(settings.daily_real_analyze_cap) if would_spend else True
     if would_spend and not within_cap:
         logger.warning("Daily real-API spend cap reached; serving mock response.")
     force_mock = would_spend and not within_cap
+    mocked = force_mock or not vision.settings.vision_enabled
 
     is_image = file.content_type.startswith("image/")
     if is_image:
@@ -231,64 +233,56 @@ async def analyze(
         # rather than being rejected outright.
         category, confidence, ocr_text = "document", 0.4, None
 
-    using_real_pipeline = vision.settings.vision_enabled and claude_analysis.settings.claude_enabled and not force_mock
-
-    # ---- LAYER 1 token gate (see backend/app/pricing.py header for the full
-    # layer map) ---------------------------------------------------------
-    # Everything below this point IS Layer 1 — Vision already ran above,
-    # this is the paid Claude step. LAYER0_CATEGORIES is free no matter
-    # which layer resolves it; the rest needs a signed-in account with
-    # enough token balance. Mock results are always free since no real API
-    # cost was actually incurred.
-    requires_tokens = (
-        using_real_pipeline
-        and not is_layer0_category(category)
-        and (not user_id or not auth.try_spend_tokens(user_id, LAYER1_TOKEN_COST))
-    )
-
-    if requires_tokens:
+    # ---- LAYER 1 (see backend/app/pricing.py's header for the full layer
+    # map) -----------------------------------------------------------------
+    # Vision classification just ran above; everything below is Layer 1.
+    # No Claude, no other paid AI call, no token spend — this build reports
+    # exactly what Vision + deterministic parsing could figure out and
+    # stops there. Structured extraction for business_card/receipt/
+    # event_flyer needs real language understanding that regex/keyword
+    # matching can't reliably do; that's deferred to Layer 2 (agentic AI,
+    # not yet built) rather than faked here.
+    if category == "medication":
+        medication = medication_extract.extract(ocr_text or "")
+        has_usable_fields = bool(medication.name or medication.dosage)
         result = AnalyzeResponse(
-            mock=False,
+            mock=mocked,
             category=category,
             confidence=confidence,
-            suggested_action="none",
-            requires_tokens=True,
-            summary="This category needs an account with tokens to unlock full extraction.",
+            suggested_action="reminder" if has_usable_fields else "none",
+            medication=medication if has_usable_fields else None,
+            needs_time_selection=has_usable_fields and not medication.specific_times,
+            raw_text=ocr_text,
+            summary=medication.name or "Medication label detected.",
         )
-    elif using_real_pipeline and category == "other":
-        # Nothing recognizable in the photo — skip the Claude call entirely
-        # rather than paying for a vision request that will just come back empty.
+    elif category in ("document", "other"):
         result = AnalyzeResponse(
-            mock=False,
+            mock=mocked,
             category=category,
             confidence=confidence,
             suggested_action="none",
-            summary="No business card, receipt, event, or document content was recognized in this photo.",
+            raw_text=ocr_text,
+            summary=(
+                "No business card, receipt, event, or document content was recognized in this photo."
+                if category == "other"
+                else "Document detected — no structured fields extracted in this version."
+            ),
         )
     else:
-        # Text-dense categories: hand Claude the OCR text instead of the image. Text tokens
-        # are much cheaper than image tokens, and dates/amounts/addresses read fine from text alone.
-        text_only_categories = {"receipt", "document", "medication"}
-        ocr_text_for_claude = ocr_text if (using_real_pipeline and category in text_only_categories) else None
-
-        # Claude's image content blocks only accept raster image media types — a PDF
-        # (or anything else without OCR text behind it) can't be sent that way.
-        if using_real_pipeline and not is_image and not ocr_text_for_claude:
-            result = AnalyzeResponse(
-                mock=False,
-                category=category,
-                confidence=confidence,
-                suggested_action="none",
-                summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
-            )
-        else:
-            result = claude_analysis.analyze(
-                image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
-            )
+        # business_card / receipt / event_flyer: classified, but full field
+        # extraction isn't available until Layer 2 exists.
+        result = AnalyzeResponse(
+            mock=mocked,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            raw_text=ocr_text,
+            summary=f"Detected as {category.replace('_', ' ')} — detailed extraction isn't available in this version yet.",
+        )
 
     # The photo itself is never uploaded — only the extracted text fields are
-    # saved, and only for a signed-in user with a real (non-locked) result.
-    if user_id and not requires_tokens:
+    # saved, and only for a signed-in user.
+    if user_id:
         background_tasks.add_task(_save_history_entry, user_id, category, result)
 
     return result

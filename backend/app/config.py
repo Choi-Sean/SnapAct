@@ -4,10 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    anthropic_api_key: str = ""
     google_application_credentials: str = ""
     google_application_credentials_json: str = ""
-    claude_model: str = "claude-sonnet-5"
     api_shared_secret: str = ""
 
     apple_team_id: str = "S8G28N4M49"
@@ -39,7 +37,7 @@ class Settings(BaseSettings):
     # Abuse/cost protection. The mobile app's API_SHARED_SECRET ships inside
     # the public JS bundle, so it can't be treated as a real secret — anyone
     # can extract it and script calls straight to the API. These limits are
-    # the actual backstop against a runaway Vision/Claude bill until real
+    # the actual backstop against a runaway Vision bill until real
     # per-account auth + quotas are required.
     analyze_rate_limit_per_hour: int = 30
     auth_rate_limit_per_hour: int = 10
@@ -58,10 +56,6 @@ class Settings(BaseSettings):
     @property
     def vision_enabled(self) -> bool:
         return bool(self.google_application_credentials or self.google_application_credentials_json)
-
-    @property
-    def claude_enabled(self) -> bool:
-        return bool(self.anthropic_api_key)
 
     @property
     def wallet_enabled(self) -> bool:

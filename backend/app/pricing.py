@@ -19,10 +19,12 @@ before touching /analyze or the mobile capture flow.
         on-device — medicationExtract.ts does regex/keyword field
         extraction (name/dosage/frequency/duration/meal-timing/times),
         no LLM, so these categories never leave the phone.
-      - business_card / receipt / event_flyer still need Claude's
-        extraction and fall through to Layer 1 below (analyzeOnDevice.ts
-        returns null for these — this is normal routing, not a capability
-        failure).
+      - business_card / receipt / event_flyer still fall through to
+        Layer 1 below (analyzeOnDevice.ts returns null for these — this
+        is normal routing, not a capability failure). "other" with zero
+        keyword matches also falls through rather than being confirmed
+        locally, since that's just as likely a real card/receipt/flyer
+        whose language classify.ts's keyword lists don't cover.
     capability.ts detects whether Layer 0 can run at all on this device/
     build (native module linked? did a call fail at runtime, e.g. no
     Google Play services on Android?) — apps/expo/src/AnalyzeScreen.tsx's
@@ -32,42 +34,47 @@ before touching /analyze or the mobile capture flow.
     deliberately never sent to the server (see consent.ts's own comment).
 
   LAYER 1 — server-side, backend/app/main.py's /analyze endpoint.
-    Where every request lands today. Runs Google Cloud Vision (classify)
-    then Anthropic Claude (structured field extraction). This is the ONLY
-    layer that exists right now — until Layer 0 ships, every photo goes
-    through here regardless of category.
-    Token gating lives here: backend/app/main.py, the `requires_tokens`
-    block right after `using_real_pipeline` is computed (search for
-    "LAYER 1" in that file). LAYER0_CATEGORIES below is what decides
-    "free even when it lands in Layer 1" vs. "costs LAYER1_TOKEN_COST".
+    Runs Google Cloud Vision (classify) and, for medication, the same
+    deterministic regex extraction as Layer 0 (medication_extract.py —
+    keep it in sync with medicationExtract.ts/MedicationExtractor.swift).
+    No Claude, no other paid AI call, and — as of this session — no token
+    spend either: business_card/receipt/event_flyer get classified and
+    handed back with the raw OCR text and an honest "not extracted yet"
+    summary, not fabricated fields. There was a Claude-based extraction
+    path here before; it was removed because it was never actually wired
+    up with a real API key in production and was silently serving
+    hardcoded placeholder data (a real bug a user hit) instead of an
+    error — see git history for backend/app/claude_analysis.py if you
+    need the old prompt/shape for reference.
     Layer 1 is the fallback for: devices/builds that can't run Layer 0 at
     all (apps/expo/src/layer0/capability.ts), and categories Layer 0 never
-    attempts extraction for (business_card/receipt/event_flyer — always
-    Claude's job). There's no language-specific OCR gap to route around:
-    Google ML Kit's on-device recognizer ships its own model per script
-    (Latin/Chinese/Japanese/Korean/Devanagari), not gated by OS version the
-    way Apple's own Vision framework is — an earlier draft of this plan
-    assumed a Korean/Japanese gap on older iOS that doesn't actually apply
-    here.
+    attempts extraction for. There's no language-specific OCR gap to route
+    around: Google ML Kit's on-device recognizer ships its own model per
+    script (Latin/Chinese/Japanese/Korean/Devanagari), not gated by OS
+    version the way Apple's own Vision framework is.
 
-  LAYER 2 — reserved, not yet defined.
-    Placeholder for whatever comes after Layer 1 (batch/priority
-    processing, a bigger model, etc.). Nothing routes here yet.
+  LAYER 2 — reserved for real structured extraction (agentic AI or
+    similar) of business_card/receipt/event_flyer, once built. Nothing
+    routes here yet — /analyze doesn't call anything for these categories
+    beyond classification. LAYER2_TOKEN_COST is a forward reference for
+    when this exists; it isn't charged anywhere right now.
 =============================================================================
 """
 
 from .models import Category
 
-# Categories that are free no matter which layer actually processes them —
-# either genuinely sensitive (medication/prescriptions, matching the "Tier 0
-# photos never leave the device" privacy principle) or low-extraction-value
-# (document, unrecognized) enough that gating them isn't worth it.
-# Once Layer 0 ships, these are exactly the categories it's expected to
-# fully resolve on its own; everything else needs Layer 1's Claude call.
+# Categories Layer 0 (and, in this version, Layer 1) can fully resolve on
+# their own without needing Layer 2 — either genuinely sensitive
+# (medication/prescriptions, matching the "never leaves the device"
+# privacy principle) or low-extraction-value (document, unrecognized)
+# enough that a plain classification + raw text is already useful.
 LAYER0_CATEGORIES: frozenset[Category] = frozenset({"medication", "document", "other"})
 
-# What a Layer 1 (Claude) call costs for a non-free category.
-LAYER1_TOKEN_COST = 10
+# Forward reference for Layer 2 (not yet built, not yet charged anywhere —
+# see this file's header). Kept so the token/Stripe infrastructure already
+# built (payments.py, the web dashboard's token packages) has a real number
+# to display instead of inventing one later.
+LAYER2_TOKEN_COST = 10
 
 STARTER_TOKENS = 50
 
@@ -77,7 +84,3 @@ TOKEN_PACKAGES = [
     {"id": "medium", "tokens": 500, "price_usd": 9.99},
     {"id": "large", "tokens": 1500, "price_usd": 19.99},
 ]
-
-
-def is_layer0_category(category: Category) -> bool:
-    return category in LAYER0_CATEGORIES

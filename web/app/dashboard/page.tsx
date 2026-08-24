@@ -195,8 +195,8 @@ function DashboardContent() {
               </p>
               <p className="mt-3 rounded-xl bg-good/10 px-3 py-2 text-[12.5px] font-semibold text-good">
                 {isKo
-                  ? '복약·문서·미인식 사진은 언제나 무료예요 — 토큰이 필요 없어요.'
-                  : 'Medication, documents, and unrecognized photos are always free — no tokens needed.'}
+                  ? '지금은 모든 분석이 무료예요 — 토큰은 나중에 나올 심화 분석 기능을 위한 거예요.'
+                  : "Every analysis is free right now — tokens are for a deeper-analysis feature that's coming later."}
               </p>
             </div>
 
@@ -215,7 +215,9 @@ function DashboardContent() {
         <div className="mt-10">
           <h2 className="text-lg font-extrabold">{isKo ? '토큰 구매' : 'Buy tokens'}</h2>
           <p className="mt-1 text-[13px] text-muted">
-            {isKo ? '명함 · 영수증 · 행사 전단 분석 1회당 10토큰이 사용돼요.' : 'Business card, receipt, and event flyer analyses use 10 tokens each.'}
+            {isKo
+              ? '지금 분석은 전부 무료라 당장은 필요 없어요 — 나중에 나올 심화 분석 기능에서 쓰일 예정이에요. 미리 구매해두실 수 있어요.'
+              : "Not needed right now — every analysis is free today. These will be used for a deeper-analysis feature coming later; you can stock up early if you'd like."}
           </p>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {packages.map((pkg) => (

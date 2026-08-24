@@ -37,7 +37,12 @@ private let mealKeywords: (before: [String], after: [String], with: [String]) = 
 
 private let dosageRegex = try! NSRegularExpression(pattern: "(\\d+(?:[.,]\\d+)?\\s?(?:mg|mcg|ml|g|iu))\\b|(\\d+\\s?(?:정|캡슐|錠|カプセル|片|粒|胶囊|膠囊))", options: .caseInsensitive)
 private let frequencyRegex = try! NSRegularExpression(pattern: "(\\d+)\\s*(?:times a day|times daily|회|回|次|veces al día|fois par jour|mal täglich)", options: .caseInsensitive)
-private let durationRegex = try! NSRegularExpression(pattern: "(\\d+)\\s*(?:days?|일분|일치|일간|일|日分|日間|日|天|días?|jours?|tage)\\b", options: .caseInsensitive)
+// Tried in order (see extractMedication below): the specific-suffix
+// pattern first, so "7일분" (duration) doesn't lose to an earlier,
+// unrelated "1일 3회" (frequency) in the same text matching the bare
+// "일"/"日"/"天" fallback instead.
+private let durationSpecificRegex = try! NSRegularExpression(pattern: "(\\d+)\\s*(?:days?|일분|일치|일간|日分|日間|días?|jours?|tage)\\b", options: .caseInsensitive)
+private let durationBareRegex = try! NSRegularExpression(pattern: "(\\d+)\\s*(?:일|日|天)\\b", options: .caseInsensitive)
 private let hhmmRegex = try! NSRegularExpression(pattern: "\\b([01]?\\d|2[0-3]):([0-5]\\d)\\b")
 private let koreanAmpmRegex = try! NSRegularExpression(pattern: "(오전|오후)\\s*(\\d{1,2})\\s*시")
 
@@ -100,7 +105,7 @@ func extractMedication(_ rawText: String) -> MedicationPayload {
     let haystack = rawText.lowercased()
     let specificTimes = extractSpecificTimes(rawText)
     let frequencyMatch = firstMatch(frequencyRegex, in: haystack)
-    let durationMatch = firstMatch(durationRegex, in: haystack)
+    let durationMatch = firstMatch(durationSpecificRegex, in: haystack) ?? firstMatch(durationBareRegex, in: haystack)
 
     return MedicationPayload(
         name: guessName(rawText),

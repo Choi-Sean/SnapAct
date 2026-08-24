@@ -19,7 +19,6 @@ import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
 import { analyzeOnDevice } from './layer0/analyzeOnDevice';
 import { getLayer0Support } from './layer0/capability';
-import { LAYER1_TOKEN_COST } from './layer0/categories';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
@@ -254,7 +253,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     const choice = await new Promise<'cancel' | 'once' | 'always'>((resolve) => {
       Alert.alert(
         t.home.layer0Unsupported.title,
-        fmt(t.home.layer0Unsupported.bodyTemplate, { n: LAYER1_TOKEN_COST }),
+        t.home.layer0Unsupported.body,
         [
           { text: t.home.layer0Unsupported.cancelButton, style: 'cancel', onPress: () => resolve('cancel') },
           { text: t.home.layer0Unsupported.onceButton, onPress: () => resolve('once') },

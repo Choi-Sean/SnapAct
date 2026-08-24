@@ -14,7 +14,7 @@ import json
 import logging
 
 from .config import settings
-from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload, MedicationPayload
+from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload, MedicationPayload, ReceiptPayload
 from .pricing import LAYER2_TOKEN_COST
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,17 @@ _MOCK_RESULTS: dict[Category, dict] = {
     },
     "receipt": {
         "suggested_action": "note",
+        "receipt": {
+            "store": "Acme Cafe",
+            "date": "2026-08-10",
+            "items": [
+                {"name": "Latte", "price": "5,500"},
+                {"name": "Sandwich", "price": "13,000"},
+            ],
+            "subtotal": "16,818",
+            "tax": "1,682",
+            "total": "18,500",
+        },
         "summary": "Receipt from Acme Cafe, total 18,500 KRW, dated 2026-08-10.",
     },
     "event_flyer": {
@@ -77,6 +88,14 @@ Respond with ONLY a JSON object (no markdown fences, no commentary) matching thi
   "suggested_action": "contact" | "calendar" | "note" | "reminder" | "none",
   "contact": {{"name": str|null, "phone": str|null, "email": str|null, "company": str|null, "title": str|null}} | null,
   "calendar": {{"title": str|null, "location": str|null, "start_date": ISO8601|null, "end_date": ISO8601|null, "notes": str|null}} | null,
+  "receipt": {{
+    "store": str|null,
+    "date": str|null,
+    "items": [{{"name": str, "price": str}}, ...] | null,
+    "subtotal": str|null,
+    "tax": str|null,
+    "total": str|null
+  }} | null,
   "medication": {{
     "name": str|null,
     "dosage": str|null,
@@ -94,8 +113,15 @@ Respond with ONLY a JSON object (no markdown fences, no commentary) matching thi
 Use "contact" for business cards, "calendar" for events/flyers with a date, "note" for
 receipts/documents worth saving as text, "reminder" for medication/prescription labels with
 dosage or a schedule, "none" if nothing useful can be extracted.
-Only include the "contact", "calendar", or "medication" object relevant to suggested_action;
-set the others to null.
+Only include the "contact", "calendar", "receipt", or "medication" object relevant to
+suggested_action; set the others to null.
+
+For "note"/receipts specifically: fill in "receipt" with whatever of store name, purchase
+date, line items (name + price each), subtotal, tax, and total you can actually read on the
+receipt. Leave individual fields (or the whole "items" list) null/empty rather than guessing
+if the photo doesn't show them clearly — a receipt with a torn or blurry item list should
+still have "store"/"date"/"total" filled in even if "items" comes back null. "receipt" stays
+null for non-receipt "note" cases (e.g. a general document).
 
 For "reminder"/medication: "specific_times" is a list of 24h "HH:MM" strings ONLY if the label
 states an actual clock time (e.g. "매일 오전 9시" -> ["09:00"]). If the label only gives
@@ -140,6 +166,7 @@ def analyze(
             suggested_action=mock["suggested_action"],
             contact=ContactPayload(**mock["contact"]) if "contact" in mock else None,
             calendar=CalendarPayload(**mock["calendar"]) if "calendar" in mock else None,
+            receipt=ReceiptPayload(**mock["receipt"]) if "receipt" in mock else None,
             medication=MedicationPayload(**mock["medication"]) if "medication" in mock else None,
             needs_time_selection=mock.get("needs_time_selection", False),
             summary=mock["summary"],
@@ -224,6 +251,7 @@ def analyze(
             suggested_action=data.get("suggested_action", "none"),
             contact=ContactPayload(**data["contact"]) if data.get("contact") else None,
             calendar=CalendarPayload(**data["calendar"]) if data.get("calendar") else None,
+            receipt=ReceiptPayload(**data["receipt"]) if data.get("receipt") else None,
             medication=MedicationPayload(**data["medication"]) if data.get("medication") else None,
             needs_time_selection=bool(data.get("needs_time_selection", False)),
             raw_text=data.get("raw_text"),

@@ -36,6 +36,20 @@ class MedicationPayload(BaseModel):
     notes: Optional[str] = None
 
 
+class ReceiptItem(BaseModel):
+    name: Optional[str] = None
+    price: Optional[str] = None
+
+
+class ReceiptPayload(BaseModel):
+    store: Optional[str] = None
+    date: Optional[str] = None
+    items: Optional[list[ReceiptItem]] = None
+    subtotal: Optional[str] = None
+    tax: Optional[str] = None
+    total: Optional[str] = None
+
+
 class AnalyzeResponse(BaseModel):
     mock: bool
     category: Category
@@ -44,6 +58,7 @@ class AnalyzeResponse(BaseModel):
     contact: Optional[ContactPayload] = None
     calendar: Optional[CalendarPayload] = None
     medication: Optional[MedicationPayload] = None
+    receipt: Optional[ReceiptPayload] = None
     # True when the client must ask the user to pick/confirm a time before
     # saving (no exact time was found in the source — only a date, or only
     # meal-relative medication timing). False means it's safe to save as-is.

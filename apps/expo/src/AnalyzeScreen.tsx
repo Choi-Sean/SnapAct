@@ -27,6 +27,7 @@ import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
 import { runVisionGate } from './layer0/visionGate';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import PricingScreen from './PricingScreen';
+import { formatReceiptTable } from './receiptFormat';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
 import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload, ReplaySpec } from './types';
 
@@ -484,13 +485,21 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           replay: { kind: 'medication', payload: { slots, durationDays } },
         });
       } else if (result.suggested_action === 'note') {
-        const message = result.summary ?? result.raw_text ?? '';
+        // Receipts get the same monospace item-table format ReviewModal's
+        // demo receipt preview uses — a real analysis should look like what
+        // the demo already showed. Other "note" categories (general
+        // documents) just share the AI summary, same as before.
+        const receiptTable = result.category === 'receipt' && result.receipt ? formatReceiptTable(result.receipt, t) : null;
+        const message = receiptTable ?? result.summary ?? result.raw_text ?? '';
         await Share.share({ message, title: t.batch.noteShareTitle });
         const imageUri = await persistImage(photo.uri);
         onSaved({
           type: 'receipt',
-          title: t.batch.categoryLabels[result.category],
-          detail: result.summary ?? '',
+          // HistoryScreen's row already shows the category label ("영수증")
+          // as the primary line — this is the secondary line, so it should
+          // be something more specific: the store name when we have one.
+          title: result.receipt?.store ?? t.batch.categoryLabels[result.category],
+          detail: message,
           savedTo: t.review.shareLabel,
           imageUri,
           resolvedLayer: result.resolved_layer,
@@ -621,6 +630,8 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
               <Text style={styles.fieldLabel}>{t.home.calendarStart}: {result.calendar.start_date}</Text>
             </View>
           )}
+
+          {result.receipt && <Text style={styles.receiptPreview}>{formatReceiptTable(result.receipt, t)}</Text>}
 
           {result.medication && (
             <View style={styles.fieldBlock}>
@@ -769,4 +780,13 @@ const styles = StyleSheet.create({
   cardBody: { fontSize: 14, color: '#444' },
   fieldBlock: { gap: 2 },
   fieldLabel: { fontSize: 13, color: '#444' },
+  receiptPreview: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+    backgroundColor: '#f7f8fb',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eef0f4',
+  },
 });

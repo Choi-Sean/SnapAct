@@ -5,6 +5,7 @@ import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
 import { persistImage } from './imageStorage';
 import { saveContact, saveEventToCalendar } from './nativeActions';
+import { formatReceiptTable } from './receiptFormat';
 import { AnalyzeResponse, BatchSubEntry } from './types';
 
 interface Item {
@@ -72,13 +73,14 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             analysisFailed: result.analysis_failed,
           });
         } else if (result.suggested_action === 'note') {
-          const message = result.summary ?? result.raw_text ?? '';
+          const receiptTable = result.category === 'receipt' && result.receipt ? formatReceiptTable(result.receipt, t) : null;
+          const message = receiptTable ?? result.summary ?? result.raw_text ?? '';
           await Share.share({ message, title: t.batch.noteShareTitle });
           batchItems.push({
             photoUri,
             category: result.category,
-            title: t.batch.categoryLabels[result.category],
-            detail: result.summary ?? '',
+            title: result.receipt?.store ?? t.batch.categoryLabels[result.category],
+            detail: message,
             savedTo: t.review.shareLabel,
             replay: { kind: 'receipt', payload: { message, title: t.batch.noteShareTitle } },
             resolvedLayer: result.resolved_layer,

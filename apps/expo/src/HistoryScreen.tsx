@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -72,6 +73,15 @@ function parseDate(s: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+const CATEGORY_TYPES: HistoryEntry['type'][] = [
+  'business_card', 'event', 'receipt', 'reminder', 'photo', 'mail', 'sms', 'maps', 'files', 'wallet', 'notification', 'batch',
+];
+
+function categoryLabel(type: HistoryEntry['type'], t: Dictionary): string {
+  if (type === 'batch') return t.history.batchLabel;
+  return t.home.demoButtons[type].label;
+}
+
 const LAYER_COLORS: Record<string, string> = {
   L0: '#6b7280',
   L1: '#7c3aed',
@@ -135,6 +145,9 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
   const [activeDateFilter, setActiveDateFilter] = useState<{ from: Date; to: Date } | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
+  const [categoryFilter, setCategoryFilter] = useState<HistoryEntry['type'] | 'all'>('all');
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+
   const nowKey = monthKey(new Date().toISOString());
   const prevKey = monthKey(new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString());
 
@@ -147,26 +160,35 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
     return Array.from(counts.entries()).sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }, [entries]);
 
+  const categoryBuckets = useMemo(() => {
+    const counts = new Map<HistoryEntry['type'], number>();
+    for (const e of entries) counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+    return CATEGORY_TYPES.filter((c) => counts.has(c)).map((c) => [c, counts.get(c)!] as const);
+  }, [entries]);
+
   const filteredEntries = useMemo(() => {
+    let result = entries;
     if (activeDateFilter) {
       const end = new Date(activeDateFilter.to);
       end.setHours(23, 59, 59, 999);
-      return entries.filter((e) => {
+      result = result.filter((e) => {
         const ts = new Date(e.createdAt).getTime();
         return ts >= activeDateFilter.from.getTime() && ts <= end.getTime();
       });
+    } else if (selectedMonth) {
+      result = result.filter((e) => monthKey(e.createdAt) === selectedMonth);
     }
-    if (selectedMonth) {
-      return entries.filter((e) => monthKey(e.createdAt) === selectedMonth);
+    if (categoryFilter !== 'all') {
+      result = result.filter((e) => e.type === categoryFilter);
     }
-    return entries;
-  }, [entries, selectedMonth, activeDateFilter]);
+    return result;
+  }, [entries, selectedMonth, activeDateFilter, categoryFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredEntries.length / PAGE_SIZE));
 
   useEffect(() => {
     setPage(0);
-  }, [selectedMonth, activeDateFilter]);
+  }, [selectedMonth, activeDateFilter, categoryFilter]);
 
   useEffect(() => {
     if (page > totalPages - 1) setPage(Math.max(0, totalPages - 1));
@@ -181,6 +203,12 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
     const base =
       selectedMonth === nowKey ? t.history.currentPeriod : selectedMonth === prevKey ? t.history.previousPeriod : monthLabel(selectedMonth);
     return `${base} (${count})`;
+  }
+
+  function categoryFilterLabel(): string {
+    if (categoryFilter === 'all') return t.history.allCategories;
+    const count = categoryBuckets.find(([c]) => c === categoryFilter)?.[1] ?? 0;
+    return `${categoryLabel(categoryFilter, t)} (${count})`;
   }
 
   function applyDateFilter() {
@@ -233,10 +261,16 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
         </View>
       ) : (
         <>
-          <TouchableOpacity style={styles.periodButton} onPress={() => setPeriodPickerOpen(true)} activeOpacity={0.7}>
-            <Text style={styles.periodButtonText}>{periodLabel()}</Text>
-            <Text style={styles.periodButtonChevron}>▾</Text>
-          </TouchableOpacity>
+          <View style={styles.filterRow}>
+            <TouchableOpacity style={[styles.periodButton, { flex: 1 }]} onPress={() => setPeriodPickerOpen(true)} activeOpacity={0.7}>
+              <Text style={styles.periodButtonText} numberOfLines={1}>{periodLabel()}</Text>
+              <Text style={styles.periodButtonChevron}>▾</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.periodButton, { flex: 1 }]} onPress={() => setCategoryPickerOpen(true)} activeOpacity={0.7}>
+              <Text style={styles.periodButtonText} numberOfLines={1}>{categoryFilterLabel()}</Text>
+              <Text style={styles.periodButtonChevron}>▾</Text>
+            </TouchableOpacity>
+          </View>
 
           {filteredEntries.length === 0 ? (
             <View style={styles.empty}>
@@ -252,8 +286,8 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                   <TouchableOpacity style={styles.row} onPress={() => setSelected(item)} activeOpacity={0.7}>
                     <Emoji name={ICONS[item.type]} size={26} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.rowTitle}>{item.title}</Text>
-                      <Text style={styles.rowDetail}>{item.detail}</Text>
+                      <Text style={styles.rowTitle}>{categoryLabel(item.type, t)}</Text>
+                      <Text style={styles.rowDetail} numberOfLines={1}>{item.title}</Text>
                     </View>
                     <View style={styles.rowRight}>
                       <Text style={styles.savedTo}>{item.savedTo}</Text>
@@ -338,8 +372,8 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                           <Image source={{ uri: item.photoUri }} style={styles.batchThumb} />
                         </TouchableOpacity>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.batchTitle}>{item.title}</Text>
-                          <Text style={styles.batchDetail}>{item.detail}</Text>
+                          <Text style={styles.batchTitle}>{t.batch.categoryLabels[item.category]}</Text>
+                          <Text style={styles.batchDetail} numberOfLines={2}>{item.title}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 6 }}>
                           <Text style={styles.savedTo}>{item.savedTo}</Text>
@@ -370,6 +404,10 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                       </View>
                     )}
                   />
+                ) : selected.type === 'receipt' ? (
+                  <ScrollView style={{ maxHeight: 340 }}>
+                    <Text style={styles.receiptPreview}>{selected.detail}</Text>
+                  </ScrollView>
                 ) : selected.fields && selected.fields.length > 0 ? (
                   <View style={styles.fieldList}>
                     {selected.fields.map((f) => (
@@ -488,6 +526,46 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
         </KeyboardAvoidingView>
       </Modal>
 
+      <Modal
+        visible={categoryPickerOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setCategoryPickerOpen(false)}
+      >
+        <View style={styles.backdrop}>
+          <View style={styles.periodSheet}>
+            <Text style={styles.periodSheetTitle}>{t.history.categoryFilterLabel}</Text>
+
+            <TouchableOpacity
+              style={[styles.periodOption, categoryFilter === 'all' && styles.periodOptionActive]}
+              onPress={() => {
+                setCategoryFilter('all');
+                setCategoryPickerOpen(false);
+              }}
+            >
+              <Text style={styles.periodOptionText}>{`${t.history.allCategories} (${entries.length})`}</Text>
+            </TouchableOpacity>
+
+            {categoryBuckets.map(([type, count]) => (
+              <TouchableOpacity
+                key={type}
+                style={[styles.periodOption, categoryFilter === type && styles.periodOptionActive]}
+                onPress={() => {
+                  setCategoryFilter(type);
+                  setCategoryPickerOpen(false);
+                }}
+              >
+                <Text style={styles.periodOptionText}>{`${categoryLabel(type, t)} · ${count}`}</Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity style={styles.periodCloseButton} onPress={() => setCategoryPickerOpen(false)}>
+              <Text style={styles.periodCloseText}>{t.history.closeButton}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <ImageZoomModal uri={zoomUri} onClose={() => setZoomUri(null)} />
     </View>
   );
@@ -565,6 +643,7 @@ const styles = StyleSheet.create({
   replayButton: { flex: 1, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   replayButtonText: { fontWeight: '700', color: '#fff' },
   replayNote: { fontSize: 11.5, color: '#999', textAlign: 'center', lineHeight: 16 },
+  filterRow: { flexDirection: 'row', gap: 8 },
   periodButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -574,8 +653,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  periodButtonText: { fontSize: 13, fontWeight: '700', color: '#333' },
+  periodButtonText: { fontSize: 13, fontWeight: '700', color: '#333', flexShrink: 1 },
   periodButtonChevron: { fontSize: 12, color: '#888' },
+  receiptPreview: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+    color: '#222',
+    backgroundColor: '#f7f8fb',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eef0f4',
+  },
   detailImage: { width: '100%', height: 200, borderRadius: 14, backgroundColor: '#eef0f4' },
   periodSheet: {
     backgroundColor: '#fff',

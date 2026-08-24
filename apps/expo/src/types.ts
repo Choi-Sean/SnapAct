@@ -28,6 +28,20 @@ export interface MedicationPayload {
   notes?: string | null;
 }
 
+export interface ReceiptItem {
+  name?: string | null;
+  price?: string | null;
+}
+
+export interface ReceiptPayload {
+  store?: string | null;
+  date?: string | null;
+  items?: ReceiptItem[] | null;
+  subtotal?: string | null;
+  tax?: string | null;
+  total?: string | null;
+}
+
 export interface AnalyzeResponse {
   mock: boolean;
   category: Category;
@@ -35,6 +49,7 @@ export interface AnalyzeResponse {
   suggested_action: SuggestedAction;
   contact?: ContactPayload | null;
   calendar?: CalendarPayload | null;
+  receipt?: ReceiptPayload | null;
   medication?: MedicationPayload | null;
   needs_time_selection?: boolean;
   requires_tokens?: boolean;

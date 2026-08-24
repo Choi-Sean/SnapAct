@@ -96,6 +96,9 @@ export interface Dictionary {
     medicationTimingAfterMeal: string;
     medicationTimingWithMeal: string;
     medicationTimingUnspecified: string;
+    receiptSubtotalLabel: string;
+    receiptTaxLabel: string;
+    receiptTotalLabel: string;
     saveToContacts: string;
     saveToCalendar: string;
     saveToReminder: string;
@@ -164,6 +167,9 @@ export interface Dictionary {
     tokensSpentTemplate: string;
     tokensFreeLabel: string;
     failedBadge: string;
+    categoryFilterLabel: string;
+    allCategories: string;
+    batchLabel: string;
   };
   permissions: {
     title: string;
@@ -421,6 +427,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: 'After meals',
       medicationTimingWithMeal: 'With meals',
       medicationTimingUnspecified: 'No timing specified',
+      receiptSubtotalLabel: 'Subtotal',
+      receiptTaxLabel: 'Tax',
+      receiptTotalLabel: 'Total',
       saveToContacts: 'Save to Contacts',
       saveToCalendar: 'Save to Calendar',
       saveToReminder: 'Set Reminders',
@@ -495,6 +504,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tokensSpentTemplate: '{n} tokens used',
       tokensFreeLabel: 'Free',
       failedBadge: 'Failed',
+      categoryFilterLabel: 'Category',
+      allCategories: 'All categories',
+      batchLabel: 'Batch',
     },
     permissions: {
       title: 'Settings',
@@ -768,6 +780,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: '식후',
       medicationTimingWithMeal: '식사와 함께',
       medicationTimingUnspecified: '시간 미지정',
+      receiptSubtotalLabel: '소계',
+      receiptTaxLabel: '세금',
+      receiptTotalLabel: '합계',
       saveToContacts: '연락처에 저장',
       saveToCalendar: '캘린더에 저장',
       saveToReminder: '복용 알림 등록',
@@ -842,6 +857,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tokensSpentTemplate: '토큰 {n}개 사용됨',
       tokensFreeLabel: '무료',
       failedBadge: '실패',
+      categoryFilterLabel: '카테고리',
+      allCategories: '전체 카테고리',
+      batchLabel: '일괄 처리',
     },
     permissions: {
       title: '설정',
@@ -1124,6 +1142,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: 'Después de las comidas',
       medicationTimingWithMeal: 'Con las comidas',
       medicationTimingUnspecified: 'Sin horario especificado',
+      receiptSubtotalLabel: 'Subtotal',
+      receiptTaxLabel: 'Impuesto',
+      receiptTotalLabel: 'Total',
       saveToContacts: 'Guardar en Contactos',
       saveToCalendar: 'Guardar en Calendario',
       saveToReminder: 'Configurar recordatorios',
@@ -1198,6 +1219,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tokensSpentTemplate: '{n} tokens usados',
       tokensFreeLabel: 'Gratis',
       failedBadge: 'Fallido',
+      categoryFilterLabel: 'Categoría',
+      allCategories: 'Todas las categorías',
+      batchLabel: 'Por lotes',
     },
     permissions: {
       title: 'Ajustes',

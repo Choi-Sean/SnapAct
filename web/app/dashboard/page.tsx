@@ -24,6 +24,7 @@ const REASON_LABEL: Record<string, { ko: string; en: string }> = {
   signup_bonus: { ko: '가입 축하 토큰', en: 'Signup bonus' },
   purchase: { ko: '구매', en: 'Purchase' },
   analysis: { ko: '분석 사용', en: 'Analysis' },
+  refund: { ko: '분석 실패 환불', en: 'Refund (analysis failed)' },
 };
 
 // Which L0-L5 rung resolved an analysis (backend/app/pricing.py's header

@@ -310,17 +310,25 @@ async def analyze(
             # Claude's image content blocks only accept raster image media types — a PDF
             # (or anything else without OCR text behind it) can't be sent that way.
             if using_claude and not is_image and not ocr_text_for_claude:
+                if user_id:
+                    auth.credit_tokens(user_id, LAYER2_TOKEN_COST, "refund")
                 result = AnalyzeResponse(
                     mock=False,
                     category=category,
                     confidence=confidence,
                     suggested_action="none",
-                    summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
+                    summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now. No tokens were charged.",
                 )
             else:
-                result = claude_analysis.analyze(
+                # succeeded is False when Claude was actually called (tokens
+                # already spent above) but didn't produce a usable result —
+                # see claude_analysis.py's analyze() header. A customer
+                # shouldn't pay tokens for an analysis that didn't happen.
+                result, succeeded = claude_analysis.analyze(
                     image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
                 )
+                if using_claude and not succeeded and user_id:
+                    auth.credit_tokens(user_id, LAYER2_TOKEN_COST, "refund")
 
     # The photo itself is never uploaded — only the extracted text fields are
     # saved, and only for a signed-in user with a real (non-locked) result.

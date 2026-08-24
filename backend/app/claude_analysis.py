@@ -120,12 +120,16 @@ def analyze(
     media_type: str = "image/jpeg",
     ocr_text: str | None = None,
     force_mock: bool = False,
-) -> AnalyzeResponse:
+) -> tuple[AnalyzeResponse, bool]:
     """ocr_text, if provided, is Vision's OCR output for the photo. When present we send
     Claude that text instead of the raw image — text tokens are far cheaper than image
     tokens, and for text-dense categories (receipts, documents) the text alone is enough
     to extract fields from. force_mock skips the real (paid) API call even when Claude is
-    configured — used when the daily spend cap has been hit."""
+    configured — used when the daily spend cap has been hit.
+
+    Returns (response, succeeded). succeeded is False whenever Claude was actually
+    called (tokens already spent, per main.py's try_spend_tokens before this runs)
+    but didn't produce a usable result -- main.py refunds the spend in that case."""
     if force_mock or not settings.claude_enabled:
         mock = _MOCK_RESULTS[category]
         return AnalyzeResponse(
@@ -139,7 +143,7 @@ def analyze(
             needs_time_selection=mock.get("needs_time_selection", False),
             summary=mock["summary"],
             resolved_layer="L5c",
-        )
+        ), True
 
     import anthropic
 
@@ -167,16 +171,16 @@ def analyze(
     # Both used to be unhandled and surfaced as a bare 500 to the app; now
     # they degrade to the same "couldn't extract anything" result a
     # low-confidence classification would already produce.
-    def _fallback(reason: str) -> AnalyzeResponse:
+    def _fallback(reason: str) -> tuple[AnalyzeResponse, bool]:
         logger.warning("Claude L5c call failed for category=%s: %s", category, reason)
         return AnalyzeResponse(
             mock=False,
             category=category,
             confidence=confidence,
             suggested_action="none",
-            summary="Couldn't extract structured data from this photo. Try again, or a clearer photo.",
+            summary="Couldn't extract structured data from this photo — no tokens were charged. Try again, or a clearer photo.",
             resolved_layer="L5c",
-        )
+        ), False
 
     try:
         message = client.messages.create(
@@ -214,7 +218,7 @@ def analyze(
             raw_text=data.get("raw_text"),
             summary=data.get("summary"),
             resolved_layer="L5c",
-        )
+        ), True
     except (AttributeError, TypeError, ValueError) as e:
         # Valid JSON but the wrong shape (e.g. a bare string/array instead of
         # the requested object, or a field of the wrong type).

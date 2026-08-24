@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 import Nav from '@/components/Nav';
 import {
   AccountSummary,
   clearSession,
+  createCheckoutSession,
   deleteAccount,
   getAccountSummary,
   getHistory,
@@ -26,9 +27,18 @@ const REASON_LABEL: Record<string, { ko: string; en: string }> = {
 };
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const { locale } = useLanguage();
   const isKo = locale === 'ko';
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [summary, setSummary] = useState<AccountSummary | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -37,6 +47,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [refreshingBalance, setRefreshingBalance] = useState(false);
+  const [checkoutNotice, setCheckoutNotice] = useState<'success' | 'cancel' | null>(null);
 
   useEffect(() => {
     if (!getToken()) {
@@ -44,6 +56,16 @@ export default function DashboardPage() {
       return;
     }
     load();
+
+    // Stripe redirects back here after checkout (payments.py's
+    // success_url/cancel_url) — the webhook is what actually credits
+    // tokens, so re-fetch the balance rather than trust this redirect by
+    // itself (it can arrive before the webhook does).
+    const checkout = searchParams.get('checkout');
+    if (checkout === 'success' || checkout === 'cancel') {
+      setCheckoutNotice(checkout);
+      router.replace('/dashboard');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -65,6 +87,35 @@ export default function DashboardPage() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleRefreshBalance() {
+    // Payment happens on this page (Stripe checkout, once wired up) but the
+    // webhook that credits tokens can lag a few seconds behind the redirect
+    // back here — this lets the user force a re-check instead of just
+    // staring at a stale number.
+    setRefreshingBalance(true);
+    setError(null);
+    try {
+      const s = await getAccountSummary();
+      setSummary(s);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRefreshingBalance(false);
+    }
+  }
+
+  async function handleBuy(packageId: string) {
+    setActionLoading(`buy-${packageId}`);
+    setError(null);
+    try {
+      const url = await createCheckoutSession(packageId);
+      window.location.href = url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setActionLoading(null);
     }
   }
 
@@ -107,11 +158,35 @@ export default function DashboardPage() {
           </p>
         )}
 
+        {checkoutNotice === 'success' && (
+          <p className="mt-4 rounded-xl border border-good/30 bg-good/10 px-4 py-3 text-[13px] font-semibold text-good">
+            {isKo
+              ? '결제가 완료됐어요. 토큰은 몇 초 안에 반영돼요 — 안 보이면 잔액 옆 새로고침을 눌러주세요.'
+              : "Payment complete. Tokens should appear within seconds — if not, hit the refresh icon next to your balance."}
+          </p>
+        )}
+        {checkoutNotice === 'cancel' && (
+          <p className="mt-4 rounded-xl border border-border bg-surface-alt px-4 py-3 text-[13px] font-medium text-muted">
+            {isKo ? '결제가 취소됐어요.' : 'Checkout was canceled.'}
+          </p>
+        )}
+
         {summary && (
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
             {/* Token balance card */}
             <div className="rounded-3xl border border-border bg-surface p-8">
-              <h2 className="text-lg font-extrabold">{isKo ? '보유 토큰' : 'Token balance'}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-extrabold">{isKo ? '보유 토큰' : 'Token balance'}</h2>
+                <button
+                  onClick={handleRefreshBalance}
+                  disabled={refreshingBalance}
+                  title={isKo ? '토큰 잔액 새로고침' : 'Refresh token balance'}
+                  aria-label={isKo ? '토큰 잔액 새로고침' : 'Refresh token balance'}
+                  className="text-base leading-none text-muted transition hover:text-text disabled:opacity-50"
+                >
+                  <span className={refreshingBalance ? 'inline-block animate-spin' : 'inline-block'}>🔄</span>
+                </button>
+              </div>
               <p className="mt-2 text-4xl font-extrabold tracking-tight text-accent">{summary.token_balance}</p>
               <p className="mt-2 text-[13px] text-muted">
                 {isKo
@@ -149,11 +224,11 @@ export default function DashboardPage() {
                 <p className="text-[12px] text-muted">{isKo ? '토큰' : 'tokens'}</p>
                 <p className="mt-3 text-xl font-extrabold text-accent">${pkg.price_usd}</p>
                 <button
-                  disabled
-                  title={isKo ? '결제 연동 준비 중이에요' : 'Payment integration coming soon'}
-                  className="mt-4 w-full cursor-not-allowed rounded-xl bg-surface-alt py-2.5 text-sm font-bold text-muted"
+                  onClick={() => handleBuy(pkg.id)}
+                  disabled={actionLoading === `buy-${pkg.id}`}
+                  className="mt-4 w-full rounded-xl bg-accent py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60"
                 >
-                  {isKo ? '구매 (출시 예정)' : 'Buy (coming soon)'}
+                  {actionLoading === `buy-${pkg.id}` ? (isKo ? '이동 중...' : 'Redirecting...') : isKo ? '구매' : 'Buy'}
                 </button>
               </div>
             ))}

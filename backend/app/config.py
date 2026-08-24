@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket_name: str = ""
 
+    # Web-only checkout (never in-app — see payments.py's header) for token
+    # top-ups. stripe_webhook_secret is set after the endpoint is deployed
+    # and registered in the Stripe dashboard, so it's blank until then.
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    web_base_url: str = "https://snapsist.app"
+
     # Abuse/cost protection. The mobile app's API_SHARED_SECRET ships inside
     # the public JS bundle, so it can't be treated as a real secret — anyone
     # can extract it and script calls straight to the API. These limits are
@@ -63,6 +70,10 @@ class Settings(BaseSettings):
     @property
     def google_oauth_enabled(self) -> bool:
         return bool(self.google_oauth_client_id and self.google_oauth_client_secret)
+
+    @property
+    def stripe_enabled(self) -> bool:
+        return bool(self.stripe_secret_key)
 
 
 settings = Settings()

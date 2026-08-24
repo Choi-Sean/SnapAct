@@ -37,7 +37,7 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_MEDIA_AUDIO"
       ],
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -95,8 +95,12 @@
           "iosActivationRules": {
             "NSExtensionActivationSupportsImageWithMaxCount": 10
           },
-          "androidIntentFilters": ["image/*"],
-          "androidMultiIntentFilters": ["image/*"]
+          "androidIntentFilters": [
+            "image/*"
+          ],
+          "androidMultiIntentFilters": [
+            "image/*"
+          ]
         }
       ]
     ],

@@ -68,6 +68,23 @@ async function authedRequest<T>(path: string, method: 'GET' | 'POST' | 'DELETE' 
   return data as T;
 }
 
+async function authedPostJson<T>(path: string, body: unknown): Promise<T> {
+  const token = getToken();
+  if (!token) throw new Error('Not logged in.');
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401) clearSession();
+    throw new Error(data.detail || `Request failed (${res.status})`);
+  }
+  return data as T;
+}
+
 export function signup(email: string, password: string) {
   return postJson<AuthResponse>('/auth/signup', { email, password });
 }
@@ -96,6 +113,14 @@ export async function getTokenPackages() {
 
 export function deleteAccount() {
   return authedRequest<void>('/account', 'DELETE');
+}
+
+// Redirects to Stripe's hosted Checkout page — tokens are credited by
+// backend/app/payments.py's webhook handler once payment actually
+// completes, not by this call itself.
+export async function createCheckoutSession(packageId: string) {
+  const { url } = await authedPostJson<{ url: string }>('/account/checkout', { package_id: packageId });
+  return url;
 }
 
 const TOKEN_KEY = 'snapsist_token';

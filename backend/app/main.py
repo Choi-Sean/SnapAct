@@ -9,10 +9,11 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, db, vision, wallet
+from . import auth, claude_analysis, db, payments, vision, wallet
 from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
+from .payments import CheckoutRequest, CheckoutResponse
 from .pricing import LAYER1_TOKEN_COST, TOKEN_PACKAGES, is_layer0_category
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
 
@@ -121,6 +122,22 @@ def account_token_history(entries: list[TokenTransactionOut] = Depends(auth.list
 @app.get("/account/token-packages")
 def account_token_packages():
     return {"packages": TOKEN_PACKAGES, "layer1_cost_per_analysis": LAYER1_TOKEN_COST}
+
+
+# ---- Web-only checkout (see payments.py's header — never wired into the
+# app, only the web dashboard) ------------------------------------------
+@app.post("/account/checkout", response_model=CheckoutResponse, dependencies=_account_rate_limited)
+def account_checkout(req: CheckoutRequest, user_id: str = Depends(auth._current_user_id)):
+    url = payments.create_checkout_session(user_id, req.package_id)
+    return CheckoutResponse(url=url)
+
+
+@app.post("/webhooks/stripe")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+    payments.handle_webhook(payload, sig_header)
+    return {"received": True}
 
 
 @app.get("/history", response_model=list[HistoryEntryOut], dependencies=_account_rate_limited)

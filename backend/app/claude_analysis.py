@@ -11,9 +11,12 @@ so this backend path is the only L5 tier actually reachable right now.
 """
 import base64
 import json
+import logging
 
 from .config import settings
 from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload, MedicationPayload
+
+logger = logging.getLogger(__name__)
 
 _MOCK_RESULTS: dict[Category, dict] = {
     "business_card": {
@@ -156,25 +159,63 @@ def analyze(
             {"type": "text", "text": prompt},
         ]
 
-    message = client.messages.create(
-        model=settings.claude_model,
-        max_tokens=1024,
-        messages=[{"role": "user", "content": content}],
-    )
+    # Claude can fail in ways that have nothing to do with our schema: a
+    # network/rate-limit error from the API call itself, or (seen in
+    # production with a real payment-card photo sent as "business_card" —
+    # Claude declined to transcribe it and replied with plain-text prose
+    # instead of the requested JSON) a 200 response that isn't valid JSON.
+    # Both used to be unhandled and surfaced as a bare 500 to the app; now
+    # they degrade to the same "couldn't extract anything" result a
+    # low-confidence classification would already produce.
+    def _fallback(reason: str) -> AnalyzeResponse:
+        logger.warning("Claude L5c call failed for category=%s: %s", category, reason)
+        return AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            summary="Couldn't extract structured data from this photo. Try again, or a clearer photo.",
+            resolved_layer="L5c",
+        )
 
-    text = "".join(block.text for block in message.content if block.type == "text")
-    data = json.loads(text)
+    try:
+        message = client.messages.create(
+            model=settings.claude_model,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": content}],
+        )
+    except anthropic.APIError as e:
+        return _fallback(f"API error: {e}")
 
-    return AnalyzeResponse(
-        mock=False,
-        category=category,
-        confidence=confidence,
-        suggested_action=data.get("suggested_action", "none"),
-        contact=ContactPayload(**data["contact"]) if data.get("contact") else None,
-        calendar=CalendarPayload(**data["calendar"]) if data.get("calendar") else None,
-        medication=MedicationPayload(**data["medication"]) if data.get("medication") else None,
-        needs_time_selection=bool(data.get("needs_time_selection", False)),
-        raw_text=data.get("raw_text"),
-        summary=data.get("summary"),
-        resolved_layer="L5c",
-    )
+    text = "".join(block.text for block in message.content if block.type == "text").strip()
+    # Defensive: the prompt says "no markdown fences", but strip them if
+    # Claude adds them anyway rather than failing on it.
+    if text.startswith("```"):
+        text = text.strip("`")
+        if text.lower().startswith("json"):
+            text = text[4:]
+        text = text.strip()
+
+    try:
+        data = json.loads(text)
+    except (json.JSONDecodeError, ValueError) as e:
+        return _fallback(f"non-JSON response ({e}): {text[:200]!r}")
+
+    try:
+        return AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action=data.get("suggested_action", "none"),
+            contact=ContactPayload(**data["contact"]) if data.get("contact") else None,
+            calendar=CalendarPayload(**data["calendar"]) if data.get("calendar") else None,
+            medication=MedicationPayload(**data["medication"]) if data.get("medication") else None,
+            needs_time_selection=bool(data.get("needs_time_selection", False)),
+            raw_text=data.get("raw_text"),
+            summary=data.get("summary"),
+            resolved_layer="L5c",
+        )
+    except (AttributeError, TypeError, ValueError) as e:
+        # Valid JSON but the wrong shape (e.g. a bare string/array instead of
+        # the requested object, or a field of the wrong type).
+        return _fallback(f"unexpected JSON shape ({e}): {text[:200]!r}")

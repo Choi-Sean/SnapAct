@@ -18,6 +18,7 @@ import { t as fmt } from './i18n/dictionaries';
 import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
 import { analyzeOnDevice } from './layer0/analyzeOnDevice';
+import { runVisionGate } from './layer0/visionGate';
 import { getLayer0Support } from './layer0/capability';
 import { LAYER1_TOKEN_COST } from './layer0/categories';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
@@ -223,6 +224,24 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   // gated behind the consent prompt below rather than silently falling
   // through. Returns null if the user declined the fallback prompt.
   async function resolveAnalysis(target: Photo): Promise<AnalyzeResponse | null> {
+    // Layer 1 vision blocking gate — on-device, BEFORE any OCR or upload.
+    // A Tier 0 photo (ID / payment card / passport / ...) must never leave the
+    // device, so a block short-circuits here and nothing is sent to the server.
+    // `unavailable` (Expo Go, or module not yet built) falls through untouched.
+    const gate = await runVisionGate(target.uri);
+    if (gate.kind === 'block') {
+      Alert.alert(
+        'Blocked on device',
+        `This photo was classified as sensitive (${gate.top}, ${(gate.p * 100).toFixed(0)}%) ` +
+          `and was NOT uploaded.\n\n${gate.reason}`
+      );
+      return null;
+    }
+    if (__DEV__ && gate.kind === 'route') {
+      // Visibility while testing: show what the on-device model routed to.
+      console.log(`[visionGate] route → ${gate.category} (${gate.confidence.toFixed(2)})`, gate.scores);
+    }
+
     const support = getLayer0Support();
     if (support.supported) {
       const onDeviceResult = await analyzeOnDevice(target.uri, locale);

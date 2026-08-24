@@ -121,7 +121,14 @@ date, line items (name + price each), subtotal, tax, and total you can actually 
 receipt. Leave individual fields (or the whole "items" list) null/empty rather than guessing
 if the photo doesn't show them clearly — a receipt with a torn or blurry item list should
 still have "store"/"date"/"total" filled in even if "items" comes back null. "receipt" stays
-null for non-receipt "note" cases (e.g. a general document).
+null for non-receipt "note" cases (e.g. a general document). Skip line items that are clearly
+not products (barcodes, product codes, membership/point numbers, card approval numbers) —
+only include actual purchased items with a name and price.
+
+Leave "raw_text" null whenever OCR text was already given to you above as input — it would
+just be a copy of what you were already given, wasting output space you need for "receipt"'s
+item list instead. Only fill "raw_text" in when you were shown an image directly and it's
+genuinely useful to report back what you read.
 
 For "reminder"/medication: "specific_times" is a list of 24h "HH:MM" strings ONLY if the label
 states an actual clock time (e.g. "매일 오전 9시" -> ["09:00"]). If the label only gives
@@ -226,7 +233,13 @@ def analyze(
 
         message = client.messages.create(
             model=settings.claude_model,
-            max_tokens=1024,
+            # 1024 was enough before receipts got a structured "items" list —
+            # a receipt with several line items (each name + price) plus the
+            # rest of the schema can genuinely run past that and get cut off
+            # mid-JSON, which then fails to parse and looks identical to a
+            # real extraction failure. Raised well past what even a long
+            # itemized receipt needs.
+            max_tokens=4096,
             messages=[{"role": "user", "content": content}],
         )
 

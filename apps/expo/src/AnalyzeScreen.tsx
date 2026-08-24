@@ -295,8 +295,12 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 
     const support = getLayer0Support();
     if (support.supported) {
-      const onDeviceResult = await analyzeOnDevice(target.uri, locale, target.metadata);
-      if (onDeviceResult) return onDeviceResult;
+      const outcome = await analyzeOnDevice(target.uri, locale, target.metadata);
+      if (outcome.kind === 'blocked') {
+        Alert.alert(t.home.sensitiveCardBlockedTitle, t.home.sensitiveCardBlockedBody);
+        return null;
+      }
+      if (outcome.kind === 'resolved') return outcome.response;
       return analyzePhoto(target);
     }
 

@@ -14,6 +14,8 @@ struct L10nStrings {
     let analyzing: String
     let authRequiredTitle: String
     let authRequiredBody: String
+    let sensitiveCardBlockedTitle: String
+    let sensitiveCardBlockedBody: String
     let categoryLabel: String
     let saveToReminders: String
     let savedTitle: String
@@ -41,6 +43,8 @@ private let table: [String: L10nStrings] = [
         analyzing: "Reading photo…",
         authRequiredTitle: "Sign in to analyze photos",
         authRequiredBody: "Real photo analysis needs a Snapsist account. Open the app to sign up or log in, then share again.",
+        sensitiveCardBlockedTitle: "This looks like a payment card",
+        sensitiveCardBlockedBody: "We don't store or analyze sensitive card details — this photo was not sent anywhere or saved.",
         categoryLabel: "Category",
         saveToReminders: "Save to Reminders",
         savedTitle: "Saved",
@@ -66,6 +70,8 @@ private let table: [String: L10nStrings] = [
         analyzing: "사진을 읽는 중…",
         authRequiredTitle: "사진 분석은 로그인 후 이용할 수 있어요",
         authRequiredBody: "실제 사진 분석은 Snapsist 계정이 필요해요. 앱을 열어서 가입하거나 로그인한 뒤 다시 공유해주세요.",
+        sensitiveCardBlockedTitle: "결제 카드로 보이는 사진이에요",
+        sensitiveCardBlockedBody: "저희는 카드 정보 같은 민감한 정보는 저장하거나 분석하지 않아요 — 이 사진은 어디로도 전송되거나 저장되지 않았습니다.",
         categoryLabel: "카테고리",
         saveToReminders: "미리 알림에 저장",
         savedTitle: "저장 완료",
@@ -91,6 +97,8 @@ private let table: [String: L10nStrings] = [
         analyzing: "Leyendo la foto…",
         authRequiredTitle: "Inicia sesión para analizar fotos",
         authRequiredBody: "El análisis real de fotos necesita una cuenta de Snapsist. Abre la app para registrarte o iniciar sesión, y vuelve a compartir.",
+        sensitiveCardBlockedTitle: "Esto parece una tarjeta de pago",
+        sensitiveCardBlockedBody: "No almacenamos ni analizamos datos sensibles de tarjetas — esta foto no se envió ni se guardó en ningún lugar.",
         categoryLabel: "Categoría",
         saveToReminders: "Guardar en Recordatorios",
         savedTitle: "Guardado",

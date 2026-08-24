@@ -129,6 +129,8 @@ export interface Dictionary {
     visionGateBlockedBodyTemplate: string;
     authGateTitle: string;
     authGateBody: string;
+    sensitiveCardBlockedTitle: string;
+    sensitiveCardBlockedBody: string;
   };
   history: {
     title: string;
@@ -447,6 +449,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       visionGateBlockedBodyTemplate: 'This photo looks like a sensitive document ({category}, {percent}%) and was not uploaded — nothing was sent to our server.',
       authGateTitle: 'Sign in to analyze photos',
       authGateBody: 'Real photo analysis needs an account — sign up or log in to continue. Demos on the other tab work without one.',
+      sensitiveCardBlockedTitle: 'This looks like a payment card',
+      sensitiveCardBlockedBody: "We don't store or analyze sensitive card details — this photo was not uploaded or saved anywhere.",
     },
     history: {
       title: 'History',
@@ -787,6 +791,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       visionGateBlockedBodyTemplate: '이 사진은 민감한 문서로 보여서({category}, {percent}%) 업로드되지 않았어요 — 서버로 아무것도 전송되지 않았습니다.',
       authGateTitle: '사진 분석은 로그인 후 이용할 수 있어요',
       authGateBody: '실제 사진 분석은 계정이 필요해요 — 가입하거나 로그인해주세요. 다른 탭의 데모는 로그인 없이도 사용할 수 있어요.',
+      sensitiveCardBlockedTitle: '결제 카드로 보이는 사진이에요',
+      sensitiveCardBlockedBody: '저희는 카드 정보 같은 민감한 정보는 저장하거나 분석하지 않아요 — 이 사진은 업로드되지도, 저장되지도 않았습니다.',
     },
     history: {
       title: '기록',
@@ -1136,6 +1142,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       visionGateBlockedBodyTemplate: 'Esta foto parece un documento sensible ({category}, {percent}%) y no se subió — no se envió nada a nuestro servidor.',
       authGateTitle: 'Inicia sesión para analizar fotos',
       authGateBody: 'El análisis real de fotos necesita una cuenta — regístrate o inicia sesión para continuar. Las demos de la otra pestaña funcionan sin cuenta.',
+      sensitiveCardBlockedTitle: 'Esto parece una tarjeta de pago',
+      sensitiveCardBlockedBody: 'No almacenamos ni analizamos datos sensibles de tarjetas — esta foto no se subió ni se guardó en ningún lugar.',
     },
     history: {
       title: 'Historial',

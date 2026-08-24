@@ -9,7 +9,7 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, claude_analysis, db, medication_extract, payments, vision, wallet
+from . import auth, claude_analysis, db, medication_extract, payments, sensitive_content, vision, wallet
 from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
@@ -230,6 +230,22 @@ async def analyze(
         # PDFs and other document types skip straight to a generic bucket
         # rather than being rejected outright.
         category, confidence, ocr_text = "document", 0.4, None
+
+    # Payment-card photos never get analyzed or saved, regardless of what
+    # category Vision guessed (a card's "New Card(s) are here!" sticker text
+    # reads a lot like a business card to keyword matching) — see
+    # sensitive_content.py's header for why this check exists and how it
+    # decides. Short-circuits before Claude ever sees the image/text and
+    # before anything is written to history.
+    if ocr_text and sensitive_content.looks_like_payment_card(ocr_text):
+        return AnalyzeResponse(
+            mock=False,
+            category=category,
+            confidence=confidence,
+            suggested_action="none",
+            summary="This looks like a payment card. We don't store or analyze sensitive card details — nothing was saved.",
+            resolved_layer="L2",
+        )
 
     # ---- L3 vs L5c (see backend/app/pricing.py's header for the full L0-L5
     # map) -------------------------------------------------------------

@@ -25,6 +25,10 @@ enum Layer0Outcome {
     // — see backend/app/pricing.py's LAYER0_CATEGORIES). Not a capability
     // failure, just normal routing.
     case needsLayer1(category: Category)
+    // A payment-card photo, caught by SensitiveCardDetector.swift's
+    // text-pattern check — never sent to Layer 1, regardless of what
+    // category classifyText would have guessed.
+    case blocked
     // The OCR call itself failed.
     case failed(Error)
 }
@@ -35,6 +39,10 @@ func analyzeOnDevice(_ image: UIImage, metadata: PhotoMetadata? = nil) async -> 
         rawText = try await recognizeText(in: image)
     } catch {
         return .failed(error)
+    }
+
+    if looksLikePaymentCard(rawText) {
+        return .blocked
     }
 
     let classification = classifyText(rawText)

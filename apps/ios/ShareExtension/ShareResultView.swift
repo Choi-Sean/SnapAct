@@ -22,6 +22,9 @@ enum ViewState {
     // requires an account, same rule as AnalyzeScreen.tsx's auth gate in
     // the main app. Nothing is analyzed in this state; OCR never even runs.
     case needsAuth
+    // Payment-card photo — see LayerZeroAnalyzer.swift's .blocked case and
+    // SensitiveCardDetector.swift. Nothing was sent to Layer 1.
+    case sensitiveCardBlocked
     case resolvedLayer0(AnalysisResult)
     case loadingLayer1
     case resolvedLayer1(Layer1Response)
@@ -57,6 +60,12 @@ struct ShareResultView: View {
                     Text(L10n.authRequiredTitle).font(.headline)
                     Text(L10n.authRequiredBody).font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center)
                     Button(L10n.openAppButton, action: onOpenApp).buttonStyle(.borderedProminent)
+                }
+
+            case .sensitiveCardBlocked:
+                VStack(spacing: 10) {
+                    Text(L10n.sensitiveCardBlockedTitle).font(.headline)
+                    Text(L10n.sensitiveCardBlockedBody).font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center)
                 }
 
             case .resolvedLayer0(let result):
@@ -96,6 +105,8 @@ struct ShareResultView: View {
             case .needsLayer1:
                 state = .loadingLayer1
                 await runLayer1()
+            case .blocked:
+                state = .sensitiveCardBlocked
             case .failed:
                 state = .ocrFailed
             }

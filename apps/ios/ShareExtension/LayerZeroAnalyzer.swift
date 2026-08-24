@@ -42,6 +42,15 @@ func analyzeOnDevice(_ image: UIImage, metadata: PhotoMetadata? = nil) async -> 
     guard layer0Categories.contains(classification.category) else {
         return .needsLayer1(category: classification.category)
     }
+    // "other" with no keyword matches at all (confidence stuck at
+    // ImageClassifier.swift's 0.3 floor) isn't confidently "nothing
+    // recognizable" — it's just as likely a real business_card/receipt/
+    // event_flyer in a language the (mostly English) keyword lists don't
+    // cover. Let Layer 1's language-agnostic classifier take a real look
+    // rather than silently misfiling it. Real matches always score >= 0.65.
+    if classification.category == .other && classification.confidence < 0.5 {
+        return .needsLayer1(category: .other)
+    }
 
     var result = AnalysisResult(
         category: classification.category,

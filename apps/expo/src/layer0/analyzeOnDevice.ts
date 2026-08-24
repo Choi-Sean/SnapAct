@@ -43,6 +43,19 @@ export async function analyzeOnDevice(uri: string, locale: Locale, metadata?: Ph
   if (!LAYER0_CATEGORIES.includes(category)) {
     return null;
   }
+  // "other" with no keyword matches at all (confidence stuck at classify.ts's
+  // 0.3 floor) isn't a confident "nothing recognizable here" — it's just as
+  // likely a real business_card/receipt/event_flyer whose text happens to be
+  // in a language classify.ts's keyword lists don't cover well (those are
+  // mostly English; only medication's list is fully multilingual). Treating
+  // that as a confirmed Layer 0 result would silently misfile a real
+  // document as "unrecognized" and never give Layer 1's fuller
+  // (language-agnostic image-label-based) classifier a chance to correct
+  // it. Real matches always score >= 0.65, so this only catches genuine
+  // no-evidence cases.
+  if (category === 'other' && classified.confidence < 0.5) {
+    return null;
+  }
 
   if (category === 'medication') {
     const medication = extractMedication(rawText);

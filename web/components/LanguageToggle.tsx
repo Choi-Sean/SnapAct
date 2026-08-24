@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { LOCALE_LABELS, Locale } from '@/lib/i18n/dictionaries';
 
-const ORDER: Locale[] = ['en', 'ko', 'ja', 'zh', 'es', 'fr', 'de'];
+const ORDER: Locale[] = ['en', 'ko', 'es'];
 
 export default function LanguageToggle() {
   const { locale, setLocale } = useLanguage();

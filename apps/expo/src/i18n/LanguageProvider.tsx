@@ -14,7 +14,7 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 const STORAGE_KEY = 'snapsist_locale';
-const SUPPORTED: Locale[] = ['en', 'ko', 'ja', 'zh', 'es', 'fr', 'de'];
+const SUPPORTED: Locale[] = ['en', 'ko', 'es'];
 
 async function detectInitialLocale(): Promise<Locale> {
   const stored = await AsyncStorage.getItem(STORAGE_KEY);

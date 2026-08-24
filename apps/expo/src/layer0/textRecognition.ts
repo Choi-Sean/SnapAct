@@ -11,16 +11,12 @@ import TextRecognition, { TextRecognitionScript } from '@react-native-ml-kit/tex
 
 import { Locale } from '../i18n/dictionaries';
 
-// Latin-script locales (en/es/fr/de) all use the default Latin recognizer —
-// only CJK scripts need their own dedicated ML Kit model.
+// Latin-script locales (en/es) use the default Latin recognizer — only
+// Korean needs its own dedicated ML Kit model.
 const SCRIPT_BY_LOCALE: Record<Locale, TextRecognitionScript> = {
   en: TextRecognitionScript.LATIN,
   es: TextRecognitionScript.LATIN,
-  fr: TextRecognitionScript.LATIN,
-  de: TextRecognitionScript.LATIN,
   ko: TextRecognitionScript.KOREAN,
-  ja: TextRecognitionScript.JAPANESE,
-  zh: TextRecognitionScript.CHINESE,
 };
 
 export function isTextRecognitionLinked(): boolean {

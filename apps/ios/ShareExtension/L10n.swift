@@ -4,9 +4,9 @@
 //
 //  Minimal localization for the extension's own UI strings — kept in sync
 //  manually with apps/expo/src/i18n/dictionaries.ts's `home` keys for the
-//  7 supported locales, since this target can't import the RN dictionary.
-//  If you add a string here, add its counterpart there too (and vice
-//  versa) so the two pipelines never drift into different wording.
+//  3 supported locales (en/ko/es), since this target can't import the RN
+//  dictionary. If you add a string here, add its counterpart there too
+//  (and vice versa) so the two pipelines never drift into different wording.
 //
 import Foundation
 
@@ -81,52 +81,6 @@ private let table: [String: L10nStrings] = [
         calendarLocation: "장소",
         calendarStart: "시작"
     ),
-    "ja": L10nStrings(
-        analyzing: "写真を読み取り中…",
-        categoryLabel: "カテゴリー",
-        saveToReminders: "リマインダーに保存",
-        savedTitle: "保存しました",
-        saveFailed: "保存できませんでした",
-        needsAppTitle: "Snapsistアプリで続けてください",
-        needsAppBody: "このカテゴリーはアプリでの分析が必要です — オンデバイス分析は服薬・書類・未認識の写真のみ対応しています。",
-        openAppButton: "Snapsistを開く",
-        closeButton: "閉じる",
-        ocrFailed: "写真を読み取れませんでした。",
-        layer1Loading: "サーバーに送信中…",
-        lockedTitle: "トークンが必要です",
-        lockedBody: "このカテゴリーにはトークンのあるアカウントが必要です。アプリを開いてログインするかトークンを購入してください。",
-        layer1FailedTitle: "サーバーに接続できませんでした",
-        finishInAppButton: "Snapsistで続きを行う",
-        contactName: "名前",
-        contactPhone: "電話番号",
-        contactCompany: "会社",
-        calendarTitle: "タイトル",
-        calendarLocation: "場所",
-        calendarStart: "開始"
-    ),
-    "zh": L10nStrings(
-        analyzing: "正在读取照片…",
-        categoryLabel: "类别",
-        saveToReminders: "保存到提醒事项",
-        savedTitle: "已保存",
-        saveFailed: "保存失败",
-        needsAppTitle: "请在 Snapsist 应用中继续",
-        needsAppBody: "此类别需要在应用中分析 — 设备端分析仅处理服药、文档和未识别的照片。",
-        openAppButton: "打开 Snapsist",
-        closeButton: "关闭",
-        ocrFailed: "无法读取这张照片。",
-        layer1Loading: "正在发送到服务器…",
-        lockedTitle: "需要代币",
-        lockedBody: "此类别需要有代币的账号。请打开应用登录或购买代币。",
-        layer1FailedTitle: "无法连接服务器",
-        finishInAppButton: "在 Snapsist 中继续",
-        contactName: "姓名",
-        contactPhone: "电话",
-        contactCompany: "公司",
-        calendarTitle: "标题",
-        calendarLocation: "地点",
-        calendarStart: "开始时间"
-    ),
     "es": L10nStrings(
         analyzing: "Leyendo la foto…",
         categoryLabel: "Categoría",
@@ -150,52 +104,6 @@ private let table: [String: L10nStrings] = [
         calendarLocation: "Ubicación",
         calendarStart: "Inicio"
     ),
-    "fr": L10nStrings(
-        analyzing: "Lecture de la photo…",
-        categoryLabel: "Catégorie",
-        saveToReminders: "Enregistrer dans Rappels",
-        savedTitle: "Enregistré",
-        saveFailed: "Échec de l'enregistrement",
-        needsAppTitle: "Ouvrez Snapsist pour continuer",
-        needsAppBody: "Cette catégorie nécessite l'application complète pour être analysée — l'analyse sur l'appareil ne traite que les médicaments, documents et photos non reconnues.",
-        openAppButton: "Ouvrir Snapsist",
-        closeButton: "Fermer",
-        ocrFailed: "Impossible de lire cette photo.",
-        layer1Loading: "Envoi au serveur…",
-        lockedTitle: "Jetons nécessaires",
-        lockedBody: "Cette catégorie nécessite un compte avec des jetons. Ouvrez l'app pour vous connecter ou acheter des jetons.",
-        layer1FailedTitle: "Impossible de contacter le serveur",
-        finishInAppButton: "Terminer dans Snapsist",
-        contactName: "Nom",
-        contactPhone: "Téléphone",
-        contactCompany: "Société",
-        calendarTitle: "Titre",
-        calendarLocation: "Lieu",
-        calendarStart: "Début"
-    ),
-    "de": L10nStrings(
-        analyzing: "Foto wird gelesen…",
-        categoryLabel: "Kategorie",
-        saveToReminders: "In Erinnerungen speichern",
-        savedTitle: "Gespeichert",
-        saveFailed: "Speichern fehlgeschlagen",
-        needsAppTitle: "Öffne Snapsist, um fortzufahren",
-        needsAppBody: "Diese Kategorie muss in der App analysiert werden — die Analyse auf dem Gerät verarbeitet nur Medikamente, Dokumente und nicht erkannte Fotos.",
-        openAppButton: "Snapsist öffnen",
-        closeButton: "Schließen",
-        ocrFailed: "Dieses Foto konnte nicht gelesen werden.",
-        layer1Loading: "Wird an den Server gesendet…",
-        lockedTitle: "Token erforderlich",
-        lockedBody: "Diese Kategorie benötigt ein Konto mit Token. Öffne die App, um dich anzumelden oder Token zu kaufen.",
-        layer1FailedTitle: "Server nicht erreichbar",
-        finishInAppButton: "In Snapsist fertigstellen",
-        contactName: "Name",
-        contactPhone: "Telefon",
-        contactCompany: "Firma",
-        calendarTitle: "Titel",
-        calendarLocation: "Ort",
-        calendarStart: "Beginn"
-    ),
 ]
 
 var L10n: L10nStrings {
@@ -207,11 +115,7 @@ var L10n: L10nStrings {
 private let categoryNames: [String: [Category: String]] = [
     "en": [.medication: "Medication", .document: "Document", .other: "Unrecognized"],
     "ko": [.medication: "복약", .document: "문서", .other: "미인식"],
-    "ja": [.medication: "服薬", .document: "書類", .other: "未認識"],
-    "zh": [.medication: "服药", .document: "文档", .other: "未识别"],
     "es": [.medication: "Medicamento", .document: "Documento", .other: "No reconocido"],
-    "fr": [.medication: "Médicament", .document: "Document", .other: "Non reconnu"],
-    "de": [.medication: "Medikament", .document: "Dokument", .other: "Nicht erkannt"],
 ]
 
 func categoryName(_ category: Category) -> String {

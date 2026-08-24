@@ -56,7 +56,7 @@ const ITEMS: PermissionItem[] = [
   },
 ];
 
-const LOCALES: Locale[] = ['en', 'ko', 'ja', 'zh', 'es', 'fr', 'de'];
+const LOCALES: Locale[] = ['en', 'ko', 'es'];
 
 export default function PermissionsScreen() {
   const { t, locale, setLocale } = useLanguage();

@@ -13,7 +13,7 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 const STORAGE_KEY = 'snapsist_locale';
-const SUPPORTED_LOCALES: Locale[] = ['en', 'ko', 'ja', 'zh', 'es', 'fr', 'de'];
+const SUPPORTED_LOCALES: Locale[] = ['en', 'ko', 'es'];
 
 function detectInitialLocale(): Locale {
   if (typeof window === 'undefined') return 'en';

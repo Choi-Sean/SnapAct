@@ -98,16 +98,13 @@ func saveMedicationReminders(_ medication: MedicationPayload, durationDays: Int,
 }
 
 // Matches apps/expo/src/i18n/dictionaries.ts's medicationTimingBeforeMeal /
-// AfterMeal / WithMeal strings for the 7 supported locales — kept in sync
-// manually since the extension can't import the RN dictionary directly.
+// AfterMeal / WithMeal strings for the 3 supported locales (en/ko/es) —
+// kept in sync manually since the extension can't import the RN
+// dictionary directly.
 private let mealRelationLabels: [String: [MealRelation: String]] = [
     "en": [.beforeMeal: "Before meals", .afterMeal: "After meals", .withMeal: "With meals"],
     "ko": [.beforeMeal: "식전", .afterMeal: "식후", .withMeal: "식사와 함께"],
-    "ja": [.beforeMeal: "食前", .afterMeal: "食後", .withMeal: "食事と一緒に"],
-    "zh": [.beforeMeal: "饭前", .afterMeal: "饭后", .withMeal: "随餐"],
     "es": [.beforeMeal: "Antes de las comidas", .afterMeal: "Después de las comidas", .withMeal: "Con las comidas"],
-    "fr": [.beforeMeal: "Avant les repas", .afterMeal: "Après les repas", .withMeal: "Avec les repas"],
-    "de": [.beforeMeal: "Vor den Mahlzeiten", .afterMeal: "Nach den Mahlzeiten", .withMeal: "Zu den Mahlzeiten"],
 ]
 
 private func mealRelationLabel(_ relation: MealRelation) -> String {

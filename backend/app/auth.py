@@ -79,6 +79,8 @@ class HistoryEntryOut(BaseModel):
     # header) — pulled out of FieldsJson, which already carries it via
     # AnalyzeResponse.resolved_layer (see main.py's _save_history_entry).
     resolved_layer: str | None = None
+    tokens_spent: int = 0
+    analysis_failed: bool = False
 
 
 def _make_token(user_id: str) -> str:
@@ -305,28 +307,33 @@ def list_history(
     finally:
         conn.close()
 
-    def _resolved_layer(fields_json: str | None) -> str | None:
+    def _fields(fields_json: str | None) -> dict:
         if not fields_json:
-            return None
+            return {}
         try:
-            return json.loads(fields_json).get("resolved_layer")
+            return json.loads(fields_json)
         except (TypeError, ValueError):
-            return None
+            return {}
 
     # No image_url here on purpose — photos never leave the device now, so
     # the server only ever has the text fields to show, never the picture.
-    return [
-        HistoryEntryOut(
-            id=e["HistoryEntryId"],
-            type=e["Type"],
-            title=e["Title"],
-            detail=e["Detail"],
-            saved_to=e["SavedTo"],
-            created_at=e["CreateDate"],
-            resolved_layer=_resolved_layer(e.get("FieldsJson")),
+    result = []
+    for e in entries:
+        f = _fields(e.get("FieldsJson"))
+        result.append(
+            HistoryEntryOut(
+                id=e["HistoryEntryId"],
+                type=e["Type"],
+                title=e["Title"],
+                detail=e["Detail"],
+                saved_to=e["SavedTo"],
+                created_at=e["CreateDate"],
+                resolved_layer=f.get("resolved_layer"),
+                tokens_spent=f.get("tokens_spent", 0),
+                analysis_failed=f.get("analysis_failed", False),
+            )
         )
-        for e in entries
-    ]
+    return result
 
 
 def delete_account(user_id: str = Depends(_current_user_id)) -> None:

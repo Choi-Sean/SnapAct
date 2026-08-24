@@ -14,7 +14,7 @@ import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
 import ReviewModal from './src/ReviewModal';
-import { BatchSubEntry, DemoKey, HistoryEntry } from './src/types';
+import { BatchSubEntry, DemoKey, HistoryEntry, ReplaySpec } from './src/types';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -114,7 +114,7 @@ function AppInner() {
     detail: string;
     savedTo: string;
     fields?: { label: string; value: string }[];
-    replay?: { kind: DemoKey; payload: unknown };
+    replay?: ReplaySpec;
   }) {
     const key = reviewKey;
     setReviewKey(null);
@@ -145,6 +145,9 @@ function AppInner() {
     savedTo: string;
     imageUri?: string;
     resolvedLayer?: string | null;
+    tokensSpent?: number;
+    analysisFailed?: boolean;
+    replay?: HistoryEntry['replay'];
   }) {
     const updated = await addHistoryEntry({
       type: info.type,
@@ -153,6 +156,9 @@ function AppInner() {
       savedTo: info.savedTo,
       imageUri: info.imageUri,
       resolvedLayer: info.resolvedLayer,
+      tokensSpent: info.tokensSpent,
+      analysisFailed: info.analysisFailed,
+      replay: info.replay,
     });
     setHistory(updated);
   }

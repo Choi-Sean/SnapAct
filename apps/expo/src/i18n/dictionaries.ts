@@ -131,6 +131,8 @@ export interface Dictionary {
     authGateBody: string;
     sensitiveCardBlockedTitle: string;
     sensitiveCardBlockedBody: string;
+    savedToFailed: string;
+    savedToNoAction: string;
   };
   history: {
     title: string;
@@ -159,6 +161,9 @@ export interface Dictionary {
     noResultsForFilter: string;
     layerNoteTemplate: string;
     layerLabels: Record<string, string>;
+    tokensSpentTemplate: string;
+    tokensFreeLabel: string;
+    failedBadge: string;
   };
   permissions: {
     title: string;
@@ -451,6 +456,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       authGateBody: 'Real photo analysis needs an account — sign up or log in to continue. Demos on the other tab work without one.',
       sensitiveCardBlockedTitle: 'This looks like a payment card',
       sensitiveCardBlockedBody: "We don't store or analyze sensitive card details — this photo was not uploaded or saved anywhere.",
+      savedToFailed: 'Failed',
+      savedToNoAction: 'Nothing to save',
     },
     history: {
       title: 'History',
@@ -485,6 +492,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         L3: 'L3 · rule-based extraction',
         L5c: 'L5c · Claude AI analysis',
       },
+      tokensSpentTemplate: '{n} tokens used',
+      tokensFreeLabel: 'Free',
+      failedBadge: 'Failed',
     },
     permissions: {
       title: 'Settings',
@@ -793,6 +803,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       authGateBody: '실제 사진 분석은 계정이 필요해요 — 가입하거나 로그인해주세요. 다른 탭의 데모는 로그인 없이도 사용할 수 있어요.',
       sensitiveCardBlockedTitle: '결제 카드로 보이는 사진이에요',
       sensitiveCardBlockedBody: '저희는 카드 정보 같은 민감한 정보는 저장하거나 분석하지 않아요 — 이 사진은 업로드되지도, 저장되지도 않았습니다.',
+      savedToFailed: '실패',
+      savedToNoAction: '저장할 내용 없음',
     },
     history: {
       title: '기록',
@@ -827,6 +839,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         L3: 'L3 · 규칙 기반 추출',
         L5c: 'L5c · 클로드 AI 분석',
       },
+      tokensSpentTemplate: '토큰 {n}개 사용됨',
+      tokensFreeLabel: '무료',
+      failedBadge: '실패',
     },
     permissions: {
       title: '설정',
@@ -1144,6 +1159,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       authGateBody: 'El análisis real de fotos necesita una cuenta — regístrate o inicia sesión para continuar. Las demos de la otra pestaña funcionan sin cuenta.',
       sensitiveCardBlockedTitle: 'Esto parece una tarjeta de pago',
       sensitiveCardBlockedBody: 'No almacenamos ni analizamos datos sensibles de tarjetas — esta foto no se subió ni se guardó en ningún lugar.',
+      savedToFailed: 'Fallido',
+      savedToNoAction: 'Nada que guardar',
     },
     history: {
       title: 'Historial',
@@ -1178,6 +1195,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
         L3: 'L3 · extracción basada en reglas',
         L5c: 'L5c · análisis con IA Claude',
       },
+      tokensSpentTemplate: '{n} tokens usados',
+      tokensFreeLabel: 'Gratis',
+      failedBadge: 'Fallido',
     },
     permissions: {
       title: 'Ajustes',

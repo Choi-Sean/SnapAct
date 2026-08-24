@@ -44,6 +44,13 @@ export interface AnalyzeResponse {
   // "L3" (rule-based extraction), "L5c" (Claude). Undefined when nothing
   // resolved yet (locked/unsupported responses never reach history).
   resolved_layer?: string | null;
+  // Net tokens actually charged for this call (0 if free, or spent then
+  // refunded on failure).
+  tokens_spent?: number;
+  // True only for a genuine failed attempt (Claude errored / returned
+  // something unusable) — not true for a legitimate "nothing recognizable
+  // here" result.
+  analysis_failed?: boolean;
 }
 
 export type DemoKey =
@@ -68,7 +75,10 @@ export interface HistoryField {
 // accident) without spending another AI call — just re-runs the same native
 // save with the same payload that was used the first time.
 export interface ReplaySpec {
-  kind: DemoKey;
+  // 'medication' isn't a DemoKey (no showcase demo for it) — it replays
+  // saveMedicationReminders(slots, durationDays), a different shape/action
+  // than the demo 'reminder' kind's single saveReminder() call.
+  kind: DemoKey | 'medication';
   payload: unknown;
   // True only for the playground's fixed showcase saves (ReviewModal), which
   // intentionally exercise every native field with filler data. Real saves
@@ -85,6 +95,8 @@ export interface BatchSubEntry {
   savedTo: string;
   replay?: ReplaySpec;
   resolvedLayer?: string | null;
+  tokensSpent?: number;
+  analysisFailed?: boolean;
 }
 
 export interface HistoryEntry {
@@ -103,4 +115,6 @@ export interface HistoryEntry {
   // header) — undefined for demo/playground saves, which don't go through
   // the real pipeline. Batch entries carry it per-item instead (batchItems).
   resolvedLayer?: string | null;
+  tokensSpent?: number;
+  analysisFailed?: boolean;
 }

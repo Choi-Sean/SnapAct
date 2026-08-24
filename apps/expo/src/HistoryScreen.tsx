@@ -90,6 +90,26 @@ function LayerBadge({ layer, h }: { layer?: string | null; h: Dictionary['histor
   );
 }
 
+function TokensBadge({ tokensSpent, h }: { tokensSpent?: number; h: Dictionary['history'] }) {
+  if (tokensSpent === undefined) return null;
+  const color = tokensSpent > 0 ? '#ea580c' : '#16a34a';
+  const label = tokensSpent > 0 ? fmt(h.tokensSpentTemplate, { n: tokensSpent }) : h.tokensFreeLabel;
+  return (
+    <View style={[badgeStyles.badge, { backgroundColor: `${color}1a`, borderColor: `${color}44` }]}>
+      <Text style={[badgeStyles.text, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+function FailedBadge({ failed, h }: { failed?: boolean; h: Dictionary['history'] }) {
+  if (!failed) return null;
+  return (
+    <View style={[badgeStyles.badge, { backgroundColor: '#dc26261a', borderColor: '#dc262644' }]}>
+      <Text style={[badgeStyles.text, { color: '#dc2626' }]}>{h.failedBadge}</Text>
+    </View>
+  );
+}
+
 const badgeStyles = StyleSheet.create({
   badge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1.5, alignSelf: 'flex-end', marginTop: 3 },
   text: { fontSize: 10, fontWeight: '800' },
@@ -238,7 +258,11 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                     <View style={styles.rowRight}>
                       <Text style={styles.savedTo}>{item.savedTo}</Text>
                       <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
-                      <LayerBadge layer={item.resolvedLayer} h={t.history} />
+                      <View style={styles.badgeRow}>
+                        <FailedBadge failed={item.analysisFailed} h={t.history} />
+                        <TokensBadge tokensSpent={item.tokensSpent} h={t.history} />
+                        <LayerBadge layer={item.resolvedLayer} h={t.history} />
+                      </View>
                     </View>
                   </TouchableOpacity>
                 </SwipeableRow>
@@ -289,6 +313,10 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                         })}
                       </Text>
                     )}
+                    <View style={[styles.badgeRow, { marginTop: 4 }]}>
+                      <FailedBadge failed={selected.analysisFailed} h={t.history} />
+                      <TokensBadge tokensSpent={selected.tokensSpent} h={t.history} />
+                    </View>
                   </View>
                 </View>
 
@@ -315,7 +343,11 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 6 }}>
                           <Text style={styles.savedTo}>{item.savedTo}</Text>
-                          <LayerBadge layer={item.resolvedLayer} h={t.history} />
+                          <View style={styles.badgeRow}>
+                            <FailedBadge failed={item.analysisFailed} h={t.history} />
+                            <TokensBadge tokensSpent={item.tokensSpent} h={t.history} />
+                            <LayerBadge layer={item.resolvedLayer} h={t.history} />
+                          </View>
                           {item.replay && (
                             <TouchableOpacity
                               style={styles.miniReplayButton}
@@ -481,6 +513,7 @@ const styles = StyleSheet.create({
   rowTitle: { fontSize: 15, fontWeight: '700', color: '#111' },
   rowDetail: { fontSize: 13, color: '#777', marginTop: 1 },
   rowRight: { alignItems: 'flex-end' },
+  badgeRow: { flexDirection: 'row', gap: 4 },
   savedTo: { fontSize: 12, color: '#2563eb', fontWeight: '700' },
   time: { fontSize: 11, color: '#aaa', marginTop: 2 },
   pager: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, paddingTop: 4 },

@@ -15,6 +15,7 @@ import logging
 
 from .config import settings
 from .models import AnalyzeResponse, CalendarPayload, Category, ContactPayload, MedicationPayload
+from .pricing import LAYER2_TOKEN_COST
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +181,7 @@ def analyze(
             suggested_action="none",
             summary="Couldn't extract structured data from this photo — no tokens were charged. Try again, or a clearer photo.",
             resolved_layer="L5c",
+            analysis_failed=True,
         ), False
 
     try:
@@ -218,6 +220,7 @@ def analyze(
             raw_text=data.get("raw_text"),
             summary=data.get("summary"),
             resolved_layer="L5c",
+            tokens_spent=LAYER2_TOKEN_COST,
         ), True
     except (AttributeError, TypeError, ValueError) as e:
         # Valid JSON but the wrong shape (e.g. a bare string/array instead of

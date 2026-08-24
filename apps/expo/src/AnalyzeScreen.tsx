@@ -5,6 +5,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -27,7 +28,7 @@ import { runVisionGate } from './layer0/visionGate';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
-import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload } from './types';
+import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload, ReplaySpec } from './types';
 
 interface Photo {
   uri: string;
@@ -56,6 +57,9 @@ interface Props {
     savedTo: string;
     imageUri?: string;
     resolvedLayer?: string | null;
+    tokensSpent?: number;
+    analysisFailed?: boolean;
+    replay?: ReplaySpec;
   }) => void;
   // Set by App.tsx when the user shared photo(s) into Snapsist from the OS
   // share sheet. AnalyzeScreen consumes it immediately (auto-analyze, no
@@ -231,6 +235,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
         setPricingVisible(true);
       } else {
         setResult(response);
+        if (response.suggested_action === 'none') await logNoActionResult(response, sharedPhoto);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -325,6 +330,28 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     return analyzePhoto(target);
   }
 
+  // suggested_action "none" (backend/app/main.py) covers two different
+  // things that look the same on the wire: a legitimate "nothing
+  // recognizable here" result, and a genuine failed attempt (analysis_failed
+  // — Claude errored or returned something unusable, see claude_analysis.py).
+  // Neither has a native app to save to, so unlike contact/calendar/reminder
+  // (which only reach history once the user taps Save) this logs itself
+  // immediately — otherwise a failure would just vanish off-screen with no
+  // record it ever happened.
+  async function logNoActionResult(response: AnalyzeResponse, target: Photo) {
+    const imageUri = await persistImage(target.uri);
+    onSaved({
+      type: 'photo',
+      title: t.batch.categoryLabels[response.category],
+      detail: response.summary ?? '',
+      savedTo: response.analysis_failed ? t.home.savedToFailed : t.home.savedToNoAction,
+      imageUri,
+      resolvedLayer: response.resolved_layer,
+      tokensSpent: response.tokens_spent,
+      analysisFailed: response.analysis_failed,
+    });
+  }
+
   async function handleAnalyze() {
     if (!photo) return;
     setAnalyzing(true);
@@ -337,6 +364,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
         setPricingVisible(true);
       } else {
         setResult(response);
+        if (response.suggested_action === 'none') await logNoActionResult(response, photo);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -418,6 +446,9 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           savedTo: t.permissions.items[2].label,
           imageUri,
           resolvedLayer: result.resolved_layer,
+          tokensSpent: result.tokens_spent,
+          analysisFailed: result.analysis_failed,
+          replay: { kind: 'business_card', payload: result.contact },
         });
       } else if (result.suggested_action === 'calendar' && result.calendar) {
         const calendarPayload = times?.length ? applyTimeToCalendar(result.calendar, times[0]) : result.calendar;
@@ -431,6 +462,9 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           savedTo: t.permissions.items[3].label,
           imageUri,
           resolvedLayer: result.resolved_layer,
+          tokensSpent: result.tokens_spent,
+          analysisFailed: result.analysis_failed,
+          replay: { kind: 'event', payload: calendarPayload },
         });
       } else if (result.suggested_action === 'reminder' && result.medication) {
         const durationDays = result.medication.duration_days ?? 30;
@@ -445,6 +479,24 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           savedTo: t.permissions.items[4].label,
           imageUri,
           resolvedLayer: result.resolved_layer,
+          tokensSpent: result.tokens_spent,
+          analysisFailed: result.analysis_failed,
+          replay: { kind: 'medication', payload: { slots, durationDays } },
+        });
+      } else if (result.suggested_action === 'note') {
+        const message = result.summary ?? result.raw_text ?? '';
+        await Share.share({ message, title: t.batch.noteShareTitle });
+        const imageUri = await persistImage(photo.uri);
+        onSaved({
+          type: 'receipt',
+          title: t.batch.categoryLabels[result.category],
+          detail: result.summary ?? '',
+          savedTo: t.review.shareLabel,
+          imageUri,
+          resolvedLayer: result.resolved_layer,
+          tokensSpent: result.tokens_spent,
+          analysisFailed: result.analysis_failed,
+          replay: { kind: 'receipt', payload: { message, title: t.batch.noteShareTitle } },
         });
       }
     } catch (e) {
@@ -590,7 +642,8 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 
           {(result.suggested_action === 'contact' ||
             result.suggested_action === 'calendar' ||
-            result.suggested_action === 'reminder') && (
+            result.suggested_action === 'reminder' ||
+            result.suggested_action === 'note') && (
             <TouchableOpacity
               style={[styles.button, styles.primaryButton]}
               onPress={handleSave}
@@ -605,7 +658,9 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
                     ? t.home.saveToContacts
                     : result.suggested_action === 'calendar'
                       ? t.home.saveToCalendar
-                      : t.home.saveToReminder}
+                      : result.suggested_action === 'reminder'
+                        ? t.home.saveToReminder
+                        : t.review.shareLabel}
                 </Text>
               )}
             </TouchableOpacity>

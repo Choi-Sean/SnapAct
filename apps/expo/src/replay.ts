@@ -4,9 +4,11 @@ import { Dictionary } from './i18n/dictionaries';
 import {
   addToWalletDemo,
   composeMailDemo,
+  MedicationReminderSlot,
   openMapsDemo,
   saveContact,
   saveEventToCalendar,
+  saveMedicationReminders,
   savePhotoDemo,
   saveReminder,
   scheduleNotificationDemo,
@@ -31,6 +33,11 @@ export async function replayAction(spec: ReplaySpec, t: Dictionary): Promise<voi
     case 'reminder':
       await saveReminder(spec.payload as { title: string; notes?: string; dueDate?: Date }, spec.demo);
       return;
+    case 'medication': {
+      const { slots, durationDays } = spec.payload as { slots: MedicationReminderSlot[]; durationDays: number };
+      await saveMedicationReminders(slots, durationDays);
+      return;
+    }
     case 'receipt': {
       const { message, title } = spec.payload as { message: string; title: string };
       await Share.share({ message, title });

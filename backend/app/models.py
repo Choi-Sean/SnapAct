@@ -59,3 +59,11 @@ class AnalyzeResponse(BaseModel):
     # extraction), "L5c" (Claude). None when nothing resolved yet (locked/
     # unsupported-filetype responses).
     resolved_layer: Optional[str] = None
+    # Net tokens actually charged for this specific call (0 if free, or if
+    # spent-then-refunded on failure — see claude_analysis.py's analyze()).
+    tokens_spent: int = 0
+    # True only for a genuine failed attempt (Claude errored / returned
+    # something unusable) -- NOT true for a legitimate "nothing recognizable
+    # here" result, which is a normal suggested_action="none" with this
+    # left False.
+    analysis_failed: bool = False

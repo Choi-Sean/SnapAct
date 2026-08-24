@@ -318,6 +318,7 @@ async def analyze(
                     confidence=confidence,
                     suggested_action="none",
                     summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now. No tokens were charged.",
+                    analysis_failed=True,
                 )
             else:
                 # succeeded is False when Claude was actually called (tokens

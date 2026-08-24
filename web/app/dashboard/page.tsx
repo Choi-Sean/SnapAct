@@ -25,6 +25,7 @@ const REASON_LABEL: Record<string, { ko: string; en: string }> = {
   purchase: { ko: '구매', en: 'Purchase' },
   analysis: { ko: '분석 사용', en: 'Analysis' },
   refund: { ko: '분석 실패 환불', en: 'Refund (analysis failed)' },
+  admin_grant: { ko: '관리자 지급', en: 'Admin grant' },
 };
 
 // Which L0-L5 rung resolved an analysis (backend/app/pricing.py's header

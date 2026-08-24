@@ -232,15 +232,16 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     });
   }
 
-  // Tries Layer 0 (on-device) first; only reaches Layer 1 (../api.ts's
-  // analyzePhoto, the server) when Layer 0 genuinely can't resolve this
-  // photo — either the category needs deeper extraction than regex/keyword
-  // matching can do (business_card/receipt/event_flyer, see
-  // layer0/categories.ts — deferred to a future Layer 2) or the device/
-  // build can't run Layer 0 at all. The latter case is a real capability
-  // gap, so it's gated behind the consent prompt below rather than
-  // silently falling through. Returns null if the user declined the
-  // fallback prompt, or if the vision gate blocked the photo outright.
+  // Tries Layer 0 (on-device) first; only reaches Layer 1/L5c (../api.ts's
+  // analyzePhoto, the server — backend/app/pricing.py has the full L0-L5
+  // map) when Layer 0 genuinely can't resolve this photo — either the
+  // category has no on-device rules yet (business_card/receipt/
+  // event_flyer, see layer0/categories.ts — these reach Claude server-side
+  // and may spend tokens) or the device/build can't run Layer 0 at all.
+  // The latter case is a real capability gap, so it's gated behind the
+  // consent prompt below rather than silently falling through. Returns
+  // null if the user declined the fallback prompt, or if the vision gate
+  // blocked the photo outright.
   async function resolveAnalysis(target: Photo): Promise<AnalyzeResponse | null> {
     // Layer 1 vision blocking gate (visionGate.ts) — on-device, BEFORE any
     // OCR or upload. A Tier 0 photo (ID / payment card / passport / ...)

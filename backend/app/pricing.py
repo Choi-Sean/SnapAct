@@ -1,79 +1,90 @@
 """
 =============================================================================
- SNAPSIST ANALYSIS LAYERS — architecture map
+ SNAPSIST ANALYSIS LAYERS — L0-L5 architecture map
 =============================================================================
-This is the map of "where does each layer live in the source". Read this
-before touching /analyze or the mobile capture flow.
+A layer is "a processing step a photo passes through on the way to
+becoming an action." Higher numbers are smarter and more expensive. Rule:
+if a cheap layer can finish the job, it does — the pipeline never pays for
+a more expensive layer than it needs.
 
-  LAYER 0 — on-device, free, no tokens, no server round-trip for the
-            analysis itself.
-    Lives in apps/expo/src/layer0/. Google ML Kit's on-device text recognizer
-    runs the OCR on BOTH platforms (apps/expo/src/layer0/textRecognition.ts,
-    via @react-native-ml-kit/text-recognition) — iOS deliberately uses
-    ML Kit's iOS SDK here rather than Apple's own Vision framework (a
-    session decision: same on-device/free/no-network guarantee, far less
-    native Swift to hand-write and verify blind). classify.ts ports the
-    exact keyword scoring below so a photo lands in the same category
-    whether Layer 0 or Layer 1 resolves it. Once classified:
-      - medication / document / other (LAYER0_CATEGORIES) resolve fully
-        on-device — medicationExtract.ts does regex/keyword field
-        extraction (name/dosage/frequency/duration/meal-timing/times),
-        no LLM, so these categories never leave the phone.
-      - business_card / receipt / event_flyer still fall through to
-        Layer 1 below (analyzeOnDevice.ts returns null for these — this
-        is normal routing, not a capability failure). "other" with zero
-        keyword matches also falls through rather than being confirmed
-        locally, since that's just as likely a real card/receipt/flyer
-        whose language classify.ts's keyword lists don't cover.
-    capability.ts detects whether Layer 0 can run at all on this device/
-    build (native module linked? did a call fail at runtime, e.g. no
-    Google Play services on Android?) — apps/expo/src/AnalyzeScreen.tsx's
-    resolveAnalysis() only prompts the Layer 1 fallback alert for a real
-    capability gap, never for normal category routing. consent.ts stores
-    the "always use Layer 1 without asking" choice — SecureStore only,
-    deliberately never sent to the server (see consent.ts's own comment).
+  L0 — signals available without looking at pixels: barcode/QR content,
+    EXIF, device state (was the phone just driving, etc). Not built yet
+    except EXIF (apps/expo/src/layer0/metadata.ts,
+    apps/ios/ShareExtension/PhotoMetadata.swift) — barcode/device-state are
+    still to do. A clean L0 read (e.g. a QR code) can skip straight to L5
+    for interpretation without ever touching L1-L4.
 
-  LAYER 1 — server-side, backend/app/main.py's /analyze endpoint.
-    Runs Google Cloud Vision (classify) and, for medication, the same
-    deterministic regex extraction as Layer 0 (medication_extract.py —
-    keep it in sync with medicationExtract.ts/MedicationExtractor.swift).
-    No Claude, no other paid AI call, and — as of this session — no token
-    spend either: business_card/receipt/event_flyer get classified and
-    handed back with the raw OCR text and an honest "not extracted yet"
-    summary, not fabricated fields. There was a Claude-based extraction
-    path here before; it was removed because it was never actually wired
-    up with a real API key in production and was silently serving
-    hardcoded placeholder data (a real bug a user hit) instead of an
-    error — see git history for backend/app/claude_analysis.py if you
-    need the old prompt/shape for reference.
-    Layer 1 is the fallback for: devices/builds that can't run Layer 0 at
-    all (apps/expo/src/layer0/capability.ts), and categories Layer 0 never
-    attempts extraction for. There's no language-specific OCR gap to route
-    around: Google ML Kit's on-device recognizer ships its own model per
-    script (Latin/Chinese/Japanese/Korean/Devanagari), not gated by OS
-    version the way Apple's own Vision framework is.
+  L1 — "what kind of photo is this," from the image alone, no OCR yet.
+    Language-independent (layout/shape), so this is the highest-leverage
+    place to have "our own" model in a multilingual product. Also the
+    Tier 0 blocking gate: ID/passport/payment-card/prescription/financial-
+    doc must never leave the device, decided here, fail-closed.
+    Lives in apps/expo/src/layer0/visionGate.ts + the Core ML model in
+    apps/expo/modules/coreml-classify/ (iOS only; ported from a
+    collaborator's spike, spikes/s3-l1-vision-classifier/ — NOT yet
+    trained on enough real photos to trust the blocking guarantee, see
+    that folder's README before relying on it).
 
-  LAYER 2 — reserved for real structured extraction (agentic AI or
-    similar) of business_card/receipt/event_flyer, once built. Nothing
-    routes here yet — /analyze doesn't call anything for these categories
-    beyond classification. LAYER2_TOKEN_COST is a forward reference for
-    when this exists; it isn't charged anywhere right now.
+  L2 — OCR. Not ours — Apple/Google's own recognizer
+    (apps/expo/src/layer0/textRecognition.ts on-device via ML Kit,
+    backend/app/vision.py server-side via Google Cloud Vision). Whatever
+    it reads is what we get; this is the slowest, priciest layer before L5,
+    which is why L1 running first (to narrow language/region) matters.
+
+  L3 — turn OCR'd text fragments into named fields, with two things
+    happening in one step: (a) shape-obvious values (phone numbers, email
+    addresses — regex is enough) and (b) context-dependent role assignment
+    (which fragment is the name vs. the title — needs position/size/
+    surrounding text, not just regex). Only medication has real L3 rules
+    right now (medication_extract.py, mirrored in
+    apps/expo/src/layer0/medicationExtract.ts and
+    apps/ios/ShareExtension/MedicationExtractor.swift) — document/other
+    need no fields, and business_card/receipt/event_flyer have no L3 rules
+    yet, so they fall through to L5c. Source-span grounding (which OCR
+    fragment a field's value came from) isn't implemented yet — OCR output
+    is currently flattened to a plain string, discarding the bounding-box
+    info ML Kit/Vision actually return.
+
+  L5 — real language understanding, for what L3's rules can't resolve.
+    Three rungs, cheapest first:
+      L5a on-device (Apple/Android's built-in model, free, never leaves
+          the device) — not built, needs iOS 26 Foundation Models /
+          Android ML Kit GenAI (Gemini Nano), both hardware-gated and
+          both native Swift/Kotlin work this environment can't compile.
+      L5b Apple Private Cloud Compute (free for small App Store Small
+          Business Program developers as of WWDC 2026, smarter than L5a)
+          — same native-Swift blocker as L5a.
+      L5c cloud LLM, Anthropic Claude (claude_analysis.py) — the only L5
+          rung actually reachable right now, since it's a plain server-
+          side API call. Reached for business_card/receipt/event_flyer
+          (LAYER2_TOKEN_COST tokens spent per call, see main.py) because
+          L3 has no rules for those yet — not because they inherently
+          need an LLM. As L3 rules get built out, L5c should get reached
+          less often, not more.
+    L5's prompt requires every field be grounded in what the photo/OCR
+    text actually shows (see claude_analysis.py's _PROMPT_HEADER) — an
+    LLM asked to extract structured data can otherwise invent plausible-
+    looking values that were never in the source.
+
+  L4 (native-action dispatch — save the result to Contacts/Calendar/
+    Reminders/etc.) is intentionally not a numbered analysis layer here;
+    it's the deterministic last step every path (L0/L1/L3/L5) ends at
+    once a category + fields are known — see apps/expo/src/nativeActions.ts
+    and apps/ios/ShareExtension/MedicationReminderSaver.swift.
 =============================================================================
 """
 
 from .models import Category
 
-# Categories Layer 0 (and, in this version, Layer 1) can fully resolve on
-# their own without needing Layer 2 — either genuinely sensitive
-# (medication/prescriptions, matching the "never leaves the device"
-# privacy principle) or low-extraction-value (document, unrecognized)
-# enough that a plain classification + raw text is already useful.
+# Categories that resolve at L3 (deterministic rules) without ever needing
+# L5 — either genuinely sensitive (medication/prescriptions — matching the
+# "never leaves the device" privacy principle) or low-extraction-value
+# (document, unrecognized) enough that a plain classification + raw text is
+# already useful. Free no matter which layer actually resolves them.
 LAYER0_CATEGORIES: frozenset[Category] = frozenset({"medication", "document", "other"})
 
-# Forward reference for Layer 2 (not yet built, not yet charged anywhere —
-# see this file's header). Kept so the token/Stripe infrastructure already
-# built (payments.py, the web dashboard's token packages) has a real number
-# to display instead of inventing one later.
+# What an L5c (Claude) call costs — business_card/receipt/event_flyer only,
+# and only when Claude is actually configured and gets used (see main.py).
 LAYER2_TOKEN_COST = 10
 
 STARTER_TOKENS = 50

@@ -6,6 +6,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     google_application_credentials: str = ""
     google_application_credentials_json: str = ""
+    # L5c only (see claude_analysis.py's header) — the last-resort cloud LLM
+    # rung, reached only when cheaper layers can't resolve a photo.
+    anthropic_api_key: str = ""
+    claude_model: str = "claude-sonnet-5"
     api_shared_secret: str = ""
 
     apple_team_id: str = "S8G28N4M49"
@@ -56,6 +60,10 @@ class Settings(BaseSettings):
     @property
     def vision_enabled(self) -> bool:
         return bool(self.google_application_credentials or self.google_application_credentials_json)
+
+    @property
+    def claude_enabled(self) -> bool:
+        return bool(self.anthropic_api_key)
 
     @property
     def wallet_enabled(self) -> bool:

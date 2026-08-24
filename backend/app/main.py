@@ -9,12 +9,12 @@ from fastapi import BackgroundTasks, Depends, FastAPI, File, Header, HTTPExcepti
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
-from . import auth, db, medication_extract, payments, vision, wallet
+from . import auth, claude_analysis, db, medication_extract, payments, vision, wallet
 from .auth import AccountSummary, AuthResponse, HistoryEntryOut, LoginRequest, SignupRequest, TokenTransactionOut, UserOut
 from .config import settings
 from .models import AnalyzeResponse
 from .payments import CheckoutRequest, CheckoutResponse
-from .pricing import LAYER2_TOKEN_COST, TOKEN_PACKAGES
+from .pricing import LAYER0_CATEGORIES, LAYER2_TOKEN_COST, TOKEN_PACKAGES
 from .ratelimit import daily_spend_cap, get_client_ip, rate_limiter
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,7 @@ def health():
     return {
         "status": "ok",
         "vision_enabled": vision.settings.vision_enabled,
+        "claude_enabled": claude_analysis.settings.claude_enabled,
         "auth_enabled": bool(settings.api_shared_secret),
         "wallet_enabled": settings.wallet_enabled,
         "accounts_enabled": bool(settings.jwt_secret),
@@ -120,8 +121,6 @@ def account_token_history(entries: list[TokenTransactionOut] = Depends(auth.list
 
 @app.get("/account/token-packages")
 def account_token_packages():
-    # layer2_cost_per_analysis is a forward reference, not an active charge —
-    # see pricing.py's header. Nothing on /analyze spends tokens right now.
     return {"packages": TOKEN_PACKAGES, "layer2_cost_per_analysis": LAYER2_TOKEN_COST}
 
 
@@ -213,16 +212,15 @@ async def analyze(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty file.")
 
-    # Global daily ceiling on real (paid) Vision usage — catches abuse spread
-    # across many IPs that the per-IP rate limit alone wouldn't stop. Once
-    # hit, every request for the rest of the UTC day gets the mock pipeline
-    # instead of erroring, so the app keeps working in demo mode.
-    would_spend = vision.settings.vision_enabled
+    # Global daily ceiling on real (paid) Vision/Claude usage — catches abuse
+    # spread across many IPs that the per-IP rate limit alone wouldn't stop.
+    # Once hit, every request for the rest of the UTC day gets the mock
+    # pipeline instead of erroring, so the app keeps working in demo mode.
+    would_spend = vision.settings.vision_enabled or claude_analysis.settings.claude_enabled
     within_cap = daily_spend_cap.try_consume(settings.daily_real_analyze_cap) if would_spend else True
     if would_spend and not within_cap:
         logger.warning("Daily real-API spend cap reached; serving mock response.")
     force_mock = would_spend and not within_cap
-    mocked = force_mock or not vision.settings.vision_enabled
 
     is_image = file.content_type.startswith("image/")
     if is_image:
@@ -233,56 +231,82 @@ async def analyze(
         # rather than being rejected outright.
         category, confidence, ocr_text = "document", 0.4, None
 
-    # ---- LAYER 1 (see backend/app/pricing.py's header for the full layer
-    # map) -----------------------------------------------------------------
-    # Vision classification just ran above; everything below is Layer 1.
-    # No Claude, no other paid AI call, no token spend — this build reports
-    # exactly what Vision + deterministic parsing could figure out and
-    # stops there. Structured extraction for business_card/receipt/
-    # event_flyer needs real language understanding that regex/keyword
-    # matching can't reliably do; that's deferred to Layer 2 (agentic AI,
-    # not yet built) rather than faked here.
-    if category == "medication":
-        medication = medication_extract.extract(ocr_text or "")
-        has_usable_fields = bool(medication.name or medication.dosage)
-        result = AnalyzeResponse(
-            mock=mocked,
-            category=category,
-            confidence=confidence,
-            suggested_action="reminder" if has_usable_fields else "none",
-            medication=medication if has_usable_fields else None,
-            needs_time_selection=has_usable_fields and not medication.specific_times,
-            raw_text=ocr_text,
-            summary=medication.name or "Medication label detected.",
-        )
-    elif category in ("document", "other"):
-        result = AnalyzeResponse(
-            mock=mocked,
-            category=category,
-            confidence=confidence,
-            suggested_action="none",
-            raw_text=ocr_text,
-            summary=(
-                "No business card, receipt, event, or document content was recognized in this photo."
-                if category == "other"
-                else "Document detected — no structured fields extracted in this version."
-            ),
-        )
+    # ---- L3 vs L5c (see backend/app/pricing.py's header for the full L0-L5
+    # map) -------------------------------------------------------------
+    # medication/document/other resolve deterministically here (L3 —
+    # regex/keyword extraction, medication_extract.py) and never cost
+    # tokens. business_card/receipt/event_flyer have no L3 rules yet, so
+    # they fall straight through to L5c (Claude, claude_analysis.py) — the
+    # only L5 tier actually reachable right now (L5a on-device / L5b Apple
+    # Private Cloud Compute are iOS/Android-native work, not built here).
+    requires_tokens = False
+    if category in LAYER0_CATEGORIES:
+        mocked = force_mock or not vision.settings.vision_enabled
+        if category == "medication":
+            medication = medication_extract.extract(ocr_text or "")
+            has_usable_fields = bool(medication.name or medication.dosage)
+            result = AnalyzeResponse(
+                mock=mocked,
+                category=category,
+                confidence=confidence,
+                suggested_action="reminder" if has_usable_fields else "none",
+                medication=medication if has_usable_fields else None,
+                needs_time_selection=has_usable_fields and not medication.specific_times,
+                raw_text=ocr_text,
+                summary=medication.name or "Medication label detected.",
+            )
+        else:
+            result = AnalyzeResponse(
+                mock=mocked,
+                category=category,
+                confidence=confidence,
+                suggested_action="none",
+                raw_text=ocr_text,
+                summary=(
+                    "No business card, receipt, event, or document content was recognized in this photo."
+                    if category == "other"
+                    else "Document detected — no structured fields extracted in this version."
+                ),
+            )
     else:
-        # business_card / receipt / event_flyer: classified, but full field
-        # extraction isn't available until Layer 2 exists.
-        result = AnalyzeResponse(
-            mock=mocked,
-            category=category,
-            confidence=confidence,
-            suggested_action="none",
-            raw_text=ocr_text,
-            summary=f"Detected as {category.replace('_', ' ')} — detailed extraction isn't available in this version yet.",
-        )
+        using_claude = claude_analysis.settings.claude_enabled and not force_mock
+        requires_tokens = using_claude and (not user_id or not auth.try_spend_tokens(user_id, LAYER2_TOKEN_COST))
+
+        if requires_tokens:
+            result = AnalyzeResponse(
+                mock=False,
+                category=category,
+                confidence=confidence,
+                suggested_action="none",
+                requires_tokens=True,
+                summary="This category needs an account with tokens to unlock full extraction.",
+            )
+        else:
+            # Text-dense categories: hand Claude the OCR text instead of the image.
+            # Text tokens are much cheaper than image tokens, and amounts/dates
+            # read fine from text alone; business_card/event_flyer need the
+            # actual layout, so those still get the image.
+            text_only_categories = {"receipt"}
+            ocr_text_for_claude = ocr_text if (using_claude and category in text_only_categories) else None
+
+            # Claude's image content blocks only accept raster image media types — a PDF
+            # (or anything else without OCR text behind it) can't be sent that way.
+            if using_claude and not is_image and not ocr_text_for_claude:
+                result = AnalyzeResponse(
+                    mock=False,
+                    category=category,
+                    confidence=confidence,
+                    suggested_action="none",
+                    summary="This file type isn't analyzed yet — it's saved, but text/field extraction only runs on photos for now.",
+                )
+            else:
+                result = claude_analysis.analyze(
+                    image_bytes, category, confidence, media_type=file.content_type, ocr_text=ocr_text_for_claude, force_mock=force_mock
+                )
 
     # The photo itself is never uploaded — only the extracted text fields are
-    # saved, and only for a signed-in user.
-    if user_id:
+    # saved, and only for a signed-in user with a real (non-locked) result.
+    if user_id and not requires_tokens:
         background_tasks.add_task(_save_history_entry, user_id, category, result)
 
     return result

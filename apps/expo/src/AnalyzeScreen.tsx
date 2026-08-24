@@ -27,8 +27,6 @@ import PricingScreen from './PricingScreen';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
 import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload } from './types';
 
-const BATCH_MOCK_CYCLE: Category[] = ['business_card', 'event_flyer', 'receipt', 'document'];
-
 interface Photo {
   uri: string;
   fileName?: string | null;
@@ -114,13 +112,24 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 
     for (let i = 0; i < assets.length; i++) {
       const asset = assets[i];
-      const mockCategory = BATCH_MOCK_CYCLE[i % BATCH_MOCK_CYCLE.length];
       try {
         const resized = await resizeForUpload(asset.uri, asset.width ?? 0, asset.height ?? 0, asset.mimeType);
-        const response = await analyzePhoto(
-          { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType },
-          mockCategory
-        );
+        const photo: Photo = { uri: resized.uri, fileName: asset.fileName, mimeType: resized.mimeType };
+        // Same Layer 0-first routing as the single-photo flow (resolveAnalysis)
+        // — batch used to skip straight to Layer 1 for every photo, which
+        // meant a batch of medication/document photos would leave the device
+        // even though the same photos picked one at a time never would.
+        const response = await resolveAnalysis(photo);
+        if (!response) {
+          // User declined the Layer 1 fallback prompt for this photo — skip
+          // it rather than aborting the whole batch.
+          results.push({
+            uri: resized.uri,
+            result: { mock: false, category: 'other', confidence: 0, suggested_action: 'none', summary: t.batch.skippedLabel },
+          });
+          setBatchProcessing({ done: i + 1, total: assets.length });
+          continue;
+        }
         results.push({ uri: resized.uri, result: response });
       } catch (e) {
         results.push({

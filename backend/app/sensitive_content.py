@@ -10,10 +10,17 @@ apps/expo/src/layer0/sensitiveCard.ts (on-device, runs before anything is
 even uploaded) and apps/ios/ShareExtension/SensitiveCardDetector.swift.
 
 Two independent signals, either one blocks:
-  1. A Luhn-valid 13-19 digit run — this is the strong one. Real, unmasked
-     card numbers pass Luhn by construction; a phone number, tracking
-     number, or receipt total practically never does. Low false-positive
-     rate on its own.
+  1. A Luhn-valid card number printed in classic grouped format (4 digits,
+     separator, 4 digits, separator, 4 digits, separator, 1-7 digits — e.g.
+     "4111 1111 1111 1111"). This is the strong one, but it used to match
+     *any* 13-19 digit run regardless of formatting, which was a real
+     production false positive: a Korean receipt's unbroken barcode/receipt
+     number ("0111621511030002000850") happened to pass Luhn by chance
+     (~1-in-10 odds for any sufficiently long digit string, so not rare)
+     and blocked a completely ordinary receipt. Requiring the grouped
+     format fixes that — real printed card numbers are essentially always
+     grouped this way, and a barcode/receipt/tracking number essentially
+     never is.
   2. A card-brand keyword (VISA/MASTERCARD/...) together with an expiry
      date/keyword — catches a photo where the number OCR'd badly but the
      rest of the card is legible. Requiring *both* (not just the brand
@@ -22,7 +29,7 @@ Two independent signals, either one blocks:
 """
 import re
 
-_DIGIT_RUN_RE = re.compile(r"(?:\d[ -]?){13,19}")
+_CARD_NUMBER_RE = re.compile(r"\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{1,7}\b")
 
 _STRONG_BRAND_KEYWORDS = [
     "visa", "mastercard", "master card", "american express", "amex",
@@ -50,7 +57,7 @@ def _luhn_valid(digits: str) -> bool:
 
 
 def _has_luhn_valid_card_number(text: str) -> bool:
-    for match in _DIGIT_RUN_RE.finditer(text):
+    for match in _CARD_NUMBER_RE.finditer(text):
         digits = re.sub(r"[ -]", "", match.group())
         if 13 <= len(digits) <= 19 and _luhn_valid(digits):
             return True

@@ -11,9 +11,15 @@
 //  apps/expo/src/layer0/sensitiveCard.ts and backend/app/sensitive_content.py.
 //
 //  Two independent signals, either one blocks:
-//    1. A Luhn-valid 13-19 digit run -- real, unmasked card numbers pass
-//       Luhn by construction; a phone number or receipt total practically
-//       never does. Low false-positive rate on its own.
+//    1. A Luhn-valid card number printed in classic grouped format (4
+//       digits, separator, 4 digits, separator, 4 digits, separator, 1-7
+//       digits -- e.g. "4111 1111 1111 1111"). Used to match *any* 13-19
+//       digit run regardless of formatting, which was a real production
+//       false positive: a receipt's unbroken barcode/receipt number
+//       happened to pass Luhn by chance (~1-in-10 odds for any
+//       sufficiently long digit string) and blocked an ordinary receipt.
+//       Real printed card numbers are essentially always grouped this way;
+//       a barcode never is.
 //    2. A card-brand keyword (VISA/MASTERCARD/...) together with an expiry
 //       date/keyword -- catches a photo where the number OCR'd badly but
 //       the rest of the card is legible. Requiring *both* keeps a receipt
@@ -31,7 +37,7 @@ private let strongBrandKeywords = [
 
 private let expiryKeywords = ["good thru", "valid thru", "expires", "exp date", "유효기간", "만료일", "有効期限"]
 private let expiryRegex = try! NSRegularExpression(pattern: "\\b(0[1-9]|1[0-2])\\s*/\\s*\\d{2}\\b")
-private let digitRunRegex = try! NSRegularExpression(pattern: "(?:\\d[ -]?){13,19}")
+private let cardNumberRegex = try! NSRegularExpression(pattern: "\\b\\d{4}[ -]\\d{4}[ -]\\d{4}[ -]\\d{1,7}\\b")
 
 private func luhnValid(_ digits: String) -> Bool {
     let chars = Array(digits)
@@ -50,7 +56,7 @@ private func luhnValid(_ digits: String) -> Bool {
 
 private func hasLuhnValidCardNumber(_ text: String) -> Bool {
     let range = NSRange(text.startIndex..., in: text)
-    let matches = digitRunRegex.matches(in: text, range: range)
+    let matches = cardNumberRegex.matches(in: text, range: range)
     for match in matches {
         guard let r = Range(match.range, in: text) else { continue }
         let digits = String(text[r]).filter { $0.isNumber }

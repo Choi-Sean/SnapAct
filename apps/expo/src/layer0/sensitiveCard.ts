@@ -8,15 +8,20 @@
 // fallback) and apps/ios/ShareExtension/SensitiveCardDetector.swift.
 //
 // Two independent signals, either one blocks:
-//   1. A Luhn-valid 13-19 digit run — real, unmasked card numbers pass Luhn
-//      by construction; a phone number or receipt total practically never
-//      does. Low false-positive rate on its own.
+//   1. A Luhn-valid card number printed in classic grouped format (4 digits,
+//      separator, 4 digits, separator, 4 digits, separator, 1-7 digits —
+//      e.g. "4111 1111 1111 1111"). Used to match *any* 13-19 digit run
+//      regardless of formatting, which was a real production false
+//      positive: a receipt's unbroken barcode/receipt number happened to
+//      pass Luhn by chance (~1-in-10 odds for any sufficiently long digit
+//      string) and blocked an ordinary receipt. Real printed card numbers
+//      are essentially always grouped this way; a barcode never is.
 //   2. A card-brand keyword (VISA/MASTERCARD/...) together with an expiry
 //      date/keyword — catches a photo where the number OCR'd badly but the
 //      rest of the card is legible. Requiring *both* keeps a receipt that
 //      mentions "paid by Visa" from tripping this — no expiry date there.
 
-const DIGIT_RUN_RE = /(?:\d[ -]?){13,19}/g;
+const CARD_NUMBER_RE = /\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{1,7}\b/g;
 
 const STRONG_BRAND_KEYWORDS = [
   'visa', 'mastercard', 'master card', 'american express', 'amex',
@@ -44,7 +49,7 @@ function luhnValid(digits: string): boolean {
 }
 
 function hasLuhnValidCardNumber(text: string): boolean {
-  const matches = text.match(DIGIT_RUN_RE);
+  const matches = text.match(CARD_NUMBER_RE);
   if (!matches) return false;
   for (const m of matches) {
     const digits = m.replace(/[ -]/g, '');

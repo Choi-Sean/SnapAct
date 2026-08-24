@@ -36,7 +36,7 @@ interface Photo {
   metadata?: PhotoMetadata;
 }
 
-// Shape shared with the OS "Share" sheet handoff (see mobile/App.tsx's
+// Shape shared with the OS "Share" sheet handoff (see apps/expo/App.tsx's
 // useShareIntent() call) — width/height let resizeForUpload skip a decode step.
 export interface SharedAsset {
   uri: string;

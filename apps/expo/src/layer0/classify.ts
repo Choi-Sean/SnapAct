@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — on-device classification (mobile/src/layer0/)
+// LAYER 0 — on-device classification (apps/expo/src/layer0/)
 // ============================================================================
 // Ported keyword-matching classifier, kept in exact parity with the server's
 // Layer 1 classifier (backend/app/vision.py's _KEYWORDS + classify_image

@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — photo metadata (mobile/src/layer0/)
+// LAYER 0 — photo metadata (apps/expo/src/layer0/)
 // ============================================================================
 // EXIF alone can't tell you *what* a photo shows (no camera writes "this is
 // a receipt" into EXIF) — this is a supplementary signal only, not a

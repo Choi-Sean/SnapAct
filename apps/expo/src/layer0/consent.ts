@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — fallback consent (mobile/src/layer0/)
+// LAYER 0 — fallback consent (apps/expo/src/layer0/)
 // ============================================================================
 // Whether the user has agreed to skip the "Layer 0 isn't available, use
 // Layer 1 (server + tokens) instead?" prompt on every future analysis.

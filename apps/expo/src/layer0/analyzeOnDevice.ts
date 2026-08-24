@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — orchestrator (mobile/src/layer0/)
+// LAYER 0 — orchestrator (apps/expo/src/layer0/)
 // ============================================================================
 // Entry point for on-device resolution: OCR (textRecognition.ts) + keyword
 // classification (classify.ts), and for medication, best-effort field

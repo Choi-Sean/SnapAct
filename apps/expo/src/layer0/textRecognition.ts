@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — on-device OCR (mobile/src/layer0/)
+// LAYER 0 — on-device OCR (apps/expo/src/layer0/)
 // ============================================================================
 // Thin wrapper around @react-native-ml-kit/text-recognition, which runs
 // Google ML Kit's on-device text recognizer on both iOS and Android (see the

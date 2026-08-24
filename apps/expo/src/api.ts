@@ -13,7 +13,7 @@ interface PickedPhoto {
 // ---- LAYER 1 (server) call ----------------------------------------------
 // Sends the photo to backend/app/main.py's /analyze — Google Vision +
 // Claude, token-gated for non-free categories. Callers should try
-// mobile/src/layer0/analyzeOnDevice.ts first (see AnalyzeScreen.tsx's
+// apps/expo/src/layer0/analyzeOnDevice.ts first (see AnalyzeScreen.tsx's
 // resolveAnalysis) and only fall through to this when Layer 0 can't handle
 // the photo itself.
 // Uses expo-file-system's native multipart uploader rather than raw

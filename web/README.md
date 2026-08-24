@@ -12,7 +12,7 @@ npm run dev
 
 ## Deploy to Vercel
 
-This lives inside a monorepo alongside `mobile/` and `backend/`. When importing
+This lives inside a monorepo alongside `apps/expo/` and `backend/`. When importing
 the repo into Vercel, set **Project Settings → General → Root Directory** to
 `web`. Vercel will only build/deploy this folder — `mobile` and `backend` are
 ignored entirely. No other config needed; Next.js is auto-detected.

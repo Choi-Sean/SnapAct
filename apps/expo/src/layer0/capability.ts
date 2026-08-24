@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — device capability detection (mobile/src/layer0/)
+// LAYER 0 — device capability detection (apps/expo/src/layer0/)
 // ============================================================================
 // Google ML Kit's on-device text recognizer (see textRecognition.ts) ships
 // its own bundled models for every script it supports (Latin/Chinese/

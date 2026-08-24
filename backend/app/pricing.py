@@ -7,8 +7,8 @@ before touching /analyze or the mobile capture flow.
 
   LAYER 0 — on-device, free, no tokens, no server round-trip for the
             analysis itself.
-    Lives in mobile/src/layer0/. Google ML Kit's on-device text recognizer
-    runs the OCR on BOTH platforms (mobile/src/layer0/textRecognition.ts,
+    Lives in apps/expo/src/layer0/. Google ML Kit's on-device text recognizer
+    runs the OCR on BOTH platforms (apps/expo/src/layer0/textRecognition.ts,
     via @react-native-ml-kit/text-recognition) — iOS deliberately uses
     ML Kit's iOS SDK here rather than Apple's own Vision framework (a
     session decision: same on-device/free/no-network guarantee, far less
@@ -25,7 +25,7 @@ before touching /analyze or the mobile capture flow.
         failure).
     capability.ts detects whether Layer 0 can run at all on this device/
     build (native module linked? did a call fail at runtime, e.g. no
-    Google Play services on Android?) — mobile/src/AnalyzeScreen.tsx's
+    Google Play services on Android?) — apps/expo/src/AnalyzeScreen.tsx's
     resolveAnalysis() only prompts the Layer 1 fallback alert for a real
     capability gap, never for normal category routing. consent.ts stores
     the "always use Layer 1 without asking" choice — SecureStore only,
@@ -41,7 +41,7 @@ before touching /analyze or the mobile capture flow.
     "LAYER 1" in that file). LAYER0_CATEGORIES below is what decides
     "free even when it lands in Layer 1" vs. "costs LAYER1_TOKEN_COST".
     Layer 1 is the fallback for: devices/builds that can't run Layer 0 at
-    all (mobile/src/layer0/capability.ts), and categories Layer 0 never
+    all (apps/expo/src/layer0/capability.ts), and categories Layer 0 never
     attempts extraction for (business_card/receipt/event_flyer — always
     Claude's job). There's no language-specific OCR gap to route around:
     Google ML Kit's on-device recognizer ships its own model per script

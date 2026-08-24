@@ -1,5 +1,5 @@
 // ============================================================================
-// LAYER 0 — on-device medication field extraction (mobile/src/layer0/)
+// LAYER 0 — on-device medication field extraction (apps/expo/src/layer0/)
 // ============================================================================
 // Regex/keyword based, not an LLM — this is the tradeoff for a medication
 // photo never leaving the device. It will miss things Claude's Layer 1

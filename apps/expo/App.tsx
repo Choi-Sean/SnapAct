@@ -104,6 +104,11 @@ function AppInner() {
     );
   }
 
+  // Demo tab saves (ReviewModal's fixed showcase data, and DemoScreen's
+  // batch demo below) never touch history — only real, logged-in analysis
+  // does (see AnalyzeScreen's auth gate + handleAnalyzeSaved/handleBatchSaved).
+  // The native side effect (Contacts/Calendar/Reminders write) already
+  // happened before onSaved fires, so this just clears the modal and confirms.
   async function handleSaved(info: {
     title: string;
     detail: string;
@@ -120,15 +125,6 @@ function AppInner() {
       return;
     }
 
-    const updated = await addHistoryEntry({
-      type: key,
-      title: info.title,
-      detail: info.detail,
-      savedTo: info.savedTo,
-      fields: info.fields,
-      replay: info.replay,
-    });
-    setHistory(updated);
     Alert.alert(t.review.saveDoneTitle, t.review.saveDoneBodyTemplate.replace('{savedTo}', info.savedTo));
   }
 
@@ -161,6 +157,8 @@ function AppInner() {
     setHistory(updated);
   }
 
+  // Real analyze-tab batch saves — logged-in only (AnalyzeScreen's auth
+  // gate), so these do get written to history.
   async function handleBatchSaved(batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) {
     const updated = await addHistoryEntry({
       type: 'batch',
@@ -176,10 +174,19 @@ function AppInner() {
     );
   }
 
+  // Demo tab's batch demo (canned data, DemoScreen's "batch demo" card) —
+  // never written to history, same as handleSaved above.
+  function handleDemoBatchSaved(batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) {
+    Alert.alert(
+      t.home.batchDoneTitle,
+      t.home.batchDoneBodyTemplate.replace('{n}', String(batch.batchItems.length))
+    );
+  }
+
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="auto" />
-      {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} onBatchSaved={handleBatchSaved} />}
+      {tab === 'demo' && <DemoScreen onDemoPress={setReviewKey} onBatchSaved={handleDemoBatchSaved} />}
       {tab === 'analyze' && (
         <AnalyzeScreen
           history={history}

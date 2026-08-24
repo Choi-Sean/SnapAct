@@ -127,6 +127,8 @@ export interface Dictionary {
     };
     visionGateBlockedTitle: string;
     visionGateBlockedBodyTemplate: string;
+    authGateTitle: string;
+    authGateBody: string;
   };
   history: {
     title: string;
@@ -443,6 +445,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
       visionGateBlockedTitle: 'Blocked on device',
       visionGateBlockedBodyTemplate: 'This photo looks like a sensitive document ({category}, {percent}%) and was not uploaded — nothing was sent to our server.',
+      authGateTitle: 'Sign in to analyze photos',
+      authGateBody: 'Real photo analysis needs an account — sign up or log in to continue. Demos on the other tab work without one.',
     },
     history: {
       title: 'History',
@@ -781,6 +785,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
       visionGateBlockedTitle: '기기에서 차단됨',
       visionGateBlockedBodyTemplate: '이 사진은 민감한 문서로 보여서({category}, {percent}%) 업로드되지 않았어요 — 서버로 아무것도 전송되지 않았습니다.',
+      authGateTitle: '사진 분석은 로그인 후 이용할 수 있어요',
+      authGateBody: '실제 사진 분석은 계정이 필요해요 — 가입하거나 로그인해주세요. 다른 탭의 데모는 로그인 없이도 사용할 수 있어요.',
     },
     history: {
       title: '기록',
@@ -1128,6 +1134,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
       visionGateBlockedTitle: 'Bloqueado en el dispositivo',
       visionGateBlockedBodyTemplate: 'Esta foto parece un documento sensible ({category}, {percent}%) y no se subió — no se envió nada a nuestro servidor.',
+      authGateTitle: 'Inicia sesión para analizar fotos',
+      authGateBody: 'El análisis real de fotos necesita una cuenta — regístrate o inicia sesión para continuar. Las demos de la otra pestaña funcionan sin cuenta.',
     },
     history: {
       title: 'Historial',

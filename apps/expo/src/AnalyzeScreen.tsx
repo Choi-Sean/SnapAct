@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 
 import { analyzePhoto } from './api';
+import { loadSession, Session } from './auth';
+import AuthScreen from './AuthScreen';
 import BatchReviewModal from './BatchReviewModal';
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
@@ -75,8 +77,27 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   const [batchProcessing, setBatchProcessing] = useState<{ done: number; total: number } | null>(null);
   const [batchReview, setBatchReview] = useState<{ uri: string; result: AnalyzeResponse }[] | null>(null);
 
+  // Real photo analysis — on-device or server — now requires an account
+  // (undefined = still checking SecureStore, null = signed out). Demos on
+  // the other tab are unaffected; they never call this screen.
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [authMode, setAuthMode] = useState<'signup' | 'login' | null>(null);
+
+  useEffect(() => {
+    loadSession().then(setSession);
+  }, []);
+
+  // Returns false (and prompts sign-in) if there's no session — call this
+  // before any real analysis entry point, since the sharedPhotos effect
+  // below can trigger one even while the auth-gate screen isn't showing.
+  function requireSession(): boolean {
+    if (session) return true;
+    setAuthMode('signup');
+    return false;
+  }
 
   async function pick(source: 'camera' | 'library') {
+    if (!requireSession()) return;
     const permission =
       source === 'camera'
         ? await ImagePicker.requestCameraPermissionsAsync()
@@ -158,6 +179,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   }
 
   async function pickMultiple() {
+    if (!requireSession()) return;
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permission.status !== 'granted') {
       Alert.alert(t.home.permissionNeededTitle, t.home.permissionNeededBody);
@@ -189,6 +211,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   // core "share -> instant analysis" product requirement.
   async function handleSharedPhotos(assets: SharedAsset[]) {
     if (!assets.length) return;
+    if (!requireSession()) return;
     if (assets.length > 1) {
       await processBatchAssets(assets);
       return;
@@ -217,11 +240,12 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   }
 
   useEffect(() => {
+    if (session === undefined) return; // still checking SecureStore for a session
     if (sharedPhotos && sharedPhotos.length) {
       handleSharedPhotos(sharedPhotos).finally(() => onSharedPhotosHandled?.());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharedPhotos]);
+  }, [sharedPhotos, session]);
 
   function handleBatchSaved(batchItems: BatchSubEntry[]) {
     setBatchReview(null);
@@ -426,6 +450,41 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     }
   }
 
+  if (session === undefined) {
+    return (
+      <View style={styles.authLoading}>
+        <ActivityIndicator color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (session === null) {
+    return (
+      <View style={styles.authGate}>
+        <Text style={styles.authGateEmoji}>🔒</Text>
+        <Text style={styles.authGateTitle}>{t.home.authGateTitle}</Text>
+        <Text style={styles.authGateBody}>{t.home.authGateBody}</Text>
+        <View style={styles.authGateButtons}>
+          <TouchableOpacity style={styles.authGatePrimary} onPress={() => setAuthMode('signup')} activeOpacity={0.8}>
+            <Text style={styles.authGatePrimaryText}>{t.auth.signupButton}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.authGateSecondary} onPress={() => setAuthMode('login')} activeOpacity={0.8}>
+            <Text style={styles.authGateSecondaryText}>{t.auth.loginButton}</Text>
+          </TouchableOpacity>
+        </View>
+        <AuthScreen
+          visible={authMode !== null}
+          initialMode={authMode ?? 'signup'}
+          onClose={() => setAuthMode(null)}
+          onAuthed={(s) => {
+            setSession(s);
+            setAuthMode(null);
+          }}
+        />
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.sectionHeaderRow}>
@@ -566,6 +625,31 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
 }
 
 const styles = StyleSheet.create({
+  authLoading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  authGate: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    padding: 32,
+    gap: 8,
+  },
+  authGateEmoji: { fontSize: 40, marginBottom: 6 },
+  authGateTitle: { fontSize: 19, fontWeight: '800', color: '#111', textAlign: 'center' },
+  authGateBody: { fontSize: 13.5, color: '#777', textAlign: 'center', lineHeight: 19, marginTop: 2 },
+  authGateButtons: { flexDirection: 'row', gap: 10, marginTop: 20, alignSelf: 'stretch' },
+  authGatePrimary: { flex: 1, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  authGatePrimaryText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  authGateSecondary: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  authGateSecondaryText: { color: '#333', fontWeight: '700', fontSize: 14 },
   container: {
     flexGrow: 1,
     backgroundColor: '#fff',

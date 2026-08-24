@@ -17,6 +17,11 @@ import SwiftUI
 
 enum ViewState {
     case loading
+    // No signed-in session found in the shared Keychain item (see
+    // SharedSession.swift) — real analysis (on-device or server) now always
+    // requires an account, same rule as AnalyzeScreen.tsx's auth gate in
+    // the main app. Nothing is analyzed in this state; OCR never even runs.
+    case needsAuth
     case resolvedLayer0(AnalysisResult)
     case loadingLayer1
     case resolvedLayer1(Layer1Response)
@@ -47,6 +52,13 @@ struct ShareResultView: View {
             case .loading:
                 ProgressView(L10n.analyzing).padding(.top, 8)
 
+            case .needsAuth:
+                VStack(spacing: 10) {
+                    Text(L10n.authRequiredTitle).font(.headline)
+                    Text(L10n.authRequiredBody).font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center)
+                    Button(L10n.openAppButton, action: onOpenApp).buttonStyle(.borderedProminent)
+                }
+
             case .resolvedLayer0(let result):
                 layer0Content(result)
 
@@ -74,6 +86,10 @@ struct ShareResultView: View {
         }
         .padding()
         .task {
+            guard loadSharedSession() != nil else {
+                state = .needsAuth
+                return
+            }
             switch await analyzeOnDevice(image, metadata: metadata) {
             case .resolved(let result):
                 state = .resolvedLayer0(result)

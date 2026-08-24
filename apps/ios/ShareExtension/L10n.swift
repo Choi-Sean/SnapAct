@@ -12,6 +12,8 @@ import Foundation
 
 struct L10nStrings {
     let analyzing: String
+    let authRequiredTitle: String
+    let authRequiredBody: String
     let categoryLabel: String
     let saveToReminders: String
     let savedTitle: String
@@ -37,6 +39,8 @@ struct L10nStrings {
 private let table: [String: L10nStrings] = [
     "en": L10nStrings(
         analyzing: "Reading photo…",
+        authRequiredTitle: "Sign in to analyze photos",
+        authRequiredBody: "Real photo analysis needs a Snapsist account. Open the app to sign up or log in, then share again.",
         categoryLabel: "Category",
         saveToReminders: "Save to Reminders",
         savedTitle: "Saved",
@@ -60,6 +64,8 @@ private let table: [String: L10nStrings] = [
     ),
     "ko": L10nStrings(
         analyzing: "사진을 읽는 중…",
+        authRequiredTitle: "사진 분석은 로그인 후 이용할 수 있어요",
+        authRequiredBody: "실제 사진 분석은 Snapsist 계정이 필요해요. 앱을 열어서 가입하거나 로그인한 뒤 다시 공유해주세요.",
         categoryLabel: "카테고리",
         saveToReminders: "미리 알림에 저장",
         savedTitle: "저장 완료",
@@ -83,6 +89,8 @@ private let table: [String: L10nStrings] = [
     ),
     "es": L10nStrings(
         analyzing: "Leyendo la foto…",
+        authRequiredTitle: "Inicia sesión para analizar fotos",
+        authRequiredBody: "El análisis real de fotos necesita una cuenta de Snapsist. Abre la app para registrarte o iniciar sesión, y vuelve a compartir.",
         categoryLabel: "Categoría",
         saveToReminders: "Guardar en Recordatorios",
         savedTitle: "Guardado",

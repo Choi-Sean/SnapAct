@@ -36,6 +36,7 @@ export interface HistoryEntry {
   detail: string | null;
   saved_to: string | null;
   created_at: number;
+  resolved_layer: string | null;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {

@@ -135,6 +135,7 @@ def analyze(
             medication=MedicationPayload(**mock["medication"]) if "medication" in mock else None,
             needs_time_selection=mock.get("needs_time_selection", False),
             summary=mock["summary"],
+            resolved_layer="L5c",
         )
 
     import anthropic
@@ -175,4 +176,5 @@ def analyze(
         needs_time_selection=bool(data.get("needs_time_selection", False)),
         raw_text=data.get("raw_text"),
         summary=data.get("summary"),
+        resolved_layer="L5c",
     )

@@ -26,6 +26,17 @@ const REASON_LABEL: Record<string, { ko: string; en: string }> = {
   analysis: { ko: '분석 사용', en: 'Analysis' },
 };
 
+// Which L0-L5 rung resolved an analysis (backend/app/pricing.py's header
+// has the full map) — same color coding as the app's HistoryScreen badge.
+const LAYER_BADGE_STYLE: Record<string, { color: string; backgroundColor: string; borderColor: string }> = {
+  L0: { color: '#6b7280', backgroundColor: '#6b72801a', borderColor: '#6b728044' },
+  L1: { color: '#7c3aed', backgroundColor: '#7c3aed1a', borderColor: '#7c3aed44' },
+  L2: { color: '#2563eb', backgroundColor: '#2563eb1a', borderColor: '#2563eb44' },
+  L3: { color: '#0d9488', backgroundColor: '#0d94881a', borderColor: '#0d948844' },
+  L5c: { color: '#ea580c', backgroundColor: '#ea580c1a', borderColor: '#ea580c44' },
+  default: { color: '#6b7280', backgroundColor: '#6b72801a', borderColor: '#6b728044' },
+};
+
 export default function DashboardPage() {
   return (
     <Suspense fallback={null}>
@@ -275,9 +286,19 @@ function DashboardContent() {
                     <p className="truncate text-[13.5px] font-bold text-text">{entry.title}</p>
                     <p className="truncate text-[12px] text-muted">{entry.detail || entry.type}</p>
                   </div>
-                  <p className="flex-shrink-0 text-[11.5px] text-muted">
-                    {new Date(entry.created_at * 1000).toLocaleDateString(isKo ? 'ko-KR' : 'en-US')}
-                  </p>
+                  <div className="flex flex-shrink-0 flex-col items-end gap-1">
+                    <p className="text-[11.5px] text-muted">
+                      {new Date(entry.created_at * 1000).toLocaleDateString(isKo ? 'ko-KR' : 'en-US')}
+                    </p>
+                    {entry.resolved_layer && (
+                      <span
+                        className="rounded-md border px-1.5 py-0.5 text-[10px] font-extrabold"
+                        style={LAYER_BADGE_STYLE[entry.resolved_layer] ?? LAYER_BADGE_STYLE.default}
+                      >
+                        {entry.resolved_layer}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

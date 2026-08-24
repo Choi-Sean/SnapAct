@@ -148,6 +148,7 @@ function AppInner() {
     detail: string;
     savedTo: string;
     imageUri?: string;
+    resolvedLayer?: string | null;
   }) {
     const updated = await addHistoryEntry({
       type: info.type,
@@ -155,6 +156,7 @@ function AppInner() {
       detail: info.detail,
       savedTo: info.savedTo,
       imageUri: info.imageUri,
+      resolvedLayer: info.resolvedLayer,
     });
     setHistory(updated);
   }

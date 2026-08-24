@@ -72,6 +72,29 @@ function parseDate(s: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+const LAYER_COLORS: Record<string, string> = {
+  L0: '#6b7280',
+  L1: '#7c3aed',
+  L2: '#2563eb',
+  L3: '#0d9488',
+  L5c: '#ea580c',
+};
+
+function LayerBadge({ layer, h }: { layer?: string | null; h: Dictionary['history'] }) {
+  if (!layer) return null;
+  const color = LAYER_COLORS[layer] ?? '#6b7280';
+  return (
+    <View style={[badgeStyles.badge, { backgroundColor: `${color}1a`, borderColor: `${color}44` }]}>
+      <Text style={[badgeStyles.text, { color }]}>{layer}</Text>
+    </View>
+  );
+}
+
+const badgeStyles = StyleSheet.create({
+  badge: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1.5, alignSelf: 'flex-end', marginTop: 3 },
+  text: { fontSize: 10, fontWeight: '800' },
+});
+
 interface Props {
   entries: HistoryEntry[];
   onClear: () => void;
@@ -215,6 +238,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                     <View style={styles.rowRight}>
                       <Text style={styles.savedTo}>{item.savedTo}</Text>
                       <Text style={styles.time}>{timeAgo(item.createdAt, t.history)}</Text>
+                      <LayerBadge layer={item.resolvedLayer} h={t.history} />
                     </View>
                   </TouchableOpacity>
                 </SwipeableRow>
@@ -258,6 +282,13 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                     <Text style={styles.sheetSubtitle}>
                       {selected.savedTo} · {formatFullDate(selected.createdAt)}
                     </Text>
+                    {selected.resolvedLayer && (
+                      <Text style={styles.sheetLayerNote}>
+                        {fmt(t.history.layerNoteTemplate, {
+                          layer: t.history.layerLabels[selected.resolvedLayer] ?? selected.resolvedLayer,
+                        })}
+                      </Text>
+                    )}
                   </View>
                 </View>
 
@@ -284,6 +315,7 @@ export default function HistoryScreen({ entries, onClear, onDelete }: Props) {
                         </View>
                         <View style={{ alignItems: 'flex-end', gap: 6 }}>
                           <Text style={styles.savedTo}>{item.savedTo}</Text>
+                          <LayerBadge layer={item.resolvedLayer} h={t.history} />
                           {item.replay && (
                             <TouchableOpacity
                               style={styles.miniReplayButton}
@@ -469,6 +501,7 @@ const styles = StyleSheet.create({
   sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   sheetTitle: { fontSize: 18, fontWeight: '800', color: '#111' },
   sheetSubtitle: { fontSize: 12.5, color: '#888', marginTop: 2 },
+  sheetLayerNote: { fontSize: 11, color: '#aaa', marginTop: 3, fontWeight: '600' },
   fieldList: { gap: 0 },
   fieldRow: {
     flexDirection: 'row',

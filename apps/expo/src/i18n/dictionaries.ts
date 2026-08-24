@@ -153,6 +153,8 @@ export interface Dictionary {
     clearFilter: string;
     dateFilterError: string;
     noResultsForFilter: string;
+    layerNoteTemplate: string;
+    layerLabels: Record<string, string>;
   };
   permissions: {
     title: string;
@@ -467,6 +469,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       clearFilter: 'Clear',
       dateFilterError: 'Enter a valid date range (from ≤ to).',
       noResultsForFilter: 'No entries in this period.',
+      layerNoteTemplate: 'Resolved at {layer}',
+      layerLabels: {
+        L0: 'L0 · barcode/EXIF signal',
+        L1: 'L1 · on-device vision gate',
+        L2: 'L2 · on-device text recognition',
+        L3: 'L3 · rule-based extraction',
+        L5c: 'L5c · Claude AI analysis',
+      },
     },
     permissions: {
       title: 'Settings',
@@ -797,6 +807,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       clearFilter: '초기화',
       dateFilterError: '유효한 날짜 범위를 입력해주세요 (시작일 ≤ 종료일).',
       noResultsForFilter: '이 기간에는 기록이 없어요.',
+      layerNoteTemplate: '{layer} 단계에서 처리됨',
+      layerLabels: {
+        L0: 'L0 · 바코드/EXIF 신호',
+        L1: 'L1 · 기기 내 비전 게이트',
+        L2: 'L2 · 기기 내 텍스트 인식',
+        L3: 'L3 · 규칙 기반 추출',
+        L5c: 'L5c · 클로드 AI 분석',
+      },
     },
     permissions: {
       title: '설정',
@@ -1136,6 +1154,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
       clearFilter: 'Borrar',
       dateFilterError: 'Introduce un rango de fechas válido (desde ≤ hasta).',
       noResultsForFilter: 'No hay entradas en este periodo.',
+      layerNoteTemplate: 'Resuelto en {layer}',
+      layerLabels: {
+        L0: 'L0 · señal de código de barras/EXIF',
+        L1: 'L1 · filtro de visión en el dispositivo',
+        L2: 'L2 · reconocimiento de texto en el dispositivo',
+        L3: 'L3 · extracción basada en reglas',
+        L5c: 'L5c · análisis con IA Claude',
+      },
     },
     permissions: {
       title: 'Ajustes',

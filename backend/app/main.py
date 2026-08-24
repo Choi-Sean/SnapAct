@@ -254,6 +254,7 @@ async def analyze(
                 needs_time_selection=has_usable_fields and not medication.specific_times,
                 raw_text=ocr_text,
                 summary=medication.name or "Medication label detected.",
+                resolved_layer="L3",
             )
         else:
             result = AnalyzeResponse(
@@ -267,6 +268,7 @@ async def analyze(
                     if category == "other"
                     else "Document detected — no structured fields extracted in this version."
                 ),
+                resolved_layer="L2",
             )
     else:
         using_claude = claude_analysis.settings.claude_enabled and not force_mock

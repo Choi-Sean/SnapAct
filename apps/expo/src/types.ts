@@ -40,6 +40,10 @@ export interface AnalyzeResponse {
   requires_tokens?: boolean;
   raw_text?: string | null;
   summary?: string | null;
+  // Which rung of the L0-L5 ladder produced this result — "L2" (OCR only),
+  // "L3" (rule-based extraction), "L5c" (Claude). Undefined when nothing
+  // resolved yet (locked/unsupported responses never reach history).
+  resolved_layer?: string | null;
 }
 
 export type DemoKey =
@@ -80,6 +84,7 @@ export interface BatchSubEntry {
   detail: string;
   savedTo: string;
   replay?: ReplaySpec;
+  resolvedLayer?: string | null;
 }
 
 export interface HistoryEntry {
@@ -94,4 +99,8 @@ export interface HistoryEntry {
   batchItems?: BatchSubEntry[];
   imageUri?: string;
   photoCount?: number;
+  // Which L0-L5 rung resolved this entry (see backend/app/pricing.py's
+  // header) — undefined for demo/playground saves, which don't go through
+  // the real pipeline. Batch entries carry it per-item instead (batchItems).
+  resolvedLayer?: string | null;
 }

@@ -54,6 +54,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             detail: result.contact.phone ?? '',
             savedTo: t.permissions.items[2].label,
             replay: { kind: 'business_card', payload: result.contact },
+            resolvedLayer: result.resolved_layer,
           });
         } else if (result.suggested_action === 'calendar' && result.calendar) {
           await saveEventToCalendar(result.calendar);
@@ -64,6 +65,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             detail: result.calendar.location ?? '',
             savedTo: t.permissions.items[3].label,
             replay: { kind: 'event', payload: result.calendar },
+            resolvedLayer: result.resolved_layer,
           });
         } else if (result.suggested_action === 'note') {
           const message = result.summary ?? result.raw_text ?? '';
@@ -75,6 +77,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             detail: result.summary ?? '',
             savedTo: t.review.shareLabel,
             replay: { kind: 'receipt', payload: { message, title: t.batch.noteShareTitle } },
+            resolvedLayer: result.resolved_layer,
           });
         } else {
           batchItems.push({
@@ -83,6 +86,7 @@ export default function BatchReviewModal({ items, onClose, onSaved }: Props) {
             title: t.batch.categoryLabels[result.category],
             detail: result.summary ?? t.batch.noInfoDetail,
             savedTo: t.batch.skippedLabel,
+            resolvedLayer: result.resolved_layer,
           });
         }
       } catch (e) {

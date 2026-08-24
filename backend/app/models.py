@@ -54,3 +54,8 @@ class AnalyzeResponse(BaseModel):
     requires_tokens: bool = False
     raw_text: Optional[str] = None
     summary: Optional[str] = None
+    # Which rung of the L0-L5 ladder actually produced this result (see
+    # pricing.py's header) — "L2" (OCR only, no fields), "L3" (rule-based
+    # extraction), "L5c" (Claude). None when nothing resolved yet (locked/
+    # unsupported-filetype responses).
+    resolved_layer: Optional[str] = None

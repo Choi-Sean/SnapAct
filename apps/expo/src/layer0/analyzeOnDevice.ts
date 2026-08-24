@@ -68,6 +68,7 @@ export async function analyzeOnDevice(uri: string, locale: Locale, metadata?: Ph
       medication: hasUsableFields ? medication : undefined,
       needs_time_selection: hasUsableFields && !medication.specific_times?.length,
       raw_text: rawText,
+      resolved_layer: 'L3',
     };
   }
 
@@ -80,5 +81,6 @@ export async function analyzeOnDevice(uri: string, locale: Locale, metadata?: Ph
     confidence,
     suggested_action: 'none',
     raw_text: rawText,
+    resolved_layer: 'L2',
   };
 }

@@ -47,7 +47,14 @@ export interface SharedAsset {
 interface Props {
   history: HistoryEntry[];
   onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
-  onSaved: (info: { type: DemoKey; title: string; detail: string; savedTo: string; imageUri?: string }) => void;
+  onSaved: (info: {
+    type: DemoKey;
+    title: string;
+    detail: string;
+    savedTo: string;
+    imageUri?: string;
+    resolvedLayer?: string | null;
+  }) => void;
   // Set by App.tsx when the user shared photo(s) into Snapsist from the OS
   // share sheet. AnalyzeScreen consumes it immediately (auto-analyze, no
   // extra taps) and calls onSharedPhotosHandled() to clear it upstream.
@@ -382,6 +389,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           detail: result.contact.phone ?? '',
           savedTo: t.permissions.items[2].label,
           imageUri,
+          resolvedLayer: result.resolved_layer,
         });
       } else if (result.suggested_action === 'calendar' && result.calendar) {
         const calendarPayload = times?.length ? applyTimeToCalendar(result.calendar, times[0]) : result.calendar;
@@ -394,6 +402,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           detail: calendarPayload.location ?? '',
           savedTo: t.permissions.items[3].label,
           imageUri,
+          resolvedLayer: result.resolved_layer,
         });
       } else if (result.suggested_action === 'reminder' && result.medication) {
         const durationDays = result.medication.duration_days ?? 30;
@@ -407,6 +416,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
           detail: result.medication.dosage ?? '',
           savedTo: t.permissions.items[4].label,
           imageUri,
+          resolvedLayer: result.resolved_layer,
         });
       }
     } catch (e) {

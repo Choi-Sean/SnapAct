@@ -1,3 +1,4 @@
+import json
 import re
 import time
 import uuid
@@ -74,6 +75,10 @@ class HistoryEntryOut(BaseModel):
     detail: str | None = None
     saved_to: str | None = None
     created_at: int
+    # Which L0-L5 rung resolved this analysis (see backend/app/pricing.py's
+    # header) — pulled out of FieldsJson, which already carries it via
+    # AnalyzeResponse.resolved_layer (see main.py's _save_history_entry).
+    resolved_layer: str | None = None
 
 
 def _make_token(user_id: str) -> str:
@@ -288,7 +293,7 @@ def list_history(
         cur = conn.cursor(as_dict=True)
         cur.execute(
             """
-            SELECT HistoryEntryId, [Type], Title, Detail, SavedTo, CreateDate
+            SELECT HistoryEntryId, [Type], Title, Detail, SavedTo, FieldsJson, CreateDate
             FROM dbo.HistoryEntries
             WHERE UserId = %s
             ORDER BY CreateDate DESC
@@ -300,6 +305,14 @@ def list_history(
     finally:
         conn.close()
 
+    def _resolved_layer(fields_json: str | None) -> str | None:
+        if not fields_json:
+            return None
+        try:
+            return json.loads(fields_json).get("resolved_layer")
+        except (TypeError, ValueError):
+            return None
+
     # No image_url here on purpose — photos never leave the device now, so
     # the server only ever has the text fields to show, never the picture.
     return [
@@ -310,6 +323,7 @@ def list_history(
             detail=e["Detail"],
             saved_to=e["SavedTo"],
             created_at=e["CreateDate"],
+            resolved_layer=_resolved_layer(e.get("FieldsJson")),
         )
         for e in entries
     ]

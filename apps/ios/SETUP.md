@@ -11,29 +11,26 @@ around the extension's memory ceiling — that's exactly the risk this whole
 split was meant to manage, and it can only be checked on a real device with
 Instruments attached.
 
-## 1. Resolve the expo-share-intent conflict first
+## 1. expo-share-intent conflict — DONE, `disableIOS: true` set in app.json
 
-`apps/expo` already has `expo-share-intent` installed, and its config
-plugin auto-generates its **own** iOS Share Extension target during
+`apps/expo` has `expo-share-intent` installed, and its config plugin used
+to auto-generate its **own** iOS Share Extension target during
 `expo prebuild` (bundle id `com.snapact.app.share-extension` — you can see
-it by name in the EAS build logs from this session). That extension is a
-thin JS-forwarding one: it just captures the shared image and hands it to
-the RN app via the `snapsist://` URL scheme.
+it by name in EAS build logs from earlier in this session, before the fix
+below). That extension is a thin JS-forwarding one: it just captures the
+shared image and hands it to the RN app via the `snapsist://` URL scheme
+— running alongside this hand-written `ShareExtension` target would have
+meant **two share extensions** for the same "Share a photo" action, both
+claiming to be Snapsist.
 
-Adding this hand-written `ShareExtension` target on top, without touching
-that, means **two share extensions** would show up for the same "Share a
-photo" action, both claiming to be Snapsist. Before wiring this into
-Xcode, pick one:
-
-- **Replace it (matches the plan discussed this session):** drop
-  `expo-share-intent`'s iOS piece. If the package doesn't offer an
-  iOS-off/Android-only option, remove the plugin's `iosActivationRules`
-  config (or the whole package, if it turns out to only exist for iOS) and
-  let this native target be the only iOS share extension. Keep
-  `expo-share-intent` for Android — `apps/expo/App.tsx`'s `useShareIntent()`
-  wiring is unaffected on that platform.
-- **Keep both, scope them differently:** unlikely to be worth the
-  confusion of two "Snapsist" entries in one share sheet — not recommended.
+Fixed by passing `disableIOS: true` to the plugin in `apps/expo/app.json`
+(the package's own config-plugin `index.js` supports this directly —
+`params.disableIOS` skips all four iOS `withPlugins` steps, Android is
+untouched). `apps/expo/App.tsx`'s `useShareIntent()` call is unaffected
+on Android; on iOS it'll just never fire (no native module registered
+for it there anymore), which is fine since this native target is now the
+only iOS share path — it deep-links back into the app via the same
+`snapsist://` scheme (`ShareViewController.swift`'s `openMainApp()`).
 
 ## 2. Add the Xcode target
 

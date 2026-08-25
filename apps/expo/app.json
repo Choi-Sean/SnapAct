@@ -92,9 +92,7 @@
       [
         "expo-share-intent",
         {
-          "iosActivationRules": {
-            "NSExtensionActivationSupportsImageWithMaxCount": 10
-          },
+          "disableIOS": true,
           "androidIntentFilters": [
             "image/*"
           ],

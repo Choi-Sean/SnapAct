@@ -9,13 +9,15 @@ class Settings(BaseSettings):
     # L5c only (see claude_analysis.py's header) — the last-resort cloud LLM
     # rung, reached only when cheaper layers can't resolve a photo.
     anthropic_api_key: str = ""
-    # Structured field extraction from a clearly-photographed card/receipt
-    # isn't a task that needs frontier-model reasoning, and Sonnet's extra
-    # latency (3-5s server-side alone, before the phone's own upload time)
-    # was the actual complaint -- Haiku is built for exactly this kind of
-    # fast, cheap, well-defined extraction and should cut that meaningfully.
-    # Override via CLAUDE_MODEL if quality ever needs to trade back up.
-    claude_model: str = "claude-haiku-4-5-20251001"
+    # Tried Haiku 4.5 here for speed (Sonnet's 3-5s server-side latency was a
+    # real complaint), but a direct comparison caught it misreading a date's
+    # year and dropping a receipt date Sonnet would have caught -- not
+    # acceptable now that due dates drive an actual reminder (see
+    # ReceiptPayload.due_date / claude_analysis.py's prompt): a wrong date
+    # there doesn't just look bad, it reminds the user on the wrong day.
+    # Accuracy over latency for this one. Override via CLAUDE_MODEL if that
+    # tradeoff ever needs to flip back.
+    claude_model: str = "claude-sonnet-5"
     api_shared_secret: str = ""
 
     apple_team_id: str = "S8G28N4M49"

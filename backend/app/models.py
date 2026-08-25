@@ -48,6 +48,11 @@ class ReceiptPayload(BaseModel):
     subtotal: Optional[str] = None
     tax: Optional[str] = None
     total: Optional[str] = None
+    # Only set for an invoice/bill that states a payment deadline separate
+    # from the transaction date (e.g. "Due Date: 26/02/2019") -- an ordinary
+    # store receipt has nothing to put here. ISO8601 date, so the client can
+    # offer "set a reminder for this" without its own date parsing.
+    due_date: Optional[str] = None
 
 
 class AnalyzeResponse(BaseModel):

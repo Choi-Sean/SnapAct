@@ -97,7 +97,8 @@ Respond with ONLY a JSON object (no markdown fences, no commentary) matching thi
     "items": [{{"name": str, "price": str}}, ...] | null,
     "subtotal": str|null,
     "tax": str|null,
-    "total": str|null
+    "total": str|null,
+    "due_date": ISO8601|null
   }} | null,
   "medication": {{
     "name": str|null,
@@ -124,7 +125,15 @@ date, line items (name + price each), subtotal, tax, and total you can actually 
 receipt. Leave individual fields (or the whole "items" list) null/empty rather than guessing
 if the photo doesn't show them clearly — a receipt with a torn or blurry item list should
 still have "store"/"date"/"total" filled in even if "items" comes back null. "receipt" stays
-null for non-receipt "note" cases (e.g. a general document). Skip line items that are clearly
+null for non-receipt "note" cases (e.g. a general document).
+
+"date" and "due_date" are different things — don't confuse them. "date" is when the
+transaction/purchase happened. "due_date" is a payment deadline stated separately from that
+(look for a literal "Due Date" / "지불 기한" / "결제 기한" label, or invoice terms like "payment
+due within N days" combined with the invoice date) — this only appears on invoices/bills, not
+ordinary paid-in-full store receipts, so leave it null unless the photo actually states one.
+
+Skip line items that are clearly
 not products (barcodes, product codes, membership/point numbers, card approval numbers) —
 only include actual purchased items with a name and price.
 

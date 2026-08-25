@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
   ScrollView,
   Share,
   StyleSheet,
@@ -25,7 +26,7 @@ import { getLayer0Support } from './layer0/capability';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
 import { runVisionGate } from './layer0/visionGate';
-import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders } from './nativeActions';
+import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders, saveReminder } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import { formatReceiptTable } from './receiptFormat';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
@@ -74,6 +75,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingDueReminder, setSavingDueReminder] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pricingVisible, setPricingVisible] = useState(false);
@@ -418,6 +420,49 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
     return { ...calendar, start_date: base.toISOString(), end_date: end.toISOString() };
   }
 
+  // A receipt is normally just "log/share this purchase" — but an invoice
+  // with a stated payment deadline (receipt.due_date, see
+  // claude_analysis.py's prompt) is also an action item, so this is offered
+  // as an extra button alongside the regular save/share one, not a
+  // replacement for it. iOS gets a real Reminder (EventKit); Android has no
+  // reminders API here, so it becomes a Calendar event instead — same
+  // fallback saveReminder() itself already uses elsewhere in this app.
+  async function handleAddDueDateReminder() {
+    if (!result?.receipt?.due_date || !photo) return;
+    const due = new Date(result.receipt.due_date);
+    if (Number.isNaN(due.getTime())) return;
+    const store = result.receipt.store ?? t.batch.categoryLabels.receipt;
+    const title = fmt(t.home.receiptDueTitleTemplate, { store });
+    const notes = result.receipt.total ? fmt(t.home.receiptDueNotesTemplate, { total: result.receipt.total }) : undefined;
+
+    setSavingDueReminder(true);
+    try {
+      if (Platform.OS === 'ios') {
+        await saveReminder({ title, notes, dueDate: due });
+      } else {
+        await saveEventToCalendar({ title, notes, start_date: due.toISOString(), end_date: due.toISOString() });
+      }
+      Alert.alert(t.home.saveDoneTitle, fmt(t.home.receiptDueDoneBodyTemplate, { date: due.toLocaleDateString() }));
+      const imageUri = await persistImage(photo.uri);
+      onSaved({
+        type: Platform.OS === 'ios' ? 'reminder' : 'event',
+        title,
+        detail: notes ?? '',
+        savedTo: Platform.OS === 'ios' ? t.permissions.items[4].label : t.permissions.items[3].label,
+        imageUri,
+        resolvedLayer: result.resolved_layer,
+        replay:
+          Platform.OS === 'ios'
+            ? { kind: 'reminder', payload: { title, notes, dueDate: due } }
+            : { kind: 'event', payload: { title, notes, start_date: due.toISOString(), end_date: due.toISOString() } },
+      });
+    } catch (e) {
+      Alert.alert(t.home.saveFailTitle, e instanceof Error ? e.message : String(e));
+    } finally {
+      setSavingDueReminder(false);
+    }
+  }
+
   async function handleSave() {
     if (!result) return;
     if (result.needs_time_selection && (result.suggested_action === 'calendar' || result.suggested_action === 'reminder')) {
@@ -682,6 +727,23 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
               )}
             </TouchableOpacity>
           )}
+
+          {result.receipt?.due_date && (
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={handleAddDueDateReminder}
+              disabled={savingDueReminder}
+              activeOpacity={0.85}
+            >
+              {savingDueReminder ? (
+                <ActivityIndicator color="#2563eb" />
+              ) : (
+                <Text style={styles.secondaryButtonText}>
+                  {fmt(t.home.receiptDueButtonTemplate, { date: new Date(result.receipt.due_date).toLocaleDateString() })}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
@@ -748,6 +810,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   primaryButton: { backgroundColor: '#2563eb', flex: undefined },
+  secondaryButton: {
+    backgroundColor: '#fff',
+    flex: undefined,
+    borderWidth: 1.5,
+    borderColor: '#2563eb',
+    marginTop: 8,
+  },
+  secondaryButtonText: { fontWeight: '700', color: '#2563eb', fontSize: 13.5 },
   buttonText: { fontWeight: '700', color: '#222', fontSize: 13.5 },
   multiButton: {
     backgroundColor: '#eef2ff',

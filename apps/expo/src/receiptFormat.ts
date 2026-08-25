@@ -27,5 +27,11 @@ export function formatReceiptTable(receipt: ReceiptPayload, t: Dictionary): stri
     if (receipt.total) lines.push(`${t.home.receiptTotalLabel.padEnd(12, ' ')}${receipt.total}`);
   }
 
+  if (receipt.due_date) {
+    const due = new Date(receipt.due_date);
+    lines.push('');
+    lines.push(`${t.home.receiptDueLabel.padEnd(12, ' ')}${Number.isNaN(due.getTime()) ? receipt.due_date : due.toLocaleDateString()}`);
+  }
+
   return lines.join('\n');
 }

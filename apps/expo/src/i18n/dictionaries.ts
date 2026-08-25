@@ -99,6 +99,11 @@ export interface Dictionary {
     receiptSubtotalLabel: string;
     receiptTaxLabel: string;
     receiptTotalLabel: string;
+    receiptDueLabel: string;
+    receiptDueTitleTemplate: string;
+    receiptDueNotesTemplate: string;
+    receiptDueDoneBodyTemplate: string;
+    receiptDueButtonTemplate: string;
     saveToContacts: string;
     saveToCalendar: string;
     saveToReminder: string;
@@ -430,6 +435,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       receiptSubtotalLabel: 'Subtotal',
       receiptTaxLabel: 'Tax',
       receiptTotalLabel: 'Total',
+      receiptDueLabel: 'Due',
+      receiptDueTitleTemplate: 'Payment due — {store}',
+      receiptDueNotesTemplate: 'Amount due: {total}',
+      receiptDueDoneBodyTemplate: 'Reminder set for {date}.',
+      receiptDueButtonTemplate: 'Remind me on {date}',
       saveToContacts: 'Save to Contacts',
       saveToCalendar: 'Save to Calendar',
       saveToReminder: 'Set Reminders',
@@ -783,6 +793,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       receiptSubtotalLabel: '소계',
       receiptTaxLabel: '세금',
       receiptTotalLabel: '합계',
+      receiptDueLabel: '결제 기한',
+      receiptDueTitleTemplate: '결제 마감 — {store}',
+      receiptDueNotesTemplate: '결제 금액: {total}',
+      receiptDueDoneBodyTemplate: '{date}에 미리 알림을 설정했어요.',
+      receiptDueButtonTemplate: '{date}에 알림 받기',
       saveToContacts: '연락처에 저장',
       saveToCalendar: '캘린더에 저장',
       saveToReminder: '복용 알림 등록',
@@ -1145,6 +1160,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       receiptSubtotalLabel: 'Subtotal',
       receiptTaxLabel: 'Impuesto',
       receiptTotalLabel: 'Total',
+      receiptDueLabel: 'Vencimiento',
+      receiptDueTitleTemplate: 'Pago pendiente — {store}',
+      receiptDueNotesTemplate: 'Importe a pagar: {total}',
+      receiptDueDoneBodyTemplate: 'Recordatorio configurado para el {date}.',
+      receiptDueButtonTemplate: 'Recordarme el {date}',
       saveToContacts: 'Guardar en Contactos',
       saveToCalendar: 'Guardar en Calendario',
       saveToReminder: 'Configurar recordatorios',

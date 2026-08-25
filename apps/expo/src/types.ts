@@ -40,6 +40,9 @@ export interface ReceiptPayload {
   subtotal?: string | null;
   tax?: string | null;
   total?: string | null;
+  // Only set for an invoice/bill with a stated payment deadline separate
+  // from the transaction date — an ordinary store receipt has none. ISO8601.
+  due_date?: string | null;
 }
 
 export interface AnalyzeResponse {

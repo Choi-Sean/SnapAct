@@ -15,18 +15,7 @@ import {
 
 import { useLanguage } from './i18n/LanguageProvider';
 import { Dictionary, t as fmt } from './i18n/dictionaries';
-import {
-  addToWalletDemo,
-  composeMailDemo,
-  openMapsDemo,
-  saveContact,
-  saveEventToCalendar,
-  savePhotoDemo,
-  saveReminder,
-  scheduleNotificationDemo,
-  sendSmsDemo,
-  shareFileDemo,
-} from './nativeActions';
+import { saveContact, saveEventToCalendar, saveReminder } from './nativeActions';
 import { DemoKey, ReplaySpec } from './types';
 
 function formatReceiptTable(d: Dictionary['review']['demo']): string {
@@ -151,57 +140,6 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
           { label: l.completed, value: 'false' },
           { label: l.alarm, value: d.reminderAlarm },
         ];
-      case 'photo':
-        return [
-          { label: l.saveAlbum, value: 'Snapsist' },
-          { label: l.originalFile, value: d.photoOriginalFile },
-          { label: l.usedApi, value: 'Asset.create() · Album.get/create() · album.add()' },
-        ];
-      case 'mail':
-        return [
-          { label: l.recipients, value: 'demo@example.com' },
-          { label: l.cc, value: 'cc@example.com' },
-          { label: l.bcc, value: 'bcc@example.com' },
-          { label: l.subject, value: d.mailSubjectDefault },
-          { label: l.body, value: d.mailBodyFormat },
-          { label: l.attachment, value: 'snapsist-summary.txt' },
-        ];
-      case 'sms':
-        return [
-          { label: l.recipients, value: '+1 123-456-7894, +1 987-654-3210' },
-          { label: l.message, value: d.smsMessageDefault },
-          { label: l.attachment, value: 'snapsist.png (image/png)' },
-        ];
-      case 'maps':
-        return [
-          { label: l.placeName, value: 'Snapsist HQ' },
-          { label: l.coordinates, value: '37.5665, 126.978' },
-          { label: l.route, value: 'iOS → Apple Maps / Android → Google Maps(geo:)' },
-        ];
-      case 'files':
-        return [
-          { label: l.fileName, value: 'snapsist-note.txt' },
-          { label: l.saveLocation, value: d.filesSaveLocation },
-          { label: l.shareOptions, value: 'mimeType=text/plain, UTI=public.plain-text' },
-        ];
-      case 'wallet':
-        return [
-          { label: l.passType, value: 'Generic' },
-          { label: l.organization, value: 'Snapsist' },
-          { label: l.description, value: d.walletDescriptionDefault },
-          { label: l.primaryField, value: 'Name — John Smith' },
-          { label: l.secondaryField, value: 'Title — Product Manager' },
-          { label: l.barcode, value: 'QR — snapsist-demo-pass' },
-          { label: l.color, value: 'bg #2563eb / fg #ffffff' },
-        ];
-      case 'notification':
-        return [
-          { label: l.titleSubtitle, value: fmt(d.notificationTitleTemplate, { text: d.notificationSubtitleDefault }) },
-          { label: l.badgeSound, value: '1 / default' },
-          { label: l.color, value: '#2563eb' },
-          { label: l.importance, value: 'active (interruptionLevel)' },
-          { label: l.trigger, value: d.notificationTriggerDefault },
-        ];
       default:
         return [];
     }
@@ -259,27 +197,6 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
           fields,
           replay: { kind: demoKey, payload, demo: true },
         });
-      } else if (demoKey === 'photo') {
-        const { album } = await savePhotoDemo();
-        onSaved({ title: t.review.titles.photo, detail: fmt(d.photoDetailTemplate, { album }), savedTo: t.permissions.items[1].label, fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'mail') {
-        const status = await composeMailDemo(d.mailSubjectDefault, d.mailBodyContent);
-        onSaved({ title: d.mailSubjectDefault, detail: fmt(d.mailDetailTemplate, { status }), savedTo: t.home.demoButtons.mail.label, fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'sms') {
-        const result = await sendSmsDemo(d.smsMessageDefault);
-        onSaved({ title: d.smsMessageDefault, detail: fmt(d.smsDetailTemplate, { status: result }), savedTo: t.home.demoButtons.sms.label, fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'maps') {
-        await openMapsDemo();
-        onSaved({ title: 'Snapsist HQ', detail: '37.5665, 126.978', savedTo: t.home.demoButtons.maps.label, fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'files') {
-        await shareFileDemo(d.filesContentPrefix, d.filesShareDialogTitle);
-        onSaved({ title: 'snapsist-note.txt', detail: d.filesDetail, savedTo: t.home.demoButtons.files.label, fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'wallet') {
-        await addToWalletDemo(d.walletShareDialogTitle);
-        onSaved({ title: d.walletDescriptionDefault, detail: d.walletDetail, savedTo: 'Wallet', fields, replay: { kind: demoKey, payload: null } });
-      } else if (demoKey === 'notification') {
-        await scheduleNotificationDemo(d.notificationSubtitleDefault, d.notificationBody);
-        onSaved({ title: 'Snapsist', detail: d.notificationDetail, savedTo: t.home.demoButtons.notification.label, fields, replay: { kind: demoKey, payload: null } });
       }
     } catch (e) {
       onSaved({ title: t.review.failTitle, detail: e instanceof Error ? e.message : String(e), savedTo: SAVE_ERROR });
@@ -326,7 +243,6 @@ export default function ReviewModal({ demoKey, onClose, onSaved }: Props) {
               </View>
             )}
             {demoKey === 'receipt' && <Text style={styles.note}>{t.review.receiptNote}</Text>}
-            {demoKey === 'wallet' && <Text style={styles.note}>{t.review.walletNote}</Text>}
           </ScrollView>
 
           <View style={styles.actions}>

@@ -13,28 +13,9 @@ const DEMO_ICONS: Record<DemoKey, EmojiName> = {
   event: 'calendar',
   receipt: 'notes',
   reminder: 'reminders',
-  photo: 'photos',
-  mail: 'mail',
-  sms: 'sms',
-  maps: 'maps',
-  files: 'files',
-  wallet: 'wallet',
-  notification: 'notification',
 };
 
-const DEMO_ORDER: DemoKey[] = [
-  'business_card',
-  'event',
-  'receipt',
-  'reminder',
-  'photo',
-  'mail',
-  'sms',
-  'maps',
-  'files',
-  'wallet',
-  'notification',
-];
+const DEMO_ORDER: DemoKey[] = ['business_card', 'event', 'receipt', 'reminder'];
 
 interface Props {
   onDemoPress: (key: DemoKey) => void;

@@ -28,13 +28,8 @@ const ICONS: Record<HistoryEntry['type'], EmojiName> = {
   event: 'calendar',
   receipt: 'notes',
   reminder: 'reminders',
-  photo: 'photos',
-  mail: 'mail',
-  sms: 'sms',
-  maps: 'maps',
-  files: 'files',
-  wallet: 'wallet',
-  notification: 'notification',
+  document: 'files',
+  other: 'photos',
   batch: 'photos',
 };
 
@@ -73,13 +68,10 @@ function parseDate(s: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-const CATEGORY_TYPES: HistoryEntry['type'][] = [
-  'business_card', 'event', 'receipt', 'reminder', 'photo', 'mail', 'sms', 'maps', 'files', 'wallet', 'notification', 'batch',
-];
+const CATEGORY_TYPES: HistoryEntry['type'][] = ['business_card', 'event', 'receipt', 'reminder', 'document', 'other', 'batch'];
 
 function categoryLabel(type: HistoryEntry['type'], t: Dictionary): string {
-  if (type === 'batch') return t.history.batchLabel;
-  return t.home.demoButtons[type].label;
+  return t.history.categoryLabels[type];
 }
 
 const LAYER_COLORS: Record<string, string> = {

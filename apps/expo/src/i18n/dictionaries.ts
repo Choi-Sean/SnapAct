@@ -1,4 +1,4 @@
-import { Category, DemoKey } from '../types';
+import { Category, DemoKey, HistoryCategory } from '../types';
 
 export type Locale = 'en' | 'ko' | 'es';
 
@@ -175,6 +175,7 @@ export interface Dictionary {
     categoryFilterLabel: string;
     allCategories: string;
     batchLabel: string;
+    categoryLabels: Record<HistoryCategory, string>;
   };
   permissions: {
     title: string;
@@ -207,7 +208,6 @@ export interface Dictionary {
     executeLabel: string;
     shareLabel: string;
     receiptNote: string;
-    walletNote: string;
     cancelButton: string;
     saveDoneTitle: string;
     saveDoneBodyTemplate: string;
@@ -231,27 +231,7 @@ export interface Dictionary {
       receiptTotal: string;
       receiptHeaderTemplate: string;
       receiptTotalLabel: string;
-      photoDetailTemplate: string;
-      photoOriginalFile: string;
       contactNote: string;
-      mailSubjectDefault: string;
-      mailBodyFormat: string;
-      mailBodyContent: string;
-      mailDetailTemplate: string;
-      smsMessageDefault: string;
-      smsDetailTemplate: string;
-      filesSaveLocation: string;
-      filesContentPrefix: string;
-      filesShareDialogTitle: string;
-      filesDetail: string;
-      walletDescriptionDefault: string;
-      walletShareDialogTitle: string;
-      walletDetail: string;
-      notificationTitleTemplate: string;
-      notificationSubtitleDefault: string;
-      notificationBody: string;
-      notificationTriggerDefault: string;
-      notificationDetail: string;
     };
   };
   batch: {
@@ -271,43 +251,17 @@ export interface Dictionary {
   };
 }
 
-const demoKeys = (
-  labels: [string, string][]
-): Record<DemoKey, { label: string; hint: string }> => {
-  const keys: DemoKey[] = [
-    'business_card',
-    'event',
-    'receipt',
-    'reminder',
-    'photo',
-    'mail',
-    'sms',
-    'maps',
-    'files',
-    'wallet',
-    'notification',
-  ];
+const DEMO_KEY_ORDER: DemoKey[] = ['business_card', 'event', 'receipt', 'reminder'];
+
+const demoKeys = (labels: [string, string][]): Record<DemoKey, { label: string; hint: string }> => {
   const out = {} as Record<DemoKey, { label: string; hint: string }>;
-  keys.forEach((k, i) => (out[k] = { label: labels[i][0], hint: labels[i][1] }));
+  DEMO_KEY_ORDER.forEach((k, i) => (out[k] = { label: labels[i][0], hint: labels[i][1] }));
   return out;
 };
 
 const reviewTitles = (titles: string[]): Record<DemoKey, string> => {
-  const keys: DemoKey[] = [
-    'business_card',
-    'event',
-    'receipt',
-    'reminder',
-    'photo',
-    'mail',
-    'sms',
-    'maps',
-    'files',
-    'wallet',
-    'notification',
-  ];
   const out = {} as Record<DemoKey, string>;
-  keys.forEach((k, i) => (out[k] = titles[i]));
+  DEMO_KEY_ORDER.forEach((k, i) => (out[k] = titles[i]));
   return out;
 };
 
@@ -405,13 +359,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Event flyer', 'Save to Calendar'],
         ['Receipt', 'Share to Notes'],
         ['To-do note', 'Save to Reminders'],
-        ['Save photo', 'Auto-save to album'],
-        ['Mail draft', 'Open Mail'],
-        ['SMS draft', 'Open Messages'],
-        ['Location photo', 'Open Maps'],
-        ['Save document', 'Share as file'],
-        ['Pass card', 'Add to Apple Wallet'],
-        ['Schedule alert', 'Notify in 5s'],
       ]),
       batchDemoButton: { label: 'Batch upload demo', hint: '10 photos at once' },
       batchDemoRejectReason: "Couldn't classify — the image is too blurry or has no recognizable text.",
@@ -517,6 +464,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       categoryFilterLabel: 'Category',
       allCategories: 'All categories',
       batchLabel: 'Batch',
+      categoryLabels: {
+        business_card: 'Business card',
+        event: 'Event',
+        receipt: 'Receipt',
+        reminder: 'Reminder',
+        document: 'Document',
+        other: 'Other',
+        batch: 'Batch',
+      },
     },
     permissions: {
       title: 'Settings',
@@ -550,24 +506,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       layer0RevokedBody: 'You\'ll be asked again before each analysis uses server processing.',
     },
     review: {
-      titles: reviewTitles([
-        'Business card → Contacts',
-        'Event → Calendar',
-        'Receipt → Notes',
-        'Reminder → Reminders',
-        'Photo → Gallery',
-        'Mail draft',
-        'SMS draft',
-        'Location → Maps',
-        'Document → Files',
-        'Pass → Apple Wallet',
-        'Schedule alert',
-      ]),
+      titles: reviewTitles(['Business card → Contacts', 'Event → Calendar', 'Receipt → Notes', 'Reminder → Reminders']),
       subtitle: 'These are the exact values that will be written — review, then confirm.',
       executeLabel: 'Save',
       shareLabel: 'Share',
       receiptNote: 'Apple doesn’t provide a public API for Notes, so after this pick "Notes" from the share sheet.',
-      walletNote: 'Fetches a signed .pkpass from the backend. This may fail until the certificate is configured.',
       cancelButton: 'Cancel',
       saveDoneTitle: 'Saved',
       saveDoneBodyTemplate: 'Saved to {savedTo}.',
@@ -599,33 +542,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         recurrence: 'Recurrence',
         startDue: 'Start / Due',
         completed: 'Completed',
-        saveAlbum: 'Album',
-        originalFile: 'Original File',
-        usedApi: 'API Used',
-        recipients: 'To',
-        cc: 'CC',
-        bcc: 'BCC',
-        subject: 'Subject',
-        body: 'Body',
-        attachment: 'Attachment',
-        message: 'Message',
-        placeName: 'Place',
-        coordinates: 'Coordinates',
-        route: 'Route',
-        fileName: 'File Name',
-        saveLocation: 'Save Location',
-        shareOptions: 'Share Options',
-        passType: 'Pass Type',
-        organization: 'Organization',
-        description: 'Description',
-        primaryField: 'Primary Field',
-        secondaryField: 'Secondary Field',
-        barcode: 'Barcode',
-        color: 'Color',
-        titleSubtitle: 'Title / Subtitle',
-        badgeSound: 'Badge / Sound',
-        importance: 'Importance',
-        trigger: 'Trigger',
       },
       demo: {
         eventTitleDefault: 'Snapsist Demo Event',
@@ -645,27 +561,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         receiptTotal: '$8.30',
         receiptHeaderTemplate: '🧾 Receipt ({date})',
         receiptTotalLabel: 'Total',
-        photoDetailTemplate: 'Album: {album}',
-        photoOriginalFile: 'Demo PNG (1×1)',
         contactNote: 'Contact created by the Snapsist demo.',
-        mailSubjectDefault: 'Snapsist demo mail',
-        mailBodyFormat: 'HTML format (isHtml: true)',
-        mailBodyContent: '<b>Snapsist</b> auto-filled this mail draft.',
-        mailDetailTemplate: 'Status: {status}',
-        smsMessageDefault: 'This is a Snapsist demo text message.',
-        smsDetailTemplate: 'Status: {status}',
-        filesSaveLocation: 'Documents directory (Paths.document)',
-        filesContentPrefix: 'Snapsist demo file\nCreated: ',
-        filesShareDialogTitle: 'Save Snapsist file',
-        filesDetail: 'Saved to documents directory',
-        walletDescriptionDefault: 'Snapsist demo pass',
-        walletShareDialogTitle: 'Add to Apple Wallet',
-        walletDetail: 'Apple Wallet share sheet opened',
-        notificationTitleTemplate: 'Snapsist / {text}',
-        notificationSubtitleDefault: 'demo notification',
-        notificationBody: 'This notification is scheduled to arrive in 5 seconds to demonstrate every parameter.',
-        notificationTriggerDefault: 'In 5s (TIME_INTERVAL)',
-        notificationDetail: 'Arriving in 5s',
       },
     },
     batch: {
@@ -763,13 +659,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['이벤트 사진', '캘린더에 저장'],
         ['영수증 사진', '메모로 공유'],
         ['리마인더 사진', '미리 알림에 저장'],
-        ['사진 저장', '앨범에 자동 저장'],
-        ['메일 초안', '메일 앱 열기'],
-        ['문자 초안', '문자 앱 열기'],
-        ['위치 사진', '지도 앱 열기'],
-        ['문서 저장', '파일로 공유'],
-        ['패스 카드', 'Apple Wallet에 추가'],
-        ['알림 예약', '5초 뒤 알림'],
       ]),
       batchDemoButton: { label: '일괄 업로드 데모', hint: '한번에 10장' },
       batchDemoRejectReason: '분류하지 못했어요 — 사진이 흐릿하거나 인식할 수 있는 글자가 없어요.',
@@ -875,6 +764,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       categoryFilterLabel: '카테고리',
       allCategories: '전체 카테고리',
       batchLabel: '일괄 처리',
+      categoryLabels: {
+        business_card: '명함',
+        event: '이벤트',
+        receipt: '영수증',
+        reminder: '리마인더',
+        document: '문서',
+        other: '기타',
+        batch: '일괄 처리',
+      },
     },
     permissions: {
       title: '설정',
@@ -908,24 +806,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       layer0RevokedBody: '앞으로 서버 분석을 사용하기 전에 다시 물어볼게요.',
     },
     review: {
-      titles: reviewTitles([
-        '명함 → 연락처',
-        '이벤트 → 캘린더',
-        '영수증 → 메모',
-        '리마인더 → 미리 알림',
-        '사진 → 갤러리',
-        '메일 초안',
-        '문자 초안',
-        '위치 → 지도',
-        '문서 → 파일',
-        '패스 → Apple Wallet',
-        '알림 예약',
-      ]),
+      titles: reviewTitles(['명함 → 연락처', '이벤트 → 캘린더', '영수증 → 메모', '리마인더 → 미리 알림']),
       subtitle: '아래 파라미터로 실행됩니다 — 확인 후 눌러주세요',
       executeLabel: '실행',
       shareLabel: '공유하기',
       receiptNote: 'Notes 앱은 공식 저장 API가 없어서, 확인 후 공유 시트에서 "메모"를 선택해주세요.',
-      walletNote: '백엔드에서 서명된 .pkpass를 받아 공유 시트로 Wallet에 추가합니다. 인증서가 아직 설정 전이면 오류가 뜰 수 있어요.',
       cancelButton: '취소',
       saveDoneTitle: '완료',
       saveDoneBodyTemplate: '{savedTo}에 저장했어요.',
@@ -957,33 +842,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         recurrence: '반복',
         startDue: '시작 / 마감',
         completed: '완료 여부',
-        saveAlbum: '저장 앨범',
-        originalFile: '원본 파일',
-        usedApi: '사용 API',
-        recipients: '받는사람',
-        cc: '참조(CC)',
-        bcc: '숨은참조(BCC)',
-        subject: '제목',
-        body: '본문',
-        attachment: '첨부파일',
-        message: '메시지',
-        placeName: '장소명',
-        coordinates: '좌표',
-        route: '경로',
-        fileName: '파일명',
-        saveLocation: '저장 위치',
-        shareOptions: '공유 옵션',
-        passType: 'Pass Type',
-        organization: 'Organization',
-        description: 'Description',
-        primaryField: 'Primary Field',
-        secondaryField: 'Secondary Field',
-        barcode: 'Barcode',
-        color: '색상',
-        titleSubtitle: '제목 / 부제',
-        badgeSound: '배지 / 사운드',
-        importance: '중요도',
-        trigger: '트리거',
       },
       demo: {
         eventTitleDefault: 'Snapsist 데모 이벤트',
@@ -1003,27 +861,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         receiptTotal: '8,300원',
         receiptHeaderTemplate: '🧾 영수증 내역 ({date})',
         receiptTotalLabel: '합계',
-        photoDetailTemplate: '앨범: {album}',
-        photoOriginalFile: '데모 PNG (1×1)',
         contactNote: 'Snapsist 데모로 생성된 연락처입니다.',
-        mailSubjectDefault: 'Snapsist 데모 메일',
-        mailBodyFormat: 'HTML 형식 (isHtml: true)',
-        mailBodyContent: '<b>Snapsist</b>에서 자동으로 채운 메일 초안입니다.',
-        mailDetailTemplate: '상태: {status}',
-        smsMessageDefault: 'Snapsist 데모 문자입니다.',
-        smsDetailTemplate: '상태: {status}',
-        filesSaveLocation: '문서 디렉토리 (Paths.document)',
-        filesContentPrefix: 'Snapsist 데모 파일\n생성 시각: ',
-        filesShareDialogTitle: 'Snapsist 파일 저장',
-        filesDetail: '문서 디렉토리에 저장됨',
-        walletDescriptionDefault: 'Snapsist 데모 패스',
-        walletShareDialogTitle: 'Apple Wallet에 추가',
-        walletDetail: 'Apple Wallet 공유 시트 열림',
-        notificationTitleTemplate: 'Snapsist / {text}',
-        notificationSubtitleDefault: '데모 알림',
-        notificationBody: '이 알림은 모든 파라미터를 시연하기 위해 5초 후 도착하도록 예약됐어요.',
-        notificationTriggerDefault: '5초 뒤 (TIME_INTERVAL)',
-        notificationDetail: '5초 뒤 도착 예정',
       },
     },
     batch: {
@@ -1130,13 +968,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ['Cartel de evento', 'Guardar en Calendario'],
         ['Recibo', 'Compartir a Notas'],
         ['Nota de tarea', 'Guardar en Recordatorios'],
-        ['Guardar foto', 'Guardar en el álbum'],
-        ['Borrador de correo', 'Abrir Correo'],
-        ['Borrador de SMS', 'Abrir Mensajes'],
-        ['Foto con ubicación', 'Abrir Mapas'],
-        ['Guardar documento', 'Compartir como archivo'],
-        ['Tarjeta/pase', 'Añadir a Apple Wallet'],
-        ['Programar alerta', 'Notificar en 5s'],
       ]),
       batchDemoButton: { label: 'Demo de carga por lotes', hint: '10 fotos a la vez' },
       batchDemoRejectReason: 'No se pudo clasificar — la imagen está borrosa o no tiene texto reconocible.',
@@ -1242,6 +1073,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
       categoryFilterLabel: 'Categoría',
       allCategories: 'Todas las categorías',
       batchLabel: 'Por lotes',
+      categoryLabels: {
+        business_card: 'Tarjeta de presentación',
+        event: 'Evento',
+        receipt: 'Recibo',
+        reminder: 'Recordatorio',
+        document: 'Documento',
+        other: 'Otro',
+        batch: 'Por lotes',
+      },
     },
     permissions: {
       title: 'Ajustes',
@@ -1275,24 +1115,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       layer0RevokedBody: 'Volveremos a preguntarte antes de cada análisis que use el servidor.',
     },
     review: {
-      titles: reviewTitles([
-        'Tarjeta → Contactos',
-        'Evento → Calendario',
-        'Recibo → Notas',
-        'Recordatorio → Recordatorios',
-        'Foto → Galería',
-        'Borrador de correo',
-        'Borrador de SMS',
-        'Ubicación → Mapas',
-        'Documento → Archivos',
-        'Pase → Apple Wallet',
-        'Programar alerta',
-      ]),
+      titles: reviewTitles(['Tarjeta → Contactos', 'Evento → Calendario', 'Recibo → Notas', 'Recordatorio → Recordatorios']),
       subtitle: 'Se guardarán exactamente estos valores — revisa y confirma.',
       executeLabel: 'Guardar',
       shareLabel: 'Compartir',
       receiptNote: 'Apple no ofrece una API pública para Notas, así que después elige "Notas" en la hoja de compartir.',
-      walletNote: 'Descarga un .pkpass firmado desde el backend. Puede fallar si el certificado aún no está configurado.',
       cancelButton: 'Cancelar',
       saveDoneTitle: 'Guardado',
       saveDoneBodyTemplate: 'Se guardó en {savedTo}.',
@@ -1324,33 +1151,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
         recurrence: 'Repetición',
         startDue: 'Inicio / Vencimiento',
         completed: 'Completado',
-        saveAlbum: 'Álbum',
-        originalFile: 'Archivo original',
-        usedApi: 'API usada',
-        recipients: 'Para',
-        cc: 'CC',
-        bcc: 'CCO',
-        subject: 'Asunto',
-        body: 'Cuerpo',
-        attachment: 'Adjunto',
-        message: 'Mensaje',
-        placeName: 'Lugar',
-        coordinates: 'Coordenadas',
-        route: 'Ruta',
-        fileName: 'Nombre del archivo',
-        saveLocation: 'Ubicación de guardado',
-        shareOptions: 'Opciones para compartir',
-        passType: 'Tipo de pase',
-        organization: 'Organización',
-        description: 'Descripción',
-        primaryField: 'Campo principal',
-        secondaryField: 'Campo secundario',
-        barcode: 'Código de barras',
-        color: 'Color',
-        titleSubtitle: 'Título / Subtítulo',
-        badgeSound: 'Insignia / Sonido',
-        importance: 'Importancia',
-        trigger: 'Disparador',
       },
       demo: {
         eventTitleDefault: 'Evento demo de Snapsist',
@@ -1370,27 +1170,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         receiptTotal: '8,30 €',
         receiptHeaderTemplate: '🧾 Recibo ({date})',
         receiptTotalLabel: 'Total',
-        photoDetailTemplate: 'Álbum: {album}',
-        photoOriginalFile: 'PNG de demo (1×1)',
         contactNote: 'Contacto creado por la demo de Snapsist.',
-        mailSubjectDefault: 'Correo demo de Snapsist',
-        mailBodyFormat: 'Formato HTML (isHtml: true)',
-        mailBodyContent: '<b>Snapsist</b> completó automáticamente este borrador de correo.',
-        mailDetailTemplate: 'Estado: {status}',
-        smsMessageDefault: 'Este es un SMS de demostración de Snapsist.',
-        smsDetailTemplate: 'Estado: {status}',
-        filesSaveLocation: 'Directorio de documentos (Paths.document)',
-        filesContentPrefix: 'Archivo demo de Snapsist\nCreado: ',
-        filesShareDialogTitle: 'Guardar archivo de Snapsist',
-        filesDetail: 'Guardado en el directorio de documentos',
-        walletDescriptionDefault: 'Pase demo de Snapsist',
-        walletShareDialogTitle: 'Añadir a Apple Wallet',
-        walletDetail: 'Se abrió la hoja para compartir de Apple Wallet',
-        notificationTitleTemplate: 'Snapsist / {text}',
-        notificationSubtitleDefault: 'notificación demo',
-        notificationBody: 'Esta notificación está programada para llegar en 5 segundos y demostrar todos los parámetros.',
-        notificationTriggerDefault: 'En 5 s (TIME_INTERVAL)',
-        notificationDetail: 'Llega en 5 s',
       },
     },
     batch: {

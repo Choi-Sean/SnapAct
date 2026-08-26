@@ -30,7 +30,16 @@ import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicatio
 import PricingScreen from './PricingScreen';
 import { formatReceiptTable } from './receiptFormat';
 import TimeConfirmModal, { TimeSelection } from './TimeConfirmModal';
-import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, DemoKey, HistoryEntry, MealRelation, MedicationPayload, ReplaySpec } from './types';
+import { AnalyzeResponse, BatchSubEntry, CalendarPayload, Category, HistoryCategory, HistoryEntry, MealRelation, MedicationPayload, ReplaySpec } from './types';
+
+// Maps a real analysis Category onto the (smaller, UI-facing) HistoryCategory
+// used to file a History entry — event_flyer -> 'event', medication ->
+// 'reminder' to match existing wording, everything else passes through.
+function toHistoryCategory(category: Category): HistoryCategory {
+  if (category === 'event_flyer') return 'event';
+  if (category === 'medication') return 'reminder';
+  return category;
+}
 
 interface Photo {
   uri: string;
@@ -53,7 +62,7 @@ interface Props {
   history: HistoryEntry[];
   onBatchSaved: (batch: { title: string; detail: string; savedTo: string; batchItems: BatchSubEntry[] }) => void;
   onSaved: (info: {
-    type: DemoKey;
+    type: HistoryCategory;
     title: string;
     detail: string;
     savedTo: string;
@@ -344,7 +353,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
   async function logNoActionResult(response: AnalyzeResponse, target: Photo) {
     const imageUri = await persistImage(target.uri);
     onSaved({
-      type: 'photo',
+      type: toHistoryCategory(response.category),
       title: t.batch.categoryLabels[response.category],
       detail: response.summary ?? '',
       savedTo: response.analysis_failed ? t.home.savedToFailed : t.home.savedToNoAction,

@@ -71,18 +71,18 @@ export interface AnalyzeResponse {
   analysis_failed?: boolean;
 }
 
-export type DemoKey =
-  | 'business_card'
-  | 'event'
-  | 'receipt'
-  | 'reminder'
-  | 'photo'
-  | 'mail'
-  | 'sms'
-  | 'maps'
-  | 'files'
-  | 'wallet'
-  | 'notification';
+// Demo tab only — the fixed showcase cards. Trimmed to the 4 categories
+// the real analysis pipeline actually produces a native-save action for
+// (photo/mail/sms/maps/files/wallet/notification were a broader tech
+// showcase, removed to ship a focused 5-category MVP — see HistoryCategory
+// below for the 5th, "document", which has no natural demo action).
+export type DemoKey = 'business_card' | 'event' | 'receipt' | 'reminder';
+
+// Real analysis results only (History entries) — mirrors backend Category
+// (event_flyer -> 'event', medication -> 'reminder' to match existing UI
+// wording) plus 'batch'. Decoupled from DemoKey: demo saves never write to
+// History, so this never needs to include demo-only categories.
+export type HistoryCategory = 'business_card' | 'event' | 'receipt' | 'reminder' | 'document' | 'other' | 'batch';
 
 export interface HistoryField {
   label: string;
@@ -119,7 +119,7 @@ export interface BatchSubEntry {
 
 export interface HistoryEntry {
   id: string;
-  type: DemoKey | 'batch';
+  type: HistoryCategory;
   title: string;
   detail: string;
   savedTo: string;

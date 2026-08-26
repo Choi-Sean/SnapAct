@@ -14,7 +14,7 @@ import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
 import ReviewModal from './src/ReviewModal';
-import { BatchSubEntry, DemoKey, HistoryEntry, ReplaySpec } from './src/types';
+import { BatchSubEntry, DemoKey, HistoryCategory, HistoryEntry, ReplaySpec } from './src/types';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -139,7 +139,7 @@ function AppInner() {
   }
 
   async function handleAnalyzeSaved(info: {
-    type: DemoKey;
+    type: HistoryCategory;
     title: string;
     detail: string;
     savedTo: string;

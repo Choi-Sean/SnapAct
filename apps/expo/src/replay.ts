@@ -1,20 +1,7 @@
 import { Share } from 'react-native';
 
 import { Dictionary } from './i18n/dictionaries';
-import {
-  addToWalletDemo,
-  composeMailDemo,
-  MedicationReminderSlot,
-  openMapsDemo,
-  saveContact,
-  saveEventToCalendar,
-  saveMedicationReminders,
-  savePhotoDemo,
-  saveReminder,
-  scheduleNotificationDemo,
-  sendSmsDemo,
-  shareFileDemo,
-} from './nativeActions';
+import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders, saveReminder } from './nativeActions';
 import { CalendarPayload, ContactPayload, ReplaySpec } from './types';
 
 /** Re-runs a previously saved action with its original payload — no new AI call,
@@ -43,26 +30,5 @@ export async function replayAction(spec: ReplaySpec, t: Dictionary): Promise<voi
       await Share.share({ message, title });
       return;
     }
-    case 'photo':
-      await savePhotoDemo();
-      return;
-    case 'mail':
-      await composeMailDemo(d.mailSubjectDefault, d.mailBodyContent);
-      return;
-    case 'sms':
-      await sendSmsDemo(d.smsMessageDefault);
-      return;
-    case 'maps':
-      await openMapsDemo();
-      return;
-    case 'files':
-      await shareFileDemo(d.filesContentPrefix, d.filesShareDialogTitle);
-      return;
-    case 'wallet':
-      await addToWalletDemo(d.walletShareDialogTitle);
-      return;
-    case 'notification':
-      await scheduleNotificationDemo(d.notificationSubtitleDefault, d.notificationBody);
-      return;
   }
 }

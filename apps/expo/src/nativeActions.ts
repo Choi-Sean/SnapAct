@@ -1,14 +1,7 @@
 import * as Calendar from 'expo-calendar';
 import * as Contacts from 'expo-contacts';
-import { File, Paths } from 'expo-file-system';
-import * as MailComposer from 'expo-mail-composer';
-import * as MediaLibrary from 'expo-media-library';
-import * as Notifications from 'expo-notifications';
-import * as Sharing from 'expo-sharing';
-import * as SMS from 'expo-sms';
-import { Linking, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
-import { API_BASE_URL, API_KEY } from './config';
 import { CalendarPayload, ContactPayload } from './types';
 
 export interface MedicationReminderSlot {
@@ -19,13 +12,6 @@ export interface MedicationReminderSlot {
   title: string;
   notes?: string;
 }
-
-// A tiny 1x1 PNG, embedded so the photo-save demo doesn't need a real captured photo.
-const DEMO_PNG_BYTES = new Uint8Array([
-  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0, 0,
-  0, 181, 28, 12, 2, 0, 0, 0, 11, 73, 68, 65, 84, 120, 218, 99, 100, 248, 15, 0, 1, 5, 1, 1, 39, 24,
-  227, 102, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
-]);
 
 async function getWritableCalendar(entityType: Calendar.EntityTypes): Promise<Calendar.ExpoCalendar> {
   if (entityType === Calendar.EntityTypes.REMINDER) {
@@ -243,164 +229,4 @@ export async function saveMedicationReminders(slots: MedicationReminderSlot[], d
     }
   }
   return ids;
-}
-
-// ---- Photos: saves a demo image into a "Snapsist" album ----
-export async function savePhotoDemo(): Promise<{ assetId: string; album: string }> {
-  const { status } = await MediaLibrary.requestPermissionsAsync();
-  if (status !== 'granted') throw new Error('Photo library permission denied.');
-
-  const file = new File(Paths.cache, 'snapsist-demo.png');
-  if (file.exists) file.delete();
-  file.create();
-  file.write(DEMO_PNG_BYTES);
-
-  const asset = await MediaLibrary.Asset.create(file.uri);
-  let album = await MediaLibrary.Album.get('Snapsist');
-  if (!album) {
-    album = await MediaLibrary.Album.create('Snapsist', [asset]);
-  } else {
-    await album.add(asset);
-  }
-
-  return { assetId: asset.id, album: await album.getTitle() };
-}
-
-// ---- Mail: opens a prefilled mail compose screen with an attachment ----
-export async function composeMailDemo(subject: string, body: string): Promise<string> {
-  const available = await MailComposer.isAvailableAsync();
-  if (!available) throw new Error('이 기기에는 사용 가능한 메일 앱이 없어요.');
-
-  const file = new File(Paths.cache, 'snapsist-summary.txt');
-  if (file.exists) file.delete();
-  file.create();
-  file.write('Snapsist 데모 첨부파일입니다.');
-
-  const result = await MailComposer.composeAsync({
-    recipients: ['demo@example.com'],
-    ccRecipients: ['cc@example.com'],
-    bccRecipients: ['bcc@example.com'],
-    subject,
-    body,
-    isHtml: true,
-    attachments: [file.uri],
-  });
-  return result.status;
-}
-
-// ---- SMS: opens a prefilled SMS compose screen with an attachment ----
-export async function sendSmsDemo(message: string): Promise<string> {
-  const available = await SMS.isAvailableAsync();
-  if (!available) throw new Error('이 기기에서는 문자 보내기를 사용할 수 없어요.');
-
-  const file = new File(Paths.cache, 'snapsist-sms-attachment.png');
-  if (file.exists) file.delete();
-  file.create();
-  file.write(DEMO_PNG_BYTES);
-
-  const { result } = await SMS.sendSMSAsync(['+1 123-456-7894', '+1 987-654-3210'], message, {
-    attachments: { uri: file.uri, mimeType: 'image/png', filename: 'snapsist.png' },
-  });
-  return result;
-}
-
-// ---- Maps: opens the platform map app with a query + coordinates ----
-export async function openMapsDemo(): Promise<void> {
-  const label = 'Snapsist HQ';
-  const lat = 37.5665;
-  const lng = 126.978;
-  const url =
-    Platform.OS === 'ios'
-      ? `https://maps.apple.com/?q=${encodeURIComponent(label)}&ll=${lat},${lng}`
-      : `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(label)})`;
-  await Linking.openURL(url);
-}
-
-// ---- Files: writes a text file and opens the share sheet (Save to Files) ----
-export async function shareFileDemo(contentPrefix: string, dialogTitle: string): Promise<string> {
-  const file = new File(Paths.document, 'snapsist-note.txt');
-  if (file.exists) file.delete();
-  file.create();
-  file.write(contentPrefix + new Date().toLocaleString());
-
-  const available = await Sharing.isAvailableAsync();
-  if (!available) throw new Error('이 기기에서는 공유 기능을 사용할 수 없어요.');
-
-  await Sharing.shareAsync(file.uri, {
-    mimeType: 'text/plain',
-    UTI: 'public.plain-text',
-    dialogTitle,
-  });
-  return file.uri;
-}
-
-// ---- Apple Wallet: downloads a signed .pkpass from the backend and offers to add it ----
-export async function addToWalletDemo(dialogTitle: string): Promise<void> {
-  if (Platform.OS !== 'ios') throw new Error('Apple Wallet은 iOS에서만 지원돼요.');
-
-  const response = await fetch(`${API_BASE_URL}/wallet/demo-pass`, {
-    headers: { 'X-API-Key': API_KEY },
-  });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`패스 생성 실패 (${response.status}): ${detail}`);
-  }
-
-  const base64 = await response.text();
-  const file = new File(Paths.cache, 'snapsist-demo.pkpass');
-  if (file.exists) file.delete();
-  file.create();
-  file.write(Uint8Array.from(atobPolyfill(base64), (c) => c.charCodeAt(0)));
-
-  const available = await Sharing.isAvailableAsync();
-  if (!available) throw new Error('이 기기에서는 공유 기능을 사용할 수 없어요.');
-
-  await Sharing.shareAsync(file.uri, {
-    mimeType: 'application/vnd.apple.pkpass',
-    UTI: 'com.apple.pkpass',
-    dialogTitle,
-  });
-}
-
-// React Native's JS engine doesn't always expose global atob(); this is a minimal
-// dependency-free base64 decoder used only for the wallet demo response.
-function atobPolyfill(base64: string): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let str = base64.replace(/[^A-Za-z0-9+/]/g, '');
-  let output = '';
-  for (let i = 0; i < str.length; i += 4) {
-    const e1 = chars.indexOf(str[i]);
-    const e2 = chars.indexOf(str[i + 1]);
-    const e3 = chars.indexOf(str[i + 2]);
-    const e4 = chars.indexOf(str[i + 3]);
-    const c1 = (e1 << 2) | (e2 >> 4);
-    const c2 = ((e2 & 15) << 4) | (e3 >> 2);
-    const c3 = ((e3 & 3) << 6) | e4;
-    output += String.fromCharCode(c1);
-    if (e3 !== -1) output += String.fromCharCode(c2);
-    if (e4 !== -1) output += String.fromCharCode(c3);
-  }
-  return output;
-}
-
-// ---- Local notification: schedules a notification using most content fields ----
-export async function scheduleNotificationDemo(subtitle: string, body: string): Promise<string> {
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== 'granted') throw new Error('알림 권한이 거부되었어요.');
-
-  return Notifications.scheduleNotificationAsync({
-    content: {
-      title: 'Snapsist',
-      subtitle,
-      body,
-      data: { source: 'snapsist-demo', screen: 'home' },
-      badge: 1,
-      sound: 'default',
-      color: '#2563eb',
-      autoDismiss: true,
-      sticky: false,
-      interruptionLevel: 'active',
-    },
-    trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 5 },
-  });
 }

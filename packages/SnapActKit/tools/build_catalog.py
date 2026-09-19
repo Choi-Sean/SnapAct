@@ -35,6 +35,7 @@ XLSX = REPO / "docs/SnapAct_클래스별액션_검토.xlsx"
 RESOURCES = REPO / "packages/SnapActKit/Sources/SnapActKit/Resources"
 OUT_JSON = RESOURCES / "actions.json"
 UNMAPPED_CSV = Path(__file__).resolve().parent / "unmapped.csv"
+ALIASES = Path(__file__).resolve().parent / "verb_aliases.json"
 
 SCHEMA_VERSION = 1
 
@@ -53,8 +54,16 @@ UNIVERSAL_VERBS = ["save_note", "create_reminder", "copy_text", "search", "trans
 
 # Display text -> verb, inside parentheses. Trailing qualifiers are ignored:
 # "(create_reminder, 기한 3일 전)" and "(create_event 다중)" both yield the verb.
-VERB_IN_PARENS = re.compile(r"\(([a-z_][a-z0-9_]*)\b[^)]*\)")
-SECONDARY_SPLIT = re.compile(r"\s*·\s*")
+VERB_IN_PARENS = re.compile(r"\(([^)]*)\)")
+# Inside the parentheses: one verb, or several joined by "+" —
+# "(create_event + create_reminder)". A trailing qualifier is ignored:
+# "(create_reminder, 기한 3일 전)" and "(create_event 다중)" both yield the verb.
+VERB_TOKEN = re.compile(r"\b([a-z_][a-z0-9_]*)\b")
+# "·" separates a 부 액션 list only when it has whitespace around it. Without
+# whitespace it is a conjunction inside one label — "서점·도서관 검색" is one
+# action, not "서점" plus "도서관 검색". 59 separators vs 1 conjunction in the
+# current sheet, and splitting the conjunction produced a phantom "서점".
+SECONDARY_SPLIT = re.compile(r"\s+·\s*|\s*·\s+")
 
 CONFIRMATION = {"자동": "auto", "되돌림 가능": "reversible", "명시적 확인": "explicit"}
 
@@ -77,6 +86,31 @@ CONFIRMATION = {"자동": "auto", "되돌림 가능": "reversible", "명시적 �
 # caption verb in this catalog — inventing one would produce a button that
 # cannot work. The substitute is save_note into our own store, linked to the
 # asset by PHAsset.localIdentifier, which survives and is searchable.
+# Two verbs the spreadsheet's 액션어휘 sheet does not carry, added by review:
+#
+# `call` — the sheet has no phone verb at all, and open_url with a tel: URL is
+# the wrong home for it: placing a call is not reversible, so it needs its own
+# confirmation level rather than inheriting open_url's "자동".
+#
+# `show_detail` — several 부 액션 cells ("세탁법 설명 표시", "추이 그래프",
+# "성분 표시") call no OS API; they render a panel inside the app. Giving them
+# an honest verb keeps them rankable and loggable instead of pretending they
+# are OS actions or dropping them silently.
+REVIEW_VERBS = {
+    "call": {
+        "api": "UIApplication (tel:)",
+        "confirmation": "explicit",
+        "undoable": False,
+        "note": "전화는 되돌릴 수 없으므로 open_url 과 확인 등급이 다르다.",
+    },
+    "show_detail": {
+        "api": "앱 내 렌더",
+        "confirmation": "auto",
+        "undoable": False,
+        "note": "OS 호출 없음. 결과 화면에 패널로 표시한다.",
+    },
+}
+
 ALBUM_CLASSES = ["book_cover", "receipt", "nutrition_label"]
 ADD_TO_ALBUM = {
     "verb": "add_to_album",
@@ -116,6 +150,23 @@ CHAT_SECONDARY = ["save_note", "create_reminder"]
 NO_RAW_RETENTION = ["chat_screenshot"]
 
 
+def load_aliases() -> tuple[dict[str, list[str]], dict[str, dict]]:
+    """Display text -> verbs, reviewed and approved by a human.
+
+    Exact strings, not patterns. Patterns looked attractive (12 rules covered
+    85 of 111 cells) but got at least four wrong: they read "캘린더 일정 + 사전
+    알림" as create_reminder alone, "개별 항목 선택 추가" as save_note when it
+    adds calendar events, and "잔액 조회 링크" as search when it opens a URL.
+    An exact table fails loudly on anything new instead of quietly mismapping
+    it, which is the failure mode worth having here.
+    """
+    if not ALIASES.is_file():
+        return {}, {}
+    data = json.loads(ALIASES.read_text(encoding="utf-8"))
+    approved = {k: list(v) for k, v in data.get("approved", {}).items()}
+    return approved, data.get("open", {})
+
+
 def _cell(row, i):
     return str(row[i]).strip() if i < len(row) and row[i] is not None else ""
 
@@ -135,7 +186,7 @@ def load_verbs(wb) -> dict:
     return verbs
 
 
-def extract(text: str, whitelist: set[str], *, split: bool) -> tuple[list[dict], list[str]]:
+def extract(text: str, whitelist: set[str], aliases: dict[str, list[str]], *, split: bool) -> tuple[list[dict], list[str]]:
     """Returns (mapped, unmapped_display_text) for one cell.
 
     `split` only for 부 액션, which is a "·"-separated list. A 주 액션 cell is
@@ -146,25 +197,37 @@ def extract(text: str, whitelist: set[str], *, split: bool) -> tuple[list[dict],
     mapped, unmapped = [], []
     parts = SECONDARY_SPLIT.split(text) if split else ([text] if text.strip() else [])
     for part in (p for p in parts if p.strip()):
-        found = [v for v in VERB_IN_PARENS.findall(part) if v in whitelist]
+        part = part.strip()
+        found: list[str] = []
+        for inner in VERB_IN_PARENS.findall(part):
+            found += [t for t in VERB_TOKEN.findall(inner) if t in whitelist]
+
         if found:
             display = VERB_IN_PARENS.sub("", part).strip(" ·")
-            for v in found:
-                mapped.append({"verb": v, "display": display or part.strip()})
+            for v in dict.fromkeys(found):
+                mapped.append({"verb": v, "display": display or part})
+            continue
+
+        # No verb in the cell. An approved alias resolves the display text;
+        # anything else is reported, never guessed.
+        alias = aliases.get(part)
+        if alias:
+            for v in alias:
+                mapped.append({"verb": v, "display": part})
         else:
-            unmapped.append(part.strip())
+            unmapped.append(part)
     return mapped, unmapped
 
 
-def load_classes(wb, whitelist: set[str]) -> tuple[dict, list[dict]]:
+def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tuple[dict, list[dict]]:
     classes, unmapped_report = {}, []
     for row in list(wb["클래스별액션"].iter_rows(values_only=True))[1:]:
         name = _cell(row, 1)
         if not name:
             continue
 
-        primary, un_primary = extract(_cell(row, 8), whitelist, split=False)
-        secondary, un_secondary = extract(_cell(row, 9), whitelist, split=True)
+        primary, un_primary = extract(_cell(row, 8), whitelist, aliases, split=False)
+        secondary, un_secondary = extract(_cell(row, 9), whitelist, aliases, split=True)
 
         for slot, items in (("primary", un_primary), ("secondary", un_secondary)):
             for display in items:
@@ -322,7 +385,20 @@ def validate(classes: dict, verbs: dict, blocking: dict) -> list[str]:
     overlap = set(classes) & set(blocking)
     if overlap:
         errors.append(f"서비스 클래스와 차단 클래스가 겹침: {sorted(overlap)}")
-    # A Tier 0 class must never carry an outbound verb.
+    # A Tier 0 class must never carry a verb that sends its content somewhere
+    # we cannot see. The set is about NETWORK egress, which is what privacy.md
+    # forbids, not about every handoff to the OS:
+    #
+    #   search / open_url         — puts extracted text into a remote query
+    #   compose_message           — hands content to a message we do not control
+    #   export_via_share_sheet    — arbitrary destination, including cloud apps
+    #
+    # Deliberately NOT here, both sanctioned by the source docs:
+    #   call       — appointment_slip's "전화 걸기". A dialer handoff, and the
+    #                verb's confirmation level is already explicit.
+    #   export_file— device_display's "CSV 내보내기(진료용)". ios-platform.md
+    #                lists CSV export as the required fallback for Health data,
+    #                so a Tier 0 class exporting a local file is the design.
     outbound = {"compose_message", "export_via_share_sheet", "open_url", "search"}
     for name, c in classes.items():
         if c["tier"] == 0:
@@ -358,8 +434,10 @@ def main() -> int:
     warnings: list[str] = []
     wb = openpyxl.load_workbook(XLSX, data_only=True)
 
+    aliases, open_items = load_aliases()
     verbs = load_verbs(wb)
-    classes, unmapped = load_classes(wb, set(verbs))
+    verbs.update(REVIEW_VERBS)
+    classes, unmapped = load_classes(wb, set(verbs), aliases)
     blocking = load_blocking(wb)
     signals = load_signals(wb)
     apply_review_adjustments(classes, verbs, warnings.append)
@@ -412,17 +490,30 @@ def main() -> int:
                         encoding="utf-8")
     unmapped_rows = sum(len(c["unmapped"]) for c in classes.values())
     with UNMAPPED_CSV.open("w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=["class", "slot", "display", "verb"])
+        w = csv.DictWriter(
+            fh, fieldnames=["class", "priority", "slot", "display", "status", "proposed", "note"]
+        )
         w.writeheader()
         # Written from the adjusted classes, not the raw parse, so a slot the
         # review already settled does not reappear as work to do.
         for name, c in classes.items():
             for u in c["unmapped"]:
-                w.writerow({"class": name, "slot": u["slot"], "display": u["display"], "verb": ""})
+                o = open_items.get(u["display"], {})
+                w.writerow({
+                    "class": name,
+                    "priority": c["priority"],
+                    "slot": u["slot"],
+                    "display": u["display"],
+                    "status": "open",
+                    "proposed": " | ".join(o.get("proposed", [])),
+                    "note": o.get("note", ""),
+                })
 
     print(f"\n생성: {OUT_JSON.relative_to(REPO)}  ({OUT_JSON.stat().st_size // 1024} KB)")
-    print(f"미매핑 리포트: {UNMAPPED_CSV.relative_to(REPO)}  ({unmapped_rows}행)")
-    print("  verb 열을 채우고 엑셀에 반영한 뒤 다시 생성하세요. 추측해서 채우지 않았습니다.")
+    print(f"미매핑 리포트: {UNMAPPED_CSV.relative_to(REPO)}  ({unmapped_rows}행, 고유 "
+          f"{len({u['display'] for c in classes.values() for u in c['unmapped']})}개)")
+    print(f"  승인된 별칭 {len(aliases)}개 적용됨 ({ALIASES.name})")
+    print("  남은 항목은 proposed 열에 선택지가 있습니다. 결정하면 별칭 파일에 옮기세요.")
     return 0
 
 

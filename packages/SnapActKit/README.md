@@ -44,6 +44,27 @@ make run       # 디버그 화면 (macOS 창)
 각 디렉터리의 `_*Area.swift` 는 "여기에 무엇이 들어오는가"를 적어둔 자리표시자이며,
 해당 단계에서 실제 코드로 대체됩니다.
 
+## 카탈로그 읽기
+
+```swift
+let catalog = try ActionCatalog.load()          // 번들에서, 검증 포함
+let card = catalog[CategoryID("business_card")]
+card?.primary.first?.verb                       // VerbID("create_contact")
+catalog.categories(inGroup: "health")           // 3개, tier 는 0/1/2 그대로
+```
+
+`VerbID` 와 `CategoryID` 는 **enum 이 아니라 문자열 래퍼**입니다. enum 으로 만들면
+액션 목록이 Swift 안으로 들어와서, 엑셀에 동사를 추가하고 이 파일을 고치지 않는
+순간 스프레드시트가 진실의 출처이길 멈춥니다. 래퍼는 시그니처 검사만 얻고
+(카테고리를 동사 자리에 넘기면 컴파일 에러), 유효한 값의 집합은 여전히
+`actions.json` 에서 오며 로드 시 검증됩니다.
+
+반면 `Tier` · `Priority` · `Confirmation` 같은 것은 enum 입니다. 이건 **스키마**이지
+카탈로그 내용이 아닙니다 — 파일 형식 자체가 정의하는 닫힌 문법입니다.
+
+`validate()` 는 첫 위반에서 던지지 않고 **전부 모아서** 보고합니다. 생성 파일이라
+한 번의 재생성으로 다 고치는데, 하나씩 알려주면 실수 개수만큼 왕복하게 됩니다.
+
 ## 모델 자산
 
 이미지 인코더는 `mobileclip_s0_image.mlpackage` (22MB) 입니다. 실측 규격:

@@ -33,3 +33,8 @@ Thumbs.db
 # Swift / SPM
 packages/*/.build/
 packages/*/.swiftpm/
+
+# Python — 프로젝트 공용 환경 (리포 루트). 재생성: make setup
+.venv/
+__pycache__/
+*.py[cod]

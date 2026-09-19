@@ -77,9 +77,13 @@ train/eval/export 세 곳에 목록을 복사해두면 언젠가 하나만 바�
 ## 설치
 
 ```bash
-cd training
-make setup          # python3.12 venv + 의존성
+make setup          # 리포 루트에서. 루트 .venv 에 전체 설치
 ```
+
+인터프리터는 **리포 루트의 공용 `.venv`** 하나입니다 (`training/.venv` 가 아닙니다).
+루트에 두면 에디터·IDE 가 자동으로 잡고, 카탈로그 생성 도구와 학습 코드가 같은
+환경을 공유합니다. 의존성 정의는 여전히 `training/requirements.txt` 이고, 루트
+`requirements.txt` 가 그것을 `-r` 로 합칩니다.
 
 Python 3.12 를 씁니다 — 시스템 python 3.14 에는 coremltools 휠이 없습니다.
 

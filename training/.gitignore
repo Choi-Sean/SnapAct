@@ -19,5 +19,8 @@ runs/
 
 __pycache__/
 *.py[cod]
+
+# venv 는 이제 리포 루트의 공용 .venv 하나뿐입니다 (루트 Makefile 의 make setup).
+# 아래 두 줄은 예전 training/.venv 가 남아 있는 체크아웃을 위해 유지합니다.
 .venv/
 venv/

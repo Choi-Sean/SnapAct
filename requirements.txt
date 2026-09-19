@@ -1,0 +1,15 @@
+# SnapAct — 프로젝트 공용 Python 환경 (루트 .venv)
+#
+# 각 영역이 자기 의존성을 선언하고, 이 파일은 그것들을 합치기만 합니다.
+# 영역 하나만 따로 설치하고 싶으면 해당 파일을 직접 -r 하세요.
+#
+#   make setup           루트 .venv 에 아래 전부 설치
+#   pip install -r packages/SnapActKit/tools/requirements.txt   카탈로그 도구만
+#
+# 여기에 backend/requirements.txt 는 포함하지 않습니다. 배포되는 서비스의
+# 런타임 의존성이고 (pymssql 은 FreeTDS 같은 시스템 라이브러리까지 요구해서
+# 로컬 설치가 실패하곤 합니다), 모델 작업 환경과 수명주기가 다릅니다.
+# backend 는 backend/venv 를 그대로 씁니다.
+
+-r training/requirements.txt
+-r packages/SnapActKit/tools/requirements.txt

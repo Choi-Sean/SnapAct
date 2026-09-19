@@ -1,0 +1,23 @@
+# 이미지 데이터는 커밋하지 않습니다.
+# 실제 신분증/카드/의료/금융 이미지가 리포에 들어가는 일이 없도록
+# 디렉터리 단위로 제외합니다. (data/ 로 쓰면 하위 README 재포함이
+# 불가능하므로 data/* 형태를 씁니다 — git은 제외된 디렉터리 내부로
+# 내려가지 않습니다.)
+data/*
+!data/README.md
+
+# 학습 산출물 — 체크포인트는 크고 재생성 가능하므로 커밋하지 않습니다.
+runs/
+*.pt
+*.pth
+*.ckpt
+
+# export/ 는 제외하지 않습니다. 최종 .mlpackage / 가중치 JSON은 파트너에게
+# 넘기는 산출물이므로 커밋합니다 (spikes/s3-l1-vision-classifier가
+# L1Classifier.mlmodel을 커밋한 것과 동일한 이유).
+*.mlmodelc
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/

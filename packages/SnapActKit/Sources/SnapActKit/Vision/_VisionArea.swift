@@ -1,9 +1,20 @@
-// Vision/ — image embedding extraction (step 5).
+// Vision/ — CLIP embedding, prefilter, structural signals (steps 6-7).
 //
-// VNGenerateImageFeaturePrintRequest, downsampled to 512px on the long edge.
-// The embedding is written to the interaction log and is NOT used for this
-// session's routing decision: it is training data for the eventual own-head
-// router, and a period where we did not collect it is a period lost for good.
+// Pipeline order here is deliberate and measured, not stylistic:
 //
-// VNImageRequestHandler.perform(_:) is synchronous — never call it on the
-// main queue (docs/future-plan/rules/ios-platform.md).
+//   VNClassifyImageRequest prefilter  — food/animal/scenery/person short-
+//     circuits to unknown without paying for CLIP at all
+//   CGImageSourceCreateThumbnailAtIndex — never a full-resolution decode; in
+//     a Share Extension that hits the memory cap and dies silently
+//     (docs/future-plan/rules/ios-platform.md)
+//   256x256 CVPixelBuffer -> mobileclip_s0_image -> final_emb_1 [1, 512]
+//   L2 normalise -> cosine against class_embeddings.json
+//   structural-signal reweighting -> category
+//
+// Do NOT normalise pixel values in Swift. The .mlpackage input is an
+// imageType and the scaling is inside the graph — verified: the first op
+// after `image` is a multiply by 0.00392156886 (= 1/255). Doing it again
+// raises no error and silently degrades accuracy, which is close to
+// undiagnosable after the fact.
+//
+// VNImageRequestHandler.perform(_:) is synchronous — never on the main queue.

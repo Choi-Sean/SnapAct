@@ -7,11 +7,12 @@
 DEVELOPER_DIR := /Applications/Xcode.app/Contents/Developer
 SWIFT := DEVELOPER_DIR=$(DEVELOPER_DIR) /usr/bin/xcrun swift
 
-.PHONY: help build test clean doctor
+.PHONY: help build test run clean doctor
 
 help:
 	@echo "make build    패키지 빌드 (호스트 macOS)"
 	@echo "make test     테스트 실행"
+	@echo "make run      디버그 화면 실행 (macOS 창)"
 	@echo "make doctor   툴체인 점검 (Xcode / Swift / SDK)"
 	@echo "make clean    빌드 산출물 삭제"
 
@@ -20,6 +21,10 @@ build:
 
 test:
 	$(SWIFT) test
+
+# 창이 뜹니다. 종료는 창을 닫거나 Ctrl-C.
+run:
+	$(SWIFT) run SnapActDebugApp
 
 doctor:
 	@echo "호스트      : $$(sw_vers -productName) $$(sw_vers -productVersion)"

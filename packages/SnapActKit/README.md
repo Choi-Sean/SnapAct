@@ -15,7 +15,8 @@
 ```bash
 cd packages/SnapActKit
 make doctor    # 툴체인 점검
-make test
+make test      # 1~11단계 검증
+make run       # 디버그 화면 (macOS 창)
 ```
 
 `xcode-select` 가 Command Line Tools 를 가리켜도 Makefile 이 `DEVELOPER_DIR` 을 직접
@@ -26,16 +27,40 @@ make test
 
 | 경로 | 내용 | 단계 |
 |---|---|---|
-| `Vision/` | 이미지 임베딩 추출 | 5 |
-| `Routing/` | 카테고리 판정 + 프로토콜 | 6 |
+| `Vision/` | CLIP 임베딩 · 사전필터 · 구조 신호 | 6, 7 |
+| `Routing/` | `PhotoRouter` + `CLIPRouter` + FM 텍스트 라우터 | 7, 9 |
+| `OCR/` | `TextReader` + OCR_SPEC (텍스트까지만) | 8 |
 | `Catalog/` | `Resources/actions.json` 파싱 | 3 |
-| `Ranking/` | 후보 생성 + 베이지안 랭킹 | 7 |
-| `Logging/` | 상호작용 로그 스키마·저장 | 8 |
+| `Ranking/` | 후보 생성 + 베이지안 + 탐색 | 10 |
+| `Logging/` | 상호작용 로그 스키마·저장 | 11 |
 | `Gate/` | Tier 0 차단 게이트 (이번엔 스텁) | 4 |
+| `DebugUI/` | SwiftUI 리뷰 화면 | 12 |
 | `tools/` | xlsx → json 변환 | 2 |
+
+`Sources/SnapActDebugApp/` 는 macOS 실행 타겟이며 **창 하나가 전부**입니다.
+리뷰 대상 동작은 전부 `DebugUI/` 안에 있어서, 파트너가 iOS 앱에서 같은 뷰를
+그대로 띄울 수 있습니다.
 
 각 디렉터리의 `_*Area.swift` 는 "여기에 무엇이 들어오는가"를 적어둔 자리표시자이며,
 해당 단계에서 실제 코드로 대체됩니다.
+
+## 모델 자산
+
+이미지 인코더는 `mobileclip_s0_image.mlpackage` (22MB) 입니다. 실측 규격:
+
+| | |
+|---|---|
+| 입력 | `image` · imageType · 256×256 · RGB |
+| 출력 | `final_emb_1` · multiArray `[1, 512]` · Float32 |
+
+**Swift 에서 픽셀값 정규화를 하지 마세요.** 입력이 imageType 이라 스케일링이
+그래프 안에 있습니다 — `image` 직후 첫 연산이 `× 0.00392156886` (= 1/255) 인 것을
+확인했습니다. 한 번 더 하면 에러 없이 정확도만 떨어져서 사후 추적이 거의
+불가능합니다.
+
+**텍스트 인코더(81MB)는 번들하지 않습니다.** 클래스 임베딩은
+`class_embeddings.json` 에 사전 계산돼 있고 (45항목 = 클래스 37 + 네거티브 8,
+dim 512, L2 정규화 완료), 런타임 텍스트 인코딩은 없습니다.
 
 ## 이 패키지가 하지 않는 것
 

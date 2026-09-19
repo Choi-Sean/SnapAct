@@ -29,7 +29,7 @@ let package = Package(
                 // and is neither shipped nor committed — see .gitignore.
                 .copy("Resources/mobileclip_s0_image.mlpackage"),
                 .process("Resources/class_embeddings.json"),
-                // actions.json joins this list in step 2.
+                .process("Resources/actions.json"),
             ]
         ),
         // The debug screen is a SwiftUI view inside SnapActKit/DebugUI, not

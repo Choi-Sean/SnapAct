@@ -7,17 +7,31 @@
 DEVELOPER_DIR := /Applications/Xcode.app/Contents/Developer
 SWIFT := DEVELOPER_DIR=$(DEVELOPER_DIR) /usr/bin/xcrun swift
 
-.PHONY: help build test run clean doctor
+# 카탈로그 생성기는 리포 루트의 공용 .venv 를 씁니다 (openpyxl).
+REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../..)
+PY := $(REPO_ROOT)/.venv/bin/python
+
+.PHONY: help build test run clean doctor catalog catalog-check
 
 help:
 	@echo "make build    패키지 빌드 (호스트 macOS)"
 	@echo "make test     테스트 실행"
 	@echo "make run      디버그 화면 실행 (macOS 창)"
+	@echo "make catalog  엑셀 -> Resources/actions.json 재생성"
 	@echo "make doctor   툴체인 점검 (Xcode / Swift / SDK)"
 	@echo "make clean    빌드 산출물 삭제"
 
-build:
+# 엑셀이 actions.json 보다 새로우면 여기서 멈춘다. 스프레드시트를 고치고
+# 재생성을 잊은 채 빌드하면, 코드가 아니라 데이터가 조용히 옛 것이 된다.
+build: catalog-check
 	$(SWIFT) build
+
+catalog:
+	$(PY) tools/build_catalog.py
+
+catalog-check:
+	@$(PY) tools/build_catalog.py --check || { \
+		echo ""; echo "  'make catalog' 로 재생성한 뒤 다시 빌드하세요."; exit 1; }
 
 test:
 	$(SWIFT) test

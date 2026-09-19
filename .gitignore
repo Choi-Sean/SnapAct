@@ -29,3 +29,7 @@ web/tsconfig.tsbuildinfo
 # OS
 .DS_Store
 Thumbs.db
+
+# Swift / SPM
+packages/*/.build/
+packages/*/.swiftpm/

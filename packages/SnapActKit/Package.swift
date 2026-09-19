@@ -18,11 +18,19 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SnapActKit"
-            // Resources/ gains actions.json (step 2), class_embeddings.json and
-            // the image encoder (steps 5-6); the `.process("Resources")` rule
-            // lands with them, since declaring it over an empty directory fails
-            // the build.
+            name: "SnapActKit",
+            resources: [
+                // .copy, not .process: an .mlpackage is a directory bundle and
+                // has to reach the built product intact, to be compiled at
+                // runtime via MLModel.compileModel(at:).
+                //
+                // Only the IMAGE encoder (22MB) is bundled. The text encoder
+                // (81MB) is a build-time tool for generating class embeddings
+                // and is neither shipped nor committed — see .gitignore.
+                .copy("Resources/mobileclip_s0_image.mlpackage"),
+                .process("Resources/class_embeddings.json"),
+                // actions.json joins this list in step 2.
+            ]
         ),
         // The debug screen is a SwiftUI view inside SnapActKit/DebugUI, not
         // here: this target is only a host so `swift run` can show it on macOS.

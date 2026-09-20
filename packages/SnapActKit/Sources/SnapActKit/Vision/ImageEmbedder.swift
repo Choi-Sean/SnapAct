@@ -41,9 +41,39 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     public private(set) var loadFootprint: (before: UInt64, after: UInt64)?
     public private(set) var loadDuration: TimeInterval?
 
-    public init(bundle: Bundle? = nil, configuration: MLModelConfiguration = .init()) {
+    /// Halves the memory cost for free.
+    ///
+    /// Measured on this Mac, release build, one process per configuration:
+    ///
+    ///   .cpuOnly             22.2 MB   196 ms load   9.9 ms inference
+    ///   .cpuAndNeuralEngine  22.7 MB   718 ms load   2.4 ms inference
+    ///   .cpuAndGPU           62.4 MB   205 ms load   4.8 ms inference
+    ///   .all (the default)   48.0 MB   736 ms load   1.8 ms inference
+    ///
+    /// `.all` reserves the GPU path as well and pays ~25 MB for it, while
+    /// actually running on the Neural Engine anyway: the embeddings from
+    /// `.all` and `.cpuAndNeuralEngine` are bit-identical (cosine 1.000000).
+    /// So this is not a speed/memory trade — it is 25 MB for nothing.
+    ///
+    /// 22.7 MB against 21.7 MB of Float16 weights leaves roughly no overhead
+    /// left to remove. Quantising further would cost accuracy to save single
+    /// digits.
+    ///
+    /// CPU remains the fallback when the Neural Engine is unavailable, and it
+    /// produces slightly different numbers — cosine 0.995 against the ANE
+    /// vector, against 0.9996 for ANE against the Python reference. On the
+    /// cross-validation images that never changed the ranking (top-1 identical
+    /// and top-5 identical on all five), but the margins there are ~0.01, so
+    /// treat it as tolerable rather than proven.
+    public static func defaultConfiguration() -> MLModelConfiguration {
+        let configuration = MLModelConfiguration()
+        configuration.computeUnits = .cpuAndNeuralEngine
+        return configuration
+    }
+
+    public init(bundle: Bundle? = nil, configuration: MLModelConfiguration? = nil) {
         self.bundle = bundle ?? .module
-        self.configuration = configuration
+        self.configuration = configuration ?? Self.defaultConfiguration()
     }
 
     public func model() throws -> MLModel {

@@ -15,6 +15,9 @@ let package = Package(
     products: [
         .library(name: "SnapActKit", targets: ["SnapActKit"]),
         .executable(name: "SnapActDebugApp", targets: ["SnapActDebugApp"]),
+        // Answers one question: can the encoder live in a Share Extension?
+        // Kept as a target so the same measurement runs on a device.
+        .executable(name: "MemProbe", targets: ["MemProbe"]),
     ],
     targets: [
         .target(
@@ -37,6 +40,7 @@ let package = Package(
         // here: this target is only a host so `swift run` can show it on macOS.
         // The partner drops the same view into the iOS app unchanged.
         .executableTarget(name: "SnapActDebugApp", dependencies: ["SnapActKit"]),
+        .executableTarget(name: "MemProbe", dependencies: ["SnapActKit"]),
         .testTarget(name: "SnapActKitTests", dependencies: ["SnapActKit"]),
     ]
 )

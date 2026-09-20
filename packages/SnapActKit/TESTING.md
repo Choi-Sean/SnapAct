@@ -34,7 +34,7 @@ Makefile 이 `DEVELOPER_DIR` 을 직접 지정하므로 전역 설정은 건드�
 
 ```bash
 cd packages/SnapActKit
-make test           # 50개 테스트, 6개 스위트, 약 3.3초
+make test           # 51개 테스트, 6개 스위트, 약 3.3초
 ```
 
 네 스위트가 각각 무엇을 증명하는지:
@@ -242,19 +242,51 @@ make test    # "설정이 로드되고, 미설정 항목을 스스로 보고한�
 다만 **이 이미지들은 합성 패턴이라 내용에 의미가 없습니다** — 스케일만 참고하시고
 임계값은 실사진으로 정하셔야 합니다.
 
-### ⚠️ 모델 메모리 — 익스텐션 반입 판단의 1차 근거
+### 모델 메모리 — 해결됨 (컴퓨트 유닛 선택)
 
+릴리즈 빌드, 구성별로 프로세스를 새로 띄워 실측:
+
+| 구성 | 메모리 증가 | 로드 | 추론(중앙) | Python 기준값과 코사인 |
+|---|---|---|---|---|
+| `.cpuOnly` | 22.2 MB | 196 ms | 9.9 ms | 0.9954 |
+| **`.cpuAndNeuralEngine`** | **22.7 MB** | 718 ms | **2.4 ms** | **0.9996** |
+| `.cpuAndGPU` | 62.4 MB | 205 ms | 4.8 ms | 0.9954 |
+| `.all` (Core ML 기본) | 48.0 MB | 736 ms | 1.8 ms | 0.9996 |
+
+**`.all` 은 GPU 경로까지 잡아두느라 25MB 를 더 쓰면서 정작 Neural Engine 에서
+돕니다.** `.all` 과 `.cpuAndNeuralEngine` 의 임베딩은 **비트 단위로 같습니다**
+(코사인 1.000000). 속도/메모리 트레이드오프가 아니라 그냥 25MB 손해입니다.
+
+그래서 기본값을 `.cpuAndNeuralEngine` 로 바꿨습니다. **48MB → 22.7MB, 수치 변화
+없음.** 테스트가 이 선택을 고정하고 있어서 되돌리면 실패합니다.
+
+Float16 가중치가 21.7MB 인데 총 22.7MB 이므로 **뺄 오버헤드가 사실상 남아
+있지 않습니다.** 더 줄이려면 양자화로 정확도를 내주는 수밖에 없고, 한 자릿수
+MB 를 위해 할 일은 아닙니다.
+
+**남은 위험 하나**: Neural Engine 을 못 쓰면 Core ML 이 CPU 로 조용히
+폴백하는데, 그때 임베딩이 달라집니다 (ANE 대비 코사인 0.995). 교차 검증
+이미지 5장에서는 **1위도 상위5도 바뀌지 않았지만**, margin 이 0.01 수준이라
+"허용 가능"이지 "증명됨"은 아닙니다. 실사진으로 재확인이 필요합니다.
+
+### 직접 재보기 — 실기기 측정용
+
+```bash
+cd packages/SnapActKit
+swift run -c release MemProbe ane CrossValidation/images/square.png
+swift run -c release MemProbe all CrossValidation/images/square.png   # 비교
 ```
-로드 전 7.8 MB  ->  로드 후 70.3 MB   (증가 약 63 MB, 컴파일+로드 0.8~1.4초)
+
+**릴리즈 빌드가 중요합니다** — 디버그 바이너리는 자체 오버헤드가 커서 비교를
+흐립니다. 위 수치는 macOS 호스트 기준이고, **익스텐션 반입 결정은 실기기에서
+같은 도구를 돌린 값으로 하셔야 합니다.**
+
+컴퓨트 유닛 간 임베딩 비교:
+
+```bash
+DUMP_VECTOR=1 swift run -c release MemProbe ane <이미지> 
+DUMP_VECTOR=1 swift run -c release MemProbe cpu <이미지>
 ```
-
-**이 수치는 macOS 호스트 기준입니다.** iOS Share Extension 의 메모리 상한은
-이보다 훨씬 빡빡하고 초과 시 **오류 없이 죽습니다**. 63 MB 는 편한 숫자가
-아니므로, 실기기에서 Instruments 를 붙여 재측정하는 것이 익스텐션 반입 결정의
-전제입니다. `Routing/` 에 KNN 스텁을 남겨둔 이유가 이것입니다 — CLIP 이
-탈락하면 그 자리를 저장된 임베딩 기반 kNN 이 대신합니다.
-
-컴파일은 프로세스당 한 번만 일어납니다 (`MLModel.compileModel` 결과를 보관).
 
 ## 5. 클래스 간 유사도
 

@@ -114,6 +114,15 @@ struct EncoderCrossValidationTests {
         }
     }
 
+    @Test("기본 컴퓨트 유닛은 Neural Engine 이다 — 메모리 절반")
+    func defaultsToNeuralEngine() {
+        // .all reserves the GPU path for ~25 MB and then runs on the ANE
+        // anyway; the embeddings are bit-identical. Reverting this default
+        // doubles the footprint and buys nothing, which is exactly the kind of
+        // change that gets made by accident.
+        #expect(MobileCLIPEncoder.defaultConfiguration().computeUnits == .cpuAndNeuralEngine)
+    }
+
     @Test("임베딩은 정규화되지 않은 채로 나온다")
     func encoderOutputIsNotNormalised() throws {
         // The reference norms are ~0.84-0.93. If this ever came back at 1.0

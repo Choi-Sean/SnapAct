@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "_note": "손으로 편집하는 파일입니다. 엑셀에서 생성되지 않습니다. 임계값과 가중치를 코드에 박지 않으려고 분리했습니다.",
+
+  "thresholds": {
+    "_todo": "eval 결과로 결정. null 인 동안 라우터는 절대 클래스를 주장하지 않고 unknown 을 돌려줍니다 (점수는 alternates 에 그대로 실려 옵니다).",
+    "_scale": "실측: 이미지↔클래스 코사인은 0.02~0.22 범위입니다. 클래스↔클래스(0.85~0.90)와 스케일이 완전히 다르므로 그 숫자로 임계값을 잡으면 전부 unknown 이 됩니다.",
+    "minScore": null,
+    "minMargin": null
+  },
+
+  "prefilter": {
+    "_note": "VNClassifyImageRequest 는 단독 분류기가 아니라 게이팅 필터로만 씁니다. 여기 걸리면 CLIP 을 아예 돌리지 않습니다.",
+    "_todo": "minConfidence 는 eval 결과로 결정. null 이면 사전필터는 동작하지 않습니다.",
+    "enabled": true,
+    "minConfidence": null,
+    "_labels": "VNClassifyImageRequest().supportedIdentifiers() 에 실제로 존재하는 상위 노드만 적었습니다 (1303개 중 확인). 없는 라벨을 적으면 조용히 아무것도 걸리지 않습니다.",
+    "rejectLabels": [
+      "food",
+      "animal",
+      "plant",
+      "flower",
+      "tree",
+      "people",
+      "crowd",
+      "sky",
+      "beach",
+      "mountain",
+      "forest",
+      "water",
+      "ocean",
+      "lake",
+      "outdoor",
+      "sport",
+      "toy",
+      "clothing",
+      "furniture",
+      "vehicle",
+      "car",
+      "art",
+      "music"
+    ]
+  },
+
+  "structuralSignals": {
+    "_note": "CLIP 점수에 곱셈으로 적용합니다. 1.0 은 영향 없음. 전부 eval 로 튜닝할 대상입니다.",
+    "_todo": "가중치는 실사진 eval 후 결정. null 인 항목은 적용되지 않습니다.",
+
+    "aspectRatio": {
+      "_note": "가로/세로 비. 범위 안이면 boost, 밖이면 penalty. 범위는 촬영 대상의 물리적 비율이라 측정이 아니라 사실입니다.",
+      "boost": null,
+      "penalty": null,
+      "ranges": {
+        "business_card": [1.4, 1.9],
+        "payment_screenshot": [0.4, 0.7],
+        "receipt": [0.15, 0.55],
+        "document_general": [0.6, 0.85],
+        "lecture_slide": [1.2, 1.9]
+      }
+    },
+
+    "screenshot": {
+      "_note": "EXIF Make/Model 부재 + 해상도가 기기 화면과 일치. class_embeddings.json 의 screenshotBiased 클래스에 적용합니다.",
+      "boost": null
+    },
+
+    "documentEdges": {
+      "_note": "VNDetectDocumentSegmentationRequest 검출 여부.",
+      "boost": null,
+      "appliesTo": ["document_general", "receipt", "bill_invoice", "warranty_doc", "lecture_slide"]
+    },
+
+    "textPresence": {
+      "_note": "VNDetectTextRectangles. 가볍습니다. 텍스트가 없으면 텍스트 기반 클래스를 낮춥니다.",
+      "penaltyWhenAbsent": null,
+      "appliesTo": ["business_card", "receipt", "bill_invoice", "document_general", "menu", "foreign_sign", "code_screenshot"]
+    }
+  }
+}

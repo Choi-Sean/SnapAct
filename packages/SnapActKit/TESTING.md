@@ -288,6 +288,50 @@ DUMP_VECTOR=1 swift run -c release MemProbe ane <이미지>
 DUMP_VECTOR=1 swift run -c release MemProbe cpu <이미지>
 ```
 
+## 4-2. 실사진 분류 성능 (662장 실측)
+
+`spikes/s3-l1-vision-classifier/data_real` 로 측정했습니다. 재실행:
+
+```bash
+.venv/bin/python packages/SnapActKit/tools/eval_router.py \
+    spikes/s3-l1-vision-classifier/data_real
+```
+
+| 라벨 | 장수 | 1위 정답 | 비고 |
+|---|---|---|---|
+| `business_card` | 55 | **74.5%** | 상위5 안에는 **100%** |
+| `receipt` | 262 | 48.9% | `bill_invoice` 포함하면 **85.9%** |
+| `other` (일반사진) | 250 | — | **74.8%** 가 네거티브로 감 (거부가 정답) |
+| `payment_card` | 51 | — | **94.1%** 네거티브. `business_card` 오분류 **0장** |
+| `passport` | 44 | — | 75.0% 네거티브. `business_card` 오분류 1장 |
+
+`receipt` 의 48.9% 는 낮아 보이지만 37% 가 `bill_invoice` 로 갔고, 이 쌍은
+**이미지로는 원리적으로 구분이 안 되는** 조합입니다 (9단계 OCR 중재 대상).
+"영수증류 문서"로 보면 85.9% 입니다.
+
+`payment_card → business_card` 가 **0/51** 인 것이 가장 중요합니다. 스펙 A-7 이
+최우선 혼동쌍으로 지목한 조합인데 실사진에서는 깨끗합니다.
+
+**다만 Tier 0 사진의 25%(여권)·6%(카드)가 서비스 클래스로 갑니다.** 라우터가
+우연히 막아주는 것에 기대면 안 되고, 차단 게이트가 할 일입니다.
+
+## 4-3. 임계값 근거 (실측)
+
+```
+minScore   액션대상 통과   일반사진 거부
+   0.20        100.0%         95.2%
+   0.22         98.7%         99.2%   ← 분리가 가장 깨끗
+   0.24         92.7%         99.6%
+   0.26         77.0%        100.0%
+```
+
+margin 은 분포가 겹쳐 분리력이 거의 없습니다 (0.010 에서 통과 71% / 거부 42%).
+높게 잡으면 정답까지 같이 버립니다.
+
+**아직 `routing_config.json` 에 넣지 않았습니다.** 채우는 것은 직접 하시는 걸로
+되어 있고, 위 데이터는 합성이 아닌 실사진이지만 `business_card`·`receipt`·일반사진
+세 종류뿐이라 37개 클래스 전체를 대표하지는 않습니다.
+
 ## 5. 클래스 간 유사도
 
 `class_embeddings.json` 의 클래스 간 코사인 실측 — **가까울수록 헷갈립니다**:

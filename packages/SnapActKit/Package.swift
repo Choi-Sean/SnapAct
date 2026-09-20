@@ -34,6 +34,7 @@ let package = Package(
                 .process("Resources/class_embeddings.json"),
                 .process("Resources/actions.json"),
                 .process("Resources/routing_config.json"),
+                .process("Resources/ocr_spec.json"),
             ]
         ),
         // The debug screen is a SwiftUI view inside SnapActKit/DebugUI, not

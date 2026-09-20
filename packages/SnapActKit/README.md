@@ -15,9 +15,13 @@
 ```bash
 cd packages/SnapActKit
 make doctor    # 툴체인 점검
-make test      # 1~11단계 검증
+make test      # 34개 테스트
 make run       # 디버그 화면 (macOS 창)
 ```
+
+파트너와 함께 데모하려면 **[TESTING.md](TESTING.md)** 를 보세요 — 지금 무엇이
+되고 무엇이 아직 안 되는지, 그리고 각 보증을 직접 깨뜨려 확인하는 방법이
+적혀 있습니다.
 
 `xcode-select` 가 Command Line Tools 를 가리켜도 Makefile 이 `DEVELOPER_DIR` 을 직접
 지정하므로 전역 설정을 바꿀 필요가 없습니다. 다만 **Xcode 26 이상**은 필요합니다

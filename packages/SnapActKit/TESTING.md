@@ -34,7 +34,7 @@ Makefile 이 `DEVELOPER_DIR` 을 직접 지정하므로 전역 설정은 건드�
 
 ```bash
 cd packages/SnapActKit
-make test           # 34개 테스트, 4개 스위트, 약 1.6초
+make test           # 39개 테스트, 5개 스위트, 약 2.7초
 ```
 
 네 스위트가 각각 무엇을 증명하는지:
@@ -45,6 +45,7 @@ make test           # 34개 테스트, 4개 스위트, 약 1.6초
 | **차단 게이트** | 이번 세션에서는 **업로드 가능한 이미지를 만들 수 없다** |
 | **컴파일 가드** | 업로드 경로는 런타임이 아니라 **컴파일 단계**에서 막힌다 |
 | **클래스 임베딩** | 45개 벡터가 단위길이이고, 코사인 계산이 Python 과 일치한다 |
+| **인코더 교차 검증** | 같은 사진의 임베딩이 Python 과 **코사인 0.999 이상**으로 일치한다 |
 
 ### 눈으로 보는 데모
 
@@ -61,7 +62,7 @@ make run            # macOS 창이 뜹니다
 
 | | 상태 |
 |---|---|
-| 사진 → 클래스 분류 | ❌ 이미지 인코더 호출이 6단계 |
+| 사진 → 클래스 분류 | ⚠️ 임베딩까지는 됨. 클래스 판정(사전필터·임계값)이 7단계 |
 | OCR | ❌ 8단계 |
 | 액션 버튼 순위 | ❌ 10단계 |
 | 개인화 카운터 | ❌ 10단계 |
@@ -128,7 +129,36 @@ make build          # 통과
 
 전부 실제로 잡히는 것을 확인했습니다.
 
-### 3-4. 임베딩 수치가 Python 과 같나
+### 3-4. 전처리가 Python 과 어긋나면 (가장 중요한 검사)
+
+`class_embeddings.json` 은 Python 파이프라인으로 만들어졌습니다. Swift 가 사진을
+다르게 전처리하면 임베딩이 **조용히 다른 공간에 놓입니다** — 에러는 없고 정확도만
+떨어져서 사후 추적이 거의 불가능합니다.
+
+`Sources/SnapActKit/Vision/PixelBuffer.swift` 에서 스쿼시를 종횡비 보존으로 바꿔
+보세요:
+
+```swift
+// context.draw(image, in: CGRect(x: 0, y: 0, width: side, height: side))
+let scale = min(CGFloat(side)/CGFloat(image.width), CGFloat(side)/CGFloat(image.height))
+let w = CGFloat(image.width)*scale, h = CGFloat(image.height)*scale
+context.draw(image, in: CGRect(x: (CGFloat(side)-w)/2, y: (CGFloat(side)-h)/2, width: w, height: h))
+```
+
+```bash
+make test
+```
+
+코사인이 0.999 → **0.79~0.91** 로 떨어지고 테스트가 실패합니다. 종횡비가 가장
+극단적인 `receipt_tall.png` 가 가장 크게 무너집니다. 되돌리면 다시 통과합니다.
+
+기준값을 다시 만들려면 (인코더나 이미지를 바꿨을 때):
+
+```bash
+.venv/bin/python packages/SnapActKit/tools/crossvalidate.py
+```
+
+### 3-5. 임베딩 수치가 Python 과 같나
 
 ```bash
 cd <리포 루트>
@@ -152,7 +182,38 @@ Swift 쪽 같은 값은 `make test` 의 "Python 과 코사인 값이 일치한�
 
 ---
 
-## 4. 알아두면 좋은 수치
+## 4. 실측 수치
+
+### 인코더 교차 검증 (Python ↔ Swift)
+
+| 이미지 | 종횡비 | 코사인 |
+|---|---|---|
+| `wide.png` | 4:1 | 0.999707 |
+| `square.png` | 1:1 | 0.999647 |
+| `receipt_tall.png` | 0.3:1 | 0.999617 |
+| `card_landscape.png` | 1.6:1 | 0.999559 |
+| `screenshot.png` | 0.56:1 | **0.999290** |
+
+전부 기준선 0.999 위입니다. 전처리 계약은 **RGB 변환 · 256×256 스쿼시(종횡비
+보존 없음) · Swift 쪽 정규화 없음** 입니다. 마지막 항목이 중요한데, `.mlpackage`
+입력이 imageType 이라 스케일링(`× 1/255`)이 그래프 안에 있습니다. Swift 에서
+한 번 더 하면 에러 없이 정확도만 떨어집니다.
+
+### ⚠️ 모델 메모리 — 익스텐션 반입 판단의 1차 근거
+
+```
+로드 전 7.8 MB  ->  로드 후 70.3 MB   (증가 약 63 MB, 컴파일+로드 0.8~1.4초)
+```
+
+**이 수치는 macOS 호스트 기준입니다.** iOS Share Extension 의 메모리 상한은
+이보다 훨씬 빡빡하고 초과 시 **오류 없이 죽습니다**. 63 MB 는 편한 숫자가
+아니므로, 실기기에서 Instruments 를 붙여 재측정하는 것이 익스텐션 반입 결정의
+전제입니다. `Routing/` 에 KNN 스텁을 남겨둔 이유가 이것입니다 — CLIP 이
+탈락하면 그 자리를 저장된 임베딩 기반 kNN 이 대신합니다.
+
+컴파일은 프로세스당 한 번만 일어납니다 (`MLModel.compileModel` 결과를 보관).
+
+## 5. 클래스 간 유사도
 
 `class_embeddings.json` 의 클래스 간 코사인 실측 — **가까울수록 헷갈립니다**:
 
@@ -174,7 +235,7 @@ Swift 쪽 같은 값은 `make test` 의 "Python 과 코사인 값이 일치한�
 
 ---
 
-## 5. 문제가 생기면
+## 6. 문제가 생기면
 
 | 증상 | 원인 |
 |---|---|

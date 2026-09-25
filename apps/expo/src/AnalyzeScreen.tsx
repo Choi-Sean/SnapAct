@@ -26,7 +26,6 @@ import { runVisionGate } from './layer0/visionGate';
 import { getLayer0Support } from './layer0/capability';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';
-import { runVisionGate } from './layer0/visionGate';
 import { MedicationReminderSlot, saveContact, saveEventToCalendar, saveMedicationReminders, saveReminder } from './nativeActions';
 import PricingScreen from './PricingScreen';
 import { formatReceiptTable } from './receiptFormat';

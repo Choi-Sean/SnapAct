@@ -1,0 +1,299 @@
+{
+  "_note": "표시 텍스트 -> 동사. 패턴이 아니라 정확한 문자열이다. 패턴은 85/111을 덮었지만 최소 4건을 틀렸다 (다중 동사 셀, '개별 항목 선택 추가', '잔액 조회 링크', '1회 제공량 환산'). 정확 표는 새 문자열에 조용히 오답을 내는 대신 미매핑으로 떨어뜨린다.",
+  "_source": "docs/SnapAct_클래스별액션_검토.xlsx 의 주/부 액션 열. 엑셀은 '어떤 클래스에 어떤 액션이 붙는가'를 정하고, 이 파일은 '그 표시 텍스트가 어느 API 인가'만 정한다.",
+  "approved": {
+    "계좌번호 복사": [
+      "copy_text"
+    ],
+    "금액 복사": [
+      "copy_text"
+    ],
+    "모델명 복사": [
+      "copy_text"
+    ],
+    "비밀번호 복사": [
+      "copy_text"
+    ],
+    "운송장 복사": [
+      "copy_text"
+    ],
+    "원문 복사": [
+      "copy_text"
+    ],
+    "코드 복사": [
+      "copy_text"
+    ],
+    "코드 텍스트 복사": [
+      "copy_text"
+    ],
+    "텍스트 복사": [
+      "copy_text"
+    ],
+    "확인번호 복사": [
+      "copy_text"
+    ],
+    "노트 저장": [
+      "save_note"
+    ],
+    "노트 저장(AS 문의용)": [
+      "save_note"
+    ],
+    "노트 저장(재방문용)": [
+      "save_note"
+    ],
+    "시음 노트 저장": [
+      "save_note"
+    ],
+    "의류와 함께 기록": [
+      "save_note"
+    ],
+    "이미지 보관": [
+      "save_note"
+    ],
+    "바코드 이미지 보관": [
+      "save_note"
+    ],
+    "코드 보관": [
+      "save_note"
+    ],
+    "가격 기록": [
+      "save_note"
+    ],
+    "정류장 저장": [
+      "save_note"
+    ],
+    "주차 위치 좌표 저장": [
+      "save_note"
+    ],
+    "약 봉투 사진 보관 (자체 저장소)": [
+      "save_note"
+    ],
+    "영업시간 저장 (자체 저장소)": [
+      "save_note"
+    ],
+    "독서 목록에 추가 (자체 저장소)": [
+      "save_note"
+    ],
+    "식물 목록 추가": [
+      "save_note"
+    ],
+    "장보기 목록": [
+      "save_note"
+    ],
+    "장보기 목록 추가": [
+      "save_note"
+    ],
+    "검색": [
+      "search"
+    ],
+    "관련 검색": [
+      "search"
+    ],
+    "매뉴얼 조회": [
+      "search"
+    ],
+    "배송 조회": [
+      "search"
+    ],
+    "리뷰 조회": [
+      "search"
+    ],
+    "가격 비교": [
+      "search"
+    ],
+    "가격 비교 검색": [
+      "search"
+    ],
+    "제품 검색": [
+      "search"
+    ],
+    "사진 검색": [
+      "search"
+    ],
+    "와인 정보 조회": [
+      "search"
+    ],
+    "평점 조회": [
+      "search"
+    ],
+    "서점·도서관 검색": [
+      "search"
+    ],
+    "vCard 내보내기": [
+      "export_file"
+    ],
+    "CSV 내보내기(진료용)": [
+      "export_file"
+    ],
+    "PDF": [
+      "export_file"
+    ],
+    "PDF 묶음 생성": [
+      "export_file"
+    ],
+    "PDF 변환 후 저장": [
+      "export_file"
+    ],
+    "PDF 저장": [
+      "export_file"
+    ],
+    "경비용 PDF": [
+      "export_file"
+    ],
+    "문서 PDF 보관": [
+      "export_file"
+    ],
+    "공유 시트 내보내기": [
+      "export_via_share_sheet"
+    ],
+    "병원 위치 지도": [
+      "open_map"
+    ],
+    "장소 지도": [
+      "open_map"
+    ],
+    "회사 위치 지도": [
+      "open_map"
+    ],
+    "지도": [
+      "open_map"
+    ],
+    "경로 안내": [
+      "open_map"
+    ],
+    "구매 링크": [
+      "open_url"
+    ],
+    "예매 링크": [
+      "open_url"
+    ],
+    "링크 열기": [
+      "open_url"
+    ],
+    "제조사 지원 링크": [
+      "open_url"
+    ],
+    "제조사 지원 페이지": [
+      "open_url"
+    ],
+    "잔액 조회 링크": [
+      "open_url"
+    ],
+    "반품 기한 알림": [
+      "create_reminder"
+    ],
+    "방문 알림": [
+      "create_reminder"
+    ],
+    "사전 알림": [
+      "create_reminder"
+    ],
+    "할 일 항목별 알림": [
+      "create_reminder"
+    ],
+    "캘린더 일정": [
+      "create_event"
+    ],
+    "개별 항목 선택 추가": [
+      "create_event"
+    ],
+    "번역": [
+      "translate"
+    ],
+    "가격 환산": [
+      "convert_currency"
+    ],
+    "환율 환산": [
+      "convert_currency"
+    ],
+    "더치페이 계산": [
+      "split_bill"
+    ],
+    "전화": [
+      "call"
+    ],
+    "전화 걸기": [
+      "call"
+    ],
+    "재배송 전화": [
+      "call"
+    ],
+    "메일 초안": [
+      "compose_message"
+    ],
+    "관리법 표시": [
+      "show_detail"
+    ],
+    "규정 요약 표시": [
+      "show_detail"
+    ],
+    "단계 요약 표시": [
+      "show_detail"
+    ],
+    "문법 강조 표시": [
+      "show_detail"
+    ],
+    "성분 표시": [
+      "show_detail"
+    ],
+    "세탁법 설명 표시": [
+      "show_detail"
+    ],
+    "추이 그래프": [
+      "show_detail"
+    ],
+    "캘린더 일정 + 사전 알림": [
+      "create_event",
+      "create_reminder"
+    ],
+    "캘린더 일정 + 사전 알림 (전날 + 1시간 전)": [
+      "create_event",
+      "create_reminder"
+    ],
+    "번역 + 요리 설명": [
+      "translate",
+      "show_detail"
+    ]
+  },
+  "open": {
+    "보증 등록": {
+      "proposed": [
+        "open_url",
+        "save_note"
+      ],
+      "note": "제조사 보증 등록. 외부 페이지로 보낼지, 구매일만 자체 저장할지."
+    },
+    "항공편 추적": {
+      "proposed": [
+        "open_url",
+        "search"
+      ],
+      "note": "항공사/추적 서비스 URL 을 열지, 검색어를 만들지."
+    },
+    "추천": {
+      "proposed": [
+        "show_detail"
+      ],
+      "note": "menu 의 요리 추천. LLM 생성물이라 L5 이며 이번 범위 밖."
+    },
+    "요약": {
+      "proposed": [
+        "show_detail"
+      ],
+      "note": "LLM 요약. 동사는 표시지만 생성은 L5 — 범위 밖이라 보류."
+    },
+    "텍스트 추출": {
+      "proposed": [
+        "copy_text",
+        "show_detail"
+      ],
+      "note": "OCR 결과를 복사할지 패널로 보여줄지. D 단계 확정 후 결정."
+    },
+    "1회 제공량 환산": {
+      "proposed": [
+        "show_detail"
+      ],
+      "note": "통화 환산이 아니라 영양 계산. convert_currency 로 넣으면 안 됨. 앱 내 계산 동사가 필요할 수 있음."
+    }
+  }
+}

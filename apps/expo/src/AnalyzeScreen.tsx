@@ -22,6 +22,7 @@ import { t as fmt } from './i18n/dictionaries';
 import { resizeForUpload } from './imageResize';
 import { persistImage } from './imageStorage';
 import { analyzeOnDevice } from './layer0/analyzeOnDevice';
+import { runVisionGate } from './layer0/visionGate';
 import { getLayer0Support } from './layer0/capability';
 import { getLayer1FallbackConsent, setLayer1FallbackConsent } from './layer0/consent';
 import { extractPhotoMetadata, PhotoMetadata } from './layer0/metadata';

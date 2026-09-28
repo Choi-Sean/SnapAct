@@ -27,7 +27,7 @@ struct RankingTests {
     @Test("설정이 로드되고 미설정 가중치를 보고한다")
     func configLoads() throws {
         let c = try config()
-        #expect(c.smoothing.alpha == 10.0)
+        #expect(c.smoothing.alpha == 8.0)
         #expect(c.exploration.probability == 0.10)
         #expect(!c.unconfiguredBoosts.isEmpty)
     }
@@ -85,11 +85,11 @@ struct RankingTests {
         // Both must eventually flip — a personalisation that can never
         // overturn the default is not personalisation.
         #expect(first != nil && rest != nil)
-        #expect(first! <= 3, "부 첫째가 \(first!)회에 역전 — 엑셀은 3회를 기대합니다")
-        // Documented divergence: at alpha 10 the lower prior needs a fourth
-        // pick. Alpha 8 makes both three. Left as configured, not silently
-        // changed.
-        #expect(rest! <= 4, "부 나머지가 \(rest!)회 — alpha 를 낮춰야 합니다")
+        // The spreadsheet's rule, enforced for BOTH secondary priors. This is
+        // what alpha was chosen to satisfy, so it is asserted rather than
+        // merely reported — raising alpha to 10 fails this.
+        #expect(first! == 3, "부 첫째가 \(first!)회 — 엑셀은 3회를 요구합니다")
+        #expect(rest! == 3, "부 나머지가 \(rest!)회 — 엑셀은 3회를 요구합니다")
     }
 
     @Test("노출만 되고 안 눌리면 점수가 내려간다")

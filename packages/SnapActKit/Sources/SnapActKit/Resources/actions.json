@@ -1,0 +1,2001 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "docs/SnapAct_클래스별액션_검토.xlsx",
+  "generatedAt": "2026-09-19T16:44:58+00:00",
+  "sourceSha256": "ab31da504559fad2bced6bc2f3d996d8d10dca05cf549bcd2de48f3962ff872a",
+  "baseScores": {
+    "primary": 0.7,
+    "secondaryFirst": 0.45,
+    "secondaryRest": 0.35,
+    "universal": 0.2
+  },
+  "universalActions": [
+    {
+      "verb": "save_note",
+      "baseScore": 0.2
+    },
+    {
+      "verb": "create_reminder",
+      "baseScore": 0.2
+    },
+    {
+      "verb": "copy_text",
+      "baseScore": 0.2
+    },
+    {
+      "verb": "search",
+      "baseScore": 0.2
+    },
+    {
+      "verb": "translate",
+      "baseScore": 0.2
+    }
+  ],
+  "verbs": {
+    "create_contact": {
+      "api": "Contacts",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "권한 거부 시 vCard 내보내기로 폴백"
+    },
+    "create_event": {
+      "api": "EventKit",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "권한 거부 시 ICS 내보내기로 폴백"
+    },
+    "create_reminder": {
+      "api": "EventKit",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "Notes·Wallet이 막혀 있어 '나중에 알려주기'의 주력 표면"
+    },
+    "create_recurring_reminder": {
+      "api": "EventKit",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "EKRecurrenceRule. 복약·물주기"
+    },
+    "log_health_sample": {
+      "api": "HealthKit",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "영양·체중·혈압·혈당·운동. 복약은 쓰기 불가"
+    },
+    "connect_wifi": {
+      "api": "NetworkExtension",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "완전 온디바이스. Android는 시스템 다이얼로그"
+    },
+    "save_note": {
+      "api": "자체 저장소",
+      "confirmation": "auto",
+      "undoable": true,
+      "note": "Apple Notes API 부재 대체. 근거 span·원본·undo 보관"
+    },
+    "export_file": {
+      "api": "공유 시트",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "vCard·ICS·PDF·CSV. 권한 폴백의 핵심"
+    },
+    "export_via_share_sheet": {
+      "api": "공유 시트",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "만능 폴백 — 외부 전송 90%를 커버. 토큰 0개"
+    },
+    "open_map": {
+      "api": "MapKit",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "열기·경로만. '저장된 장소' 쓰기는 불가"
+    },
+    "open_url": {
+      "api": "UIApplication",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": ""
+    },
+    "copy_text": {
+      "api": "UIPasteboard",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": ""
+    },
+    "search": {
+      "api": "웹 검색",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "검색어를 잘 만드는 것이 액션"
+    },
+    "translate": {
+      "api": "Translation",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "온디바이스"
+    },
+    "split_bill": {
+      "api": "앱 내 계산",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "액션 선택 후 인원수를 물음"
+    },
+    "convert_currency": {
+      "api": "앱 내 계산",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "촬영 시점 환율"
+    },
+    "compose_message": {
+      "api": "MessageUI",
+      "confirmation": "explicit",
+      "undoable": false,
+      "note": "초안 미리채움만. 발송은 사용자"
+    },
+    "call": {
+      "api": "UIApplication (tel:)",
+      "confirmation": "explicit",
+      "undoable": false,
+      "note": "전화는 되돌릴 수 없으므로 open_url 과 확인 등급이 다르다."
+    },
+    "show_detail": {
+      "api": "앱 내 렌더",
+      "confirmation": "auto",
+      "undoable": false,
+      "note": "OS 호출 없음. 결과 화면에 패널로 표시한다."
+    },
+    "add_to_album": {
+      "api": "PhotoKit (PHAssetCollectionChangeRequest)",
+      "confirmation": "reversible",
+      "undoable": true,
+      "note": "앨범 생성·추가는 가능. 사진 캡션 쓰기는 PhotoKit에 없어 save_note로 대체한다."
+    }
+  },
+  "classes": {
+    "business_card": {
+      "id": 1,
+      "motive": "A",
+      "situation": "미팅이 끝났고 이 사람 연락처를 저장해야 한다",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "name",
+        "title",
+        "org",
+        "phone[]",
+        "email[]",
+        "address",
+        "url"
+      ],
+      "primary": [
+        {
+          "verb": "create_contact",
+          "display": "연락처 추가",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "call",
+          "display": "전화 걸기",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "compose_message",
+          "display": "메일 초안",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "open_map",
+          "display": "회사 위치 지도",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "export_file",
+          "display": "vCard 내보내기",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "권한 거부 → vCard 파일 + 공유 시트",
+      "promotionBasis": "구조해석",
+      "pitfalls": "payment_card와 최난도 혼동쌍 — 애매하면 차단. 이메일 도메인으로 회사명 교차검증. vCard QR 있으면 L0에서 종료",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "wifi_credentials": {
+      "id": 2,
+      "motive": "A",
+      "situation": "카페에 앉았고 비밀번호를 손으로 치기 싫다",
+      "priority": "P1",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "ssid",
+        "password",
+        "security"
+      ],
+      "primary": [
+        {
+          "verb": "connect_wifi",
+          "display": "Wi-Fi 접속",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "copy_text",
+          "display": "비밀번호 복사",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "노트 저장(재방문용)",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "추출 실패 → 비밀번호 복사",
+      "promotionBasis": "전용API",
+      "pitfalls": "완전 온디바이스 — LLM·서버·자체모델 전부 불필요. l/1/O/0 오독이 치명적. Android는 시스템 다이얼로그 필요",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "appliance_nameplate": {
+      "id": 3,
+      "motive": "A",
+      "situation": "부품이나 매뉴얼을 찾아야 한다",
+      "priority": "P2",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "modelNumber",
+        "serialNumber",
+        "manufacturer"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "모델명 검색",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "search",
+          "display": "매뉴얼 조회",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "copy_text",
+          "display": "모델명 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "보증 등록"
+        }
+      ],
+      "fallback": "검색어 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "검색 의도가 100% 명확. 모델/시리얼 구분이 관건",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "care_tag": {
+      "id": 4,
+      "motive": "A",
+      "situation": "이 옷 어떻게 세탁하지",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L1",
+      "extractionFields": [
+        "세탁 기호 → 세탁법 텍스트"
+      ],
+      "primary": [
+        {
+          "verb": "show_detail",
+          "display": "세탁법 설명 표시",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "의류와 함께 기록",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "이미지 검색",
+      "promotionBasis": "의미해석",
+      "pitfalls": "텍스트가 없어 L2를 건너뜀 — 계층 모델의 예외. 기호가 국제표준이라 정확도는 높음. 실사용 빈도 낮음",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "book_cover": {
+      "id": 5,
+      "motive": "A",
+      "situation": "이 책 나중에 읽어보자",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "title",
+        "author",
+        "isbn"
+      ],
+      "primary": [
+        {
+          "verb": "save_note",
+          "display": "독서 목록에 추가 (자체 저장소)",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "search",
+          "display": "서점·도서관 검색",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "search",
+          "display": "리뷰 조회",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "add_to_album",
+          "display": "앨범에 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "제목 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "ISBN 바코드가 있으면 L0에서 종료 — 그 경우 클래스 불필요",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "profile_screenshot": {
+      "id": 6,
+      "motive": "A",
+      "situation": "이 사람 연락처로 저장해두자",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "name",
+        "handle",
+        "org",
+        "phone",
+        "email (앱별 서식)"
+      ],
+      "primary": [
+        {
+          "verb": "create_contact",
+          "display": "연락처 추가",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "open_url",
+          "display": "링크 열기",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "스크린샷은 EXIF로 무료 감지. OCR 정확도 거의 100%. 앱별 레이아웃 고정. 실사용 빈도가 명함보다 높을 수 있음",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "bill_invoice": {
+      "id": 7,
+      "motive": "B",
+      "situation": "고지서를 받았고 납부일을 까먹을 것 같다",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "issuer",
+        "amount",
+        "dueDate",
+        "accountNumber",
+        "customerNumber"
+      ],
+      "primary": [
+        {
+          "verb": "create_reminder",
+          "display": "납부 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "copy_text",
+          "display": "계좌번호 복사",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "copy_text",
+          "display": "금액 복사",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "권한 거부 → 자체 저장소 + 로컬 알림",
+      "promotionBasis": "구조해석",
+      "pitfalls": "receipt와 방향 반대 — 미래 날짜 + 계좌번호로 판별. financial_doc(통장·명세서)과 혼동 주의. 은행앱 금액 미리채움은 불가",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "event_flyer": {
+      "id": 8,
+      "motive": "B",
+      "situation": "포스터를 봤고 그날 시간을 비워둬야 한다",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "title",
+        "start",
+        "end",
+        "location",
+        "description",
+        "ticketUrl"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "open_map",
+          "display": "장소 지도",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "create_reminder",
+          "display": "사전 알림",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "open_url",
+          "display": "예매 링크",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "권한 거부 → ICS 내보내기",
+      "promotionBasis": "구조해석",
+      "pitfalls": "연도 미기재가 흔함 → 추정임을 표시. 과거 날짜면 경고. menu와 혼동(둘 다 텍스트+이미지) → 일시 필드 유무로 분기",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "llm",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "appointment_slip": {
+      "id": 9,
+      "motive": "B",
+      "situation": "병원에서 다음 진료 예약증을 받았다",
+      "priority": "P1",
+      "tier": 0,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "datetime",
+        "institution",
+        "department",
+        "confirmationNumber"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정 + 사전 알림 (전날 + 1시간 전)",
+          "baseScore": 0.7
+        },
+        {
+          "verb": "create_reminder",
+          "display": "캘린더 일정 + 사전 알림 (전날 + 1시간 전)",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "open_map",
+          "display": "병원 위치 지도",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "call",
+          "display": "전화 걸기",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "ICS 내보내기",
+      "promotionBasis": "구조해석",
+      "pitfalls": "Tier 0 — 의료기관·진료과가 진료 이력 노출. 캘린더는 로컬 API라 업로드 없이 완결 가능. 일정 제목에 진료과 포함 여부를 사용자가 선택(캘린더는 공유될 수 있음)",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [
+        "booking_screenshot"
+      ],
+      "retainsRawText": true
+    },
+    "parking_restriction": {
+      "id": 10,
+      "motive": "B",
+      "situation": "주차했는데 표지판이 복잡하다. 견인당하고 싶지 않다",
+      "priority": "P1",
+      "tier": 2,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "규제 요일·시간대 → 다음 규제 시작 시각 역산"
+      ],
+      "primary": [
+        {
+          "verb": "create_reminder",
+          "display": "규제 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "주차 위치 좌표 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "show_detail",
+          "display": "규정 요약 표시",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "규정 텍스트 표시",
+      "promotionBasis": "의미해석",
+      "pitfalls": "'클래스가 필요한 이유'의 교과서 사례 — 텍스트 복사는 무의미, 규칙 해석이 전부. 좌표 축적 = 이동 이력이므로 로컬 전용. 주차 '위치'는 클래스 아님(신호 기반), '규정'만 클래스",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "llm",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "medication": {
+      "id": 11,
+      "motive": "B",
+      "situation": "약을 받았고 복용 시간을 놓칠까 걱정된다",
+      "priority": "P1",
+      "tier": 0,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "복용 시각만 (1일 N회 → 시각 리스트)"
+      ],
+      "primary": [
+        {
+          "verb": "create_recurring_reminder",
+          "display": "반복 복약 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "약 봉투 사진 보관 (자체 저장소)",
+          "baseScore": 0.45
+        }
+      ],
+      "unmapped": [],
+      "fallback": "L5a 불가 기기 → 규칙 기반만",
+      "promotionBasis": "구조해석",
+      "pitfalls": "용량(dose) 자동 추출 금지 — '1일 3회'→'1일 2회' 오독은 실제 복약 오류. 용량은 원본 크롭 표시로 대체. HealthKit 복약 쓰기 불가 → EKReminder 자체 구현. 온디바이스(L5a) 완결",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "delivery_notice": {
+      "id": 12,
+      "motive": "B",
+      "situation": "부재표를 받았다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "trackingNumber",
+        "carrier",
+        "deadline"
+      ],
+      "primary": [
+        {
+          "verb": "create_reminder",
+          "display": "수령 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "search",
+          "display": "배송 조회",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "copy_text",
+          "display": "운송장 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "call",
+          "display": "재배송 전화",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "운송장 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "한국·일본 빈도 높음. 바코드 있으면 L0 우선",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "schedule_table": {
+      "id": 13,
+      "motive": "B",
+      "situation": "시간표나 근무표를 받았다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "반복 규칙",
+        "항목별 시간·제목"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일괄 생성",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "이미지 보관",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "create_event",
+          "display": "개별 항목 선택 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "ICS 내보내기",
+      "promotionBasis": "구조해석",
+      "pitfalls": "격자 구조는 VIS에만 존재 — 텍스트 flatten 시 정보 소실. iOS 26 RecognizeDocumentsRequest가 완화할 수 있음(검증 필요). receipt와 혼동(둘 다 표) → 시간축 유무로 분기",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "ticket_boarding_pass": {
+      "id": 14,
+      "motive": "B",
+      "situation": "티켓을 예매했다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "eventName",
+        "datetime",
+        "venue",
+        "seat",
+        "gate",
+        "flightNumber"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정 + 사전 알림",
+          "baseScore": 0.7
+        },
+        {
+          "verb": "create_reminder",
+          "display": "캘린더 일정 + 사전 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "open_map",
+          "display": "장소 지도",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "바코드 이미지 보관",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "항공편 추적"
+        }
+      ],
+      "fallback": "ICS 내보내기",
+      "promotionBasis": "구조해석",
+      "pitfalls": "Wallet 추가 불가 — 서명된 .pkpass가 필요하므로 사진에서 생성 못 함. 바코드 이미지를 자체 저장소에 보관하는 것이 현실적 대안",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "gift_card_voucher": {
+      "id": 15,
+      "motive": "B",
+      "situation": "상품권을 받았다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "issuer",
+        "code",
+        "balance",
+        "expiryDate"
+      ],
+      "primary": [
+        {
+          "verb": "create_reminder",
+          "display": "만료 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "코드 보관",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "copy_text",
+          "display": "코드 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "open_url",
+          "display": "잔액 조회 링크",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "코드 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "만료일 vs 발행일 구분이 관건. 바코드 있으면 함께 보관",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "booking_screenshot": {
+      "id": 16,
+      "motive": "B",
+      "situation": "예약 확인 화면이다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "datetime",
+        "venue",
+        "confirmationNumber",
+        "partySize"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "open_map",
+          "display": "장소 지도",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "copy_text",
+          "display": "확인번호 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "call",
+          "display": "전화 걸기",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "ICS 내보내기",
+      "promotionBasis": "구조해석",
+      "pitfalls": "스크린샷 — OCR 정확도 거의 100%, 전처리 생략 가능. 항공·호텔·식당 서식이 각각 고정",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "chat_screenshot": {
+      "id": 17,
+      "motive": "B",
+      "situation": "대화로 약속을 잡았다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "약속 일시",
+        "장소",
+        "할 일 (커밋먼트)"
+      ],
+      "primary": [
+        {
+          "verb": "create_event",
+          "display": "캘린더 일정",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "create_reminder",
+          "display": "알림 생성",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "요약만 표시",
+      "promotionBasis": "의미해석",
+      "pitfalls": "제3자 데이터 — 추출 결과를 저장하지 않고 알림 생성에만 사용. 대화 내용 자체는 보관 금지. 인물 식별 금지",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "llm",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": false
+    },
+    "warranty_doc": {
+      "id": 18,
+      "motive": "B",
+      "situation": "보증서를 받았다",
+      "priority": "P3",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "product",
+        "purchaseDate",
+        "warrantyPeriod → 만료일 계산"
+      ],
+      "primary": [
+        {
+          "verb": "create_reminder",
+          "display": "보증 만료 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "export_file",
+          "display": "문서 PDF 보관",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "open_url",
+          "display": "제조사 지원 링크",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "PDF 저장",
+      "promotionBasis": "의미해석",
+      "pitfalls": "구매일 + 보증기간 계산이 필요. receipt와 함께 묶으면 가치 상승",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "plant_care_tag": {
+      "id": 19,
+      "motive": "B",
+      "situation": "식물을 샀는데 관리법을 모르겠다",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "plantName",
+        "wateringInterval",
+        "light",
+        "temperature"
+      ],
+      "primary": [
+        {
+          "verb": "create_recurring_reminder",
+          "display": "반복 물주기 알림",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "show_detail",
+          "display": "관리법 표시",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "식물 목록 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "관리법 텍스트 표시",
+      "promotionBasis": "의미해석",
+      "pitfalls": "'주 1회' → 반복 규칙 변환. 종 식별(Visual Look Up 중복)이 아니라 관리 라벨 판독임에 주의",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "receipt": {
+      "id": 20,
+      "motive": "C",
+      "situation": "경비 정산 / 가계부 / 반품 대비 / 더치페이 / 세금",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "merchant",
+        "datetime",
+        "total",
+        "currency",
+        "items[]",
+        "paymentMethod"
+      ],
+      "primary": [
+        {
+          "verb": "save_note",
+          "display": "지출 기록",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "split_bill",
+          "display": "더치페이 계산",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "convert_currency",
+          "display": "환율 환산",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "export_file",
+          "display": "경비용 PDF",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "copy_text",
+          "display": "금액 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "create_reminder",
+          "display": "반품 기한 알림",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "add_to_album",
+          "display": "앨범에 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "금액 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "카드번호 마스킹 필수(Luhn 통과 시 즉시). 다중 사진 클래스 — 월별 집계 + 묶음 내보내기가 본질. 3개월치 = 생활 패턴이므로 집계는 온디바이스 전용. 자동 지출 기록은 카드사 문자 자동수집과 중복이라 미제공(현금 영수증만 우위)",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "device_display": {
+      "id": 21,
+      "motive": "C",
+      "situation": "혈압을 쟀고 숫자를 기록해두라고 의사가 말했다",
+      "priority": "P1",
+      "tier": 0,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "7세그먼트 수치 + 단위 (수축/이완/맥박",
+        "혈당",
+        "체중)"
+      ],
+      "primary": [
+        {
+          "verb": "log_health_sample",
+          "display": "건강 기록",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "show_detail",
+          "display": "추이 그래프",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "export_file",
+          "display": "CSV 내보내기(진료용)",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "권한 거부 → 자체 저장소 + CSV",
+      "promotionBasis": "전용API",
+      "pitfalls": "최고 후보 — 완전 언어 독립(7세그먼트) + 고정 레이아웃 + 전용 API + 촬영 습관 존재. 반복 사용률 매우 높음(매일 측정). 온디바이스 완결 필수. Android는 Health Connect로 동등 대응",
+      "group": "health",
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "nutrition_label": {
+      "id": 22,
+      "motive": "C",
+      "situation": "이거 먹어도 되나. 칼로리 기록해야 하는데",
+      "priority": "P1",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "servingSize",
+        "calories",
+        "carbs",
+        "protein",
+        "fat",
+        "sodium",
+        "sugar"
+      ],
+      "primary": [
+        {
+          "verb": "log_health_sample",
+          "display": "영양 기록",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "show_detail",
+          "display": "성분 표시",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "add_to_album",
+          "display": "앨범에 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "1회 제공량 환산"
+        }
+      ],
+      "fallback": "권한 거부 → 자체 저장소",
+      "promotionBasis": "구조해석",
+      "pitfalls": "법정 고정 서식 → 소형 모델 정확도 최상, ROI 제한 가능. 사용자가 섭식 관련 어려움을 보이면 수치 강조·목표 대비 표시를 하지 않는다",
+      "group": "health",
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "document_general": {
+      "id": 23,
+      "motive": "C",
+      "situation": "서류를 보관해야 한다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "title",
+        "date",
+        "본문 텍스트"
+      ],
+      "primary": [
+        {
+          "verb": "export_file",
+          "display": "PDF 변환 후 저장",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "export_via_share_sheet",
+          "display": "공유 시트 내보내기",
+          "baseScore": 0.45
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "텍스트 추출"
+        },
+        {
+          "slot": "secondary",
+          "display": "요약"
+        }
+      ],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "원근 보정 필수(VNDetectDocumentSegmentation). 사실상 잔여 경로에 가까움 — 클래스로 유지할지 검토 필요",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "workout_display": {
+      "id": 24,
+      "motive": "C",
+      "situation": "운동을 마쳤다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "duration",
+        "distance",
+        "calories",
+        "workoutType"
+      ],
+      "primary": [
+        {
+          "verb": "log_health_sample",
+          "display": "운동 기록",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "show_detail",
+          "display": "추이 그래프",
+          "baseScore": 0.45
+        }
+      ],
+      "unmapped": [],
+      "fallback": "자체 저장소",
+      "promotionBasis": "전용API",
+      "pitfalls": "러닝머신·실내자전거 종료 화면. device_display와 판독 방식은 동일(7세그먼트/LCD)",
+      "group": "health",
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "payment_screenshot": {
+      "id": 25,
+      "motive": "C",
+      "situation": "송금했다 / 결제했다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "amount",
+        "recipient",
+        "datetime"
+      ],
+      "primary": [
+        {
+          "verb": "save_note",
+          "display": "지출 기록",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "split_bill",
+          "display": "더치페이 계산",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "convert_currency",
+          "display": "환율 환산",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "export_file",
+          "display": "경비용 PDF",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "copy_text",
+          "display": "금액 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "create_reminder",
+          "display": "반품 기한 알림",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "add_to_album",
+          "display": "앨범에 추가",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "금액 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "계좌번호 마스킹 필수. financial_doc과 경계가 모호 — 스크린샷 여부로 구분",
+      "group": null,
+      "aliasOf": "receipt",
+      "resolution": "rules",
+      "maskingRules": [
+        "account_number"
+      ],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "error_screen": {
+      "id": 26,
+      "motive": "D",
+      "situation": "뭔가 고장났다. 이게 무슨 뜻인지 모르겠다",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "errorCode",
+        "deviceModel",
+        "appName",
+        "message"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "해결책 검색",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "copy_text",
+          "display": "코드 복사",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "open_url",
+          "display": "제조사 지원 페이지",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "save_note",
+          "display": "노트 저장(AS 문의용)",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "촬영 빈도 높고 의도가 100% 명확. 구현 단순. 스크린샷과 기기 LCD 양쪽 모두 해당",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "llm",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "menu": {
+      "id": 27,
+      "motive": "D",
+      "situation": "외국어 메뉴다. 뭘 시켜야 할지 모르겠다",
+      "priority": "P2",
+      "tier": 2,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "요리명[]",
+        "가격[]",
+        "카테고리"
+      ],
+      "primary": [
+        {
+          "verb": "translate",
+          "display": "번역 + 요리 설명",
+          "baseScore": 0.7
+        },
+        {
+          "verb": "show_detail",
+          "display": "번역 + 요리 설명",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "convert_currency",
+          "display": "가격 환산",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "search",
+          "display": "사진 검색",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "추천"
+        }
+      ],
+      "fallback": "번역만",
+      "promotionBasis": "의미해석",
+      "pitfalls": "여행 시나리오. event_flyer와 혼동 → 일시 필드 유무로 분기. 가격 우측정렬 열이 시각적 구분자",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "foreign_sign": {
+      "id": 28,
+      "motive": "D",
+      "situation": "뭐라고 쓴 거지",
+      "priority": "P2",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "원문 텍스트",
+        "감지 언어"
+      ],
+      "primary": [
+        {
+          "verb": "translate",
+          "display": "번역",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "copy_text",
+          "display": "원문 복사",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "search",
+          "display": "관련 검색",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "전용API",
+      "pitfalls": "iOS Live Text와 기능이 겹침 — 차별점이 약해 클래스 유지 여부 검토 필요. 유니버설 '번역' 액션으로 충분할 수 있음",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "transit_sign": {
+      "id": 29,
+      "motive": "D",
+      "situation": "이 버스 언제 오지 / 어디로 가지",
+      "priority": "P2",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "routeNumber",
+        "stopCode",
+        "stopName",
+        "destination"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "노선·도착 조회",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "정류장 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "open_map",
+          "display": "경로 안내",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "정류장명 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "지역별 서식 차이가 큼. 실시간 도착 정보는 외부 API 의존",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "business_hours": {
+      "id": 30,
+      "motive": "D",
+      "situation": "지금 열었나 / 언제 오면 되지",
+      "priority": "P2",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "요일별 영업시간",
+        "휴무일"
+      ],
+      "primary": [
+        {
+          "verb": "save_note",
+          "display": "영업시간 저장 (자체 저장소)",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "create_reminder",
+          "display": "방문 알림",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "open_map",
+          "display": "지도",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "call",
+          "display": "전화",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 표시",
+      "promotionBasis": "의미해석",
+      "pitfalls": "요일×시간 표 해석 필요. storefront(간판)와 함께 나오는 경우가 많음",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "instruction_manual": {
+      "id": 31,
+      "motive": "D",
+      "situation": "이거 어떻게 쓰는 거지",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "단계별 지시사항",
+        "주의사항"
+      ],
+      "primary": [
+        {
+          "verb": "show_detail",
+          "display": "단계 요약 표시",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "export_file",
+          "display": "PDF 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "translate",
+          "display": "번역",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "search",
+          "display": "검색",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "의미해석",
+      "pitfalls": "긴 텍스트라 요약이 핵심. 다중 사진일 가능성 높음",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "price_tag": {
+      "id": 32,
+      "motive": "E",
+      "situation": "살까 말까. 다른 데가 싼가",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "productName",
+        "price",
+        "unitPrice",
+        "currency"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "가격 비교 검색",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "장보기 목록 추가",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "가격 기록",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "copy_text",
+          "display": "금액 복사",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "가격 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "단위가격 vs 총액 구분이 관건. 바코드 있으면 L0 우선",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "product_packaging": {
+      "id": 33,
+      "motive": "E",
+      "situation": "이 제품 정보를 알고 싶다",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "brand",
+        "productName",
+        "volume"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "제품 검색",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "장보기 목록",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "search",
+          "display": "가격 비교",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "search",
+          "display": "리뷰 조회",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "제품명 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "바코드가 훨씬 정확 — 바코드 있으면 클래스 불필요. Visual Look Up과 중복 위험",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "wine_label": {
+      "id": 34,
+      "motive": "E",
+      "situation": "이 와인 어떤 거지 / 기록해두자",
+      "priority": "P3",
+      "tier": 2,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "producer",
+        "vintage",
+        "varietal",
+        "region"
+      ],
+      "primary": [
+        {
+          "verb": "search",
+          "display": "와인 정보 조회",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "시음 노트 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "search",
+          "display": "평점 조회",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "open_url",
+          "display": "구매 링크",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "라벨 텍스트 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "니치하지만 충성도 높음. 병 곡면 왜곡 보정 필요",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "handwritten_note": {
+      "id": 35,
+      "motive": "A",
+      "situation": "회의 화이트보드 / 수업 필기 / 냅킨에 적은 아이디어",
+      "priority": "P1",
+      "tier": 1,
+      "terminatingLayer": "L5",
+      "extractionFields": [
+        "정리된 텍스트",
+        "할 일 목록",
+        "제목 추정"
+      ],
+      "primary": [
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "create_reminder",
+          "display": "할 일 항목별 알림",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "copy_text",
+          "display": "텍스트 복사",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "export_file",
+          "display": "PDF",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "원문 텍스트만 표시",
+      "promotionBasis": "의미해석",
+      "pitfalls": "필기 vs 인쇄는 텍스트로 판정 불가 → VIS 필수. 정리 과정에서 없는 내용 추가 위험 → 근거 대조 필수. 원문/정리본 토글 제공",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "llm",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "lecture_slide": {
+      "id": 36,
+      "motive": "C",
+      "situation": "수업 슬라이드를 찍어뒀다",
+      "priority": "P2",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "슬라이드 순서",
+        "제목",
+        "본문"
+      ],
+      "primary": [
+        {
+          "verb": "export_file",
+          "display": "PDF 묶음 생성",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.45
+        }
+      ],
+      "unmapped": [
+        {
+          "slot": "secondary",
+          "display": "텍스트 추출"
+        },
+        {
+          "slot": "secondary",
+          "display": "요약"
+        }
+      ],
+      "fallback": "개별 이미지 저장",
+      "promotionBasis": "구조해석",
+      "pitfalls": "다중 사진 클래스 — 순서 정렬, 중복 제거, 묶음 경계 판정이 필요. 단일 사진 파이프라인과 다른 처리",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    },
+    "code_screenshot": {
+      "id": 37,
+      "motive": "A",
+      "situation": "코드나 로그를 공유받았다",
+      "priority": "P3",
+      "tier": 1,
+      "terminatingLayer": "L3",
+      "extractionFields": [
+        "언어 추정",
+        "코드 본문"
+      ],
+      "primary": [
+        {
+          "verb": "copy_text",
+          "display": "코드 텍스트 복사",
+          "baseScore": 0.7
+        }
+      ],
+      "secondary": [
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.45
+        },
+        {
+          "verb": "show_detail",
+          "display": "문법 강조 표시",
+          "baseScore": 0.35
+        },
+        {
+          "verb": "search",
+          "display": "검색",
+          "baseScore": 0.35
+        }
+      ],
+      "unmapped": [],
+      "fallback": "텍스트 복사",
+      "promotionBasis": "구조해석",
+      "pitfalls": "스크린샷 — OCR 정확도 높음. 들여쓰기 보존이 관건. 실사용 빈도는 개발자 한정",
+      "group": null,
+      "aliasOf": null,
+      "resolution": "rules",
+      "maskingRules": [],
+      "coPresentWhenScreenshot": [],
+      "retainsRawText": true
+    }
+  },
+  "blockingClasses": {
+    "id_document": {
+      "id": 38,
+      "visualDiscriminators": "카드 비율, 증명사진 영역, 홀로그램/기하 패턴, 국가별 고정 서식",
+      "userFacing": "'민감한 문서로 보여 기기 안에서만 처리했어요'",
+      "provides": "텍스트 표시·복사 (로컬)",
+      "confusionRisk": "business_card ↔ 유출 위험",
+      "tier": 0
+    },
+    "payment_card": {
+      "id": 39,
+      "visualDiscriminators": "엠보싱 16자리, IC 칩 사각형, 브랜드 로고 위치, 무광/유광 표면",
+      "userFacing": "동일",
+      "provides": "로컬 표시만 · 번호 마스킹",
+      "confusionRisk": "business_card ↔ 최난도",
+      "tier": 0
+    },
+    "medical_record": {
+      "id": 40,
+      "visualDiscriminators": "병원 서식 헤더, 검사 수치 표, 환자 식별 영역",
+      "userFacing": "동일",
+      "provides": "로컬 표시·복사",
+      "confusionRisk": "medication ↔ (둘 다 Tier 0라 유출 위험은 없음)",
+      "tier": 0
+    },
+    "financial_doc": {
+      "id": 41,
+      "visualDiscriminators": "거래 내역 행, MICR 라인, 계좌번호 블록",
+      "userFacing": "동일",
+      "provides": "로컬 표시 · 계좌번호 마스킹",
+      "confusionRisk": "receipt / bill_invoice ↔",
+      "tier": 0
+    }
+  },
+  "rankingSignals": [
+    {
+      "signal": "촬영-공유 시간차",
+      "source": "EXIF DateTimeOriginal",
+      "inference": "3초 전 = 지금 뭔가 하려는 중(의도 명확) / 3개월 전 = 사진첩 정리 중(의도 불명확)",
+      "affects": "전체 — 신뢰도 상하향 및 후보 개수"
+    },
+    {
+      "signal": "요일 · 시각",
+      "source": "시스템 시계",
+      "inference": "평일 낮 = 업무 경비 / 주말 저녁 = 더치페이",
+      "affects": "receipt 부 액션 순서"
+    },
+    {
+      "signal": "POI 카테고리",
+      "source": "CLGeocoder 역지오코딩",
+      "inference": "식당·카페·주차장·병원 등",
+      "affects": "receipt, parking, appointment_slip"
+    },
+    {
+      "signal": "운전→정지 전이",
+      "source": "CMMotionActivity",
+      "inference": "방금 주차했다",
+      "affects": "주차 위치 저장 (임계값 0.25)"
+    },
+    {
+      "signal": "차량 블루투스 해제",
+      "source": "AVAudioSession 라우트 변경",
+      "inference": "동일 — 보조 신호",
+      "affects": "주차 위치 저장"
+    },
+    {
+      "signal": "GPS 부재 · 저정확도",
+      "source": "EXIF GPS",
+      "inference": "실내 정황 (단 메신저 경유로 EXIF가 지워졌을 수도 있음)",
+      "affects": "주차, storefront"
+    },
+    {
+      "signal": "스크린샷 여부",
+      "source": "EXIF Make/Model 부재 + 해상도 교차확인",
+      "inference": "디지털 텍스트 → OCR 정확도 100%, 전처리 생략, .fast 시도 가능",
+      "affects": "OCR 설정 + 스크린샷 계열 6개 클래스"
+    },
+    {
+      "signal": "감지 언어",
+      "source": "NLLanguageRecognizer",
+      "inference": "기기 언어와 다르면 번역 수요",
+      "affects": "translate 액션 상향"
+    },
+    {
+      "signal": "통화 단위",
+      "source": "L3 추출",
+      "inference": "해외 통화 = 여행 정산",
+      "affects": "receipt 환율 환산 상향"
+    },
+    {
+      "signal": "동일 상호 반복",
+      "source": "자체 저장소 이력",
+      "inference": "정기 지출",
+      "affects": "receipt 자동 분류"
+    },
+    {
+      "signal": "온보딩 성향",
+      "source": "최초 1회 사용자 선택",
+      "inference": "경비 정산 / 가계부 / 일정 관리 / 건강 기록 / 여행·번역",
+      "affects": "전체 — 정렬 가중치 기본값"
+    },
+    {
+      "signal": "선택 이력",
+      "source": "누적 (M2+)",
+      "inference": "같은 클래스에서 3회 연속 같은 선택 → 그 액션을 최상단",
+      "affects": "전체 — 순서만 변경, 자동 실행은 하지 않음"
+    }
+  ]
+}

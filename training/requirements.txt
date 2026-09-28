@@ -1,0 +1,32 @@
+# 게이트 모델 학습 전용. 앱 타겟과 무관합니다.
+# Python 3.11+ 기준.
+
+# --- 학습 (트랙 A) ---
+torch>=2.4
+torchvision>=0.19
+
+# --- 내보내기 ---
+coremltools>=8.0
+
+# --- 데이터/합성 ---
+numpy>=1.26
+pillow>=10.4
+opencv-python>=4.10      # 원근 왜곡 / 배경 합성
+faker>=28.0              # 템플릿 슬롯 채울 무작위 텍스트(이름/주소/번호)
+
+# --- 지표 ---
+scikit-learn>=1.5        # 혼동 행렬, precision/recall
+
+# --- 기타 ---
+pyyaml>=6.0
+tqdm>=4.66
+
+# --- 툴체인 주의 (2026-09-16 실측) -----------------------------------------
+# * Python 3.12 를 씁니다. 시스템 python 3.14 에는 coremltools 휠이 없습니다.
+#   make setup 이 python3.12 로 .venv 를 만듭니다.
+# * coremltools 9.0 은 torch 2.7.0 까지만 테스트됐고 설치된 건 2.14.0 입니다.
+#   학습에는 무관하고, 변환(세션 3)에서 문제가 생기면 두 가지 길이 있습니다:
+#     (a) torch 2.7 + torchvision 0.22 로 함께 내리기
+#     (b) 애초에 계획된 가중치 JSON 경로로 넘기기 (export/README.md 참고)
+# * "scikit-learn 1.9.1 is not supported" 경고는 coremltools 의 sklearn 변환
+#   API에 대한 것입니다. 우리는 PyTorch 를 변환하므로 무관합니다.

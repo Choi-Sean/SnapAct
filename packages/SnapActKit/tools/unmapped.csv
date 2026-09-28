@@ -1,0 +1,9 @@
+class,priority,slot,display,status,proposed,note
+appliance_nameplate,P2,secondary,보증 등록,open,open_url | save_note,"제조사 보증 등록. 외부 페이지로 보낼지, 구매일만 자체 저장할지."
+ticket_boarding_pass,P2,secondary,항공편 추적,open,open_url | search,"항공사/추적 서비스 URL 을 열지, 검색어를 만들지."
+nutrition_label,P1,secondary,1회 제공량 환산,open,show_detail,통화 환산이 아니라 영양 계산. convert_currency 로 넣으면 안 됨. 앱 내 계산 동사가 필요할 수 있음.
+document_general,P2,secondary,텍스트 추출,open,copy_text | show_detail,OCR 결과를 복사할지 패널로 보여줄지. D 단계 확정 후 결정.
+document_general,P2,secondary,요약,open,show_detail,LLM 요약. 동사는 표시지만 생성은 L5 — 범위 밖이라 보류.
+menu,P2,secondary,추천,open,show_detail,menu 의 요리 추천. LLM 생성물이라 L5 이며 이번 범위 밖.
+lecture_slide,P2,secondary,텍스트 추출,open,copy_text | show_detail,OCR 결과를 복사할지 패널로 보여줄지. D 단계 확정 후 결정.
+lecture_slide,P2,secondary,요약,open,show_detail,LLM 요약. 동사는 표시지만 생성은 L5 — 범위 밖이라 보류.

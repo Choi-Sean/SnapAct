@@ -11,6 +11,24 @@ around the extension's memory ceiling — that's exactly the risk this whole
 split was meant to manage, and it can only be checked on a real device with
 Instruments attached.
 
+## 0. Which classifier is canonical — decided 2026-09-27, action deferred
+
+Three on-device classifiers exist in this repo right now:
+- `apps/expo/modules/coreml-classify` — 5-class CoreML gate, **live**:
+  wired into `apps/expo/src/layer0/visionGate.ts` and already running in
+  the shipped RN app.
+- `apps/ios/ShareExtension/ImageClassifier.swift` — hand-written, part of
+  this folder's unbuilt pipeline (see intro above).
+- `packages/SnapActKit` — CLIP-based, 37-class, evaluated on 662 real
+  photos (see its README/TESTING.md). Not imported anywhere yet.
+
+Decision: keep the CoreML 5-class gate as what's live for now.
+`SnapActKit` is the target it and `ImageClassifier.swift` both get
+replaced by, once someone's back on a Mac — don't invest further in
+`ImageClassifier.swift` in the meantime. This is a documentation-only
+decision; no code changed to make it. Revisit when Mac/Xcode work on
+this folder resumes.
+
 ## 1. expo-share-intent conflict — DONE, `disableIOS: true` set in app.json
 
 `apps/expo` has `expo-share-intent` installed, and its config plugin used

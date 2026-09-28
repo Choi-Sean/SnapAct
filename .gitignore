@@ -40,3 +40,20 @@ Thumbs.db
 # Claude Code project instructions — local-only from here on, per user request.
 CLAUDE.md
 **/CLAUDE.md
+
+# Swift / SPM
+packages/*/.build/
+packages/*/.swiftpm/
+
+# Python — 프로젝트 공용 환경 (리포 루트). 재생성: make setup
+.venv/
+__pycache__/
+*.py[cod]
+
+# MobileCLIP 텍스트 인코더 (81MB) — 프롬프트 임베딩을 만들 때만 쓰고 앱에는
+# 넣지 않습니다. 저장소에도 두지 않습니다. 재다운로드:
+#   huggingface-cli download apple/coreml-mobileclip \
+#       mobileclip_s0_text.mlpackage --local-dir ./models
+# 앱에 들어가는 이미지 인코더(22MB)는 커밋되며, 위치가 다릅니다:
+#   packages/SnapActKit/Sources/SnapActKit/Resources/
+models/

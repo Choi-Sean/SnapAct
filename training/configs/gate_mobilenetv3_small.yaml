@@ -1,0 +1,77 @@
+# 게이트 학습 설정 — 트랙 A (PyTorch MobileNetV3-Small fine-tune)
+#
+# 스펙 고정값(클래스 목록/순서, 독립 시그모이드, 비대칭 임계값)은 여기가 아니라
+# gate/classes.py에 있습니다. 이 파일은 하이퍼파라미터만 담습니다.
+
+model:
+  backbone: mobilenet_v3_small
+  pretrained: imagenet          # 사전학습 가중치에서 fine-tune
+  input_size: 224
+  dropout: 0.2
+  # 출력은 5차원 raw logit. 시그모이드는 손실(BCEWithLogitsLoss)과
+  # 내보내기 시점에만 적용 — 두 번 적용되지 않도록.
+
+data:
+  # 합성은 학습에만. 검증에는 절대 들어가지 않습니다 (gate/data.py가 코드로 막습니다).
+  train:
+    synth_dir: data/synth
+    real_dir: data/real/train
+  val:
+    real_dir: data/real/val
+  num_workers: 4
+  # 에폭당 실촬영:합성 샘플링 비율. 실촬영이 훨씬 적으므로 가중 샘플링으로
+  # 실사진이 매 에폭 충분히 등장하게 합니다.
+  real_oversample: 3.0
+
+train:
+  epochs: 40
+  batch_size: 64
+  optimizer: adamw
+  lr: 3.0e-4
+  backbone_lr_mult: 0.1         # 사전학습 백본은 헤드보다 느리게
+  weight_decay: 1.0e-4
+  scheduler: cosine
+  warmup_epochs: 2
+  device: auto                  # cuda > mps > cpu
+
+  loss:
+    name: BCEWithLogitsLoss     # softmax/CrossEntropy 아님 — 스펙 고정
+    # 클래스 불균형: positive가 적으므로 pos_weight 적용.
+    # auto = 학습셋에서 neg/pos 비율로 클래스별 계산.
+    pos_weight: auto
+    pos_weight_cap: 20.0        # auto가 과하게 튀는 것 방지
+
+  early_stop:
+    # loss가 아니라 positive 재현율 기준 — 스펙 고정.
+    metric: min_blocking_recall # 4개 차단 클래스 재현율 중 최솟값
+    mode: max
+    patience: 8
+  checkpoint:
+    # 최고 재현율 체크포인트를 저장. loss 최저점이 아님.
+    select_on: min_blocking_recall
+    dir: runs
+
+eval:
+  # gate/classes.py의 기본값. 스윕 결과가 나오면 여기서 확정합니다.
+  block_threshold: 0.30
+  safe_threshold: 0.90
+  sweep:
+    block_threshold: {start: 0.10, stop: 0.90, step: 0.05}
+    # 2D 스윕(차단 x safe). decide()가 두 임계값을 함께 쓰므로 권장
+    # 동작점은 1D로 고를 수 없습니다. safe 범위가 높은 쪽에 몰린 이유는
+    # safe 판정이 유출 위험을 지는 주장이기 때문입니다.
+    safe_threshold: {start: 0.50, stop: 0.95, step: 0.05}
+  report:
+    csv_dir: runs/eval
+    # 별도 라인으로 뽑을 오탐 쌍은 gate.classes.TRACKED_FALSE_POSITIVE_PAIRS 참조
+    # (business_card -> payment_card, business_card -> id_document)
+
+augment:
+  # 합성 생성 시 적용 (synth/augment.py). occlusion은 빼지 말 것.
+  perspective: {enabled: true, max_warp: 0.25}
+  occlusion:   {enabled: true, max_patches: 3, max_area_frac: 0.18}
+  lighting:    {enabled: true, modes: [fluorescent, backlight, hard_shadow]}
+  blur:        {enabled: true, max_kernel: 9}
+  rotation:    {enabled: true, max_degrees: 20}
+  background:  {enabled: true, dir: synth/templates/backgrounds}
+  jpeg:        {enabled: true, quality_range: [35, 92]}

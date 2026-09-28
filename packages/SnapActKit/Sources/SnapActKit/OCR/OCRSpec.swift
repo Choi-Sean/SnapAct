@@ -47,7 +47,6 @@ public struct OCRSpec: Decodable, Sendable {
 
     public struct SkipClasses: Decodable, Sendable {
         public let classes: [CategoryID]
-        public let skipUnknown: Bool
     }
 
     public struct PerClass: Decodable, Sendable {
@@ -88,12 +87,16 @@ public extension OCRSpec {
 
     /// Whether this category is worth OCRing at all.
     ///
-    /// `unknown` and the negatives are skipped because there is no text to act
-    /// on in a photo of a dog — and OCR is the expensive step, so skipping it
-    /// is most of what cost control means here.
-    func needsOCR(_ category: CategoryID, isNegative: Bool) -> Bool {
-        if isNegative { return false }
-        if category == .unknown { return !skipClasses.skipUnknown }
+    /// - Parameter hasNothingToRead: the caller's judgement, not a lookup.
+    ///   `unknown` is not one situation: a negative top class or a prefilter
+    ///   rejection means a photo of a dog, while an unknown produced by a
+    ///   confidence threshold may be covered in text. An earlier version had a
+    ///   `skipUnknown` flag that treated both alike, and the effect was that
+    ///   with thresholds still null EVERY photo was unknown and the entire
+    ///   text path was silently dead. One flag, decided by the caller that
+    ///   knows which kind it is holding — see PhotoPipeline.hasNothingToRead.
+    func needsOCR(_ category: CategoryID, hasNothingToRead: Bool) -> Bool {
+        if hasNothingToRead { return false }
         return !skipClasses.classes.contains(category)
     }
 }

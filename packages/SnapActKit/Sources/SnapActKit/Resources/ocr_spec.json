@@ -20,8 +20,7 @@
   "skipClasses": {
     "_note": "OCR 을 아예 돌리지 않는 클래스. 텍스트가 목적이 아니거나(care_tag 는 세탁 기호), 애초에 액션 대상이 아닌 경우입니다.",
     "classes": ["care_tag"],
-    "_skipNegatives": "네거티브 클래스(음식·동물·풍경 등)와 unknown 은 목록과 무관하게 건너뜁니다. 코드에서 처리합니다.",
-    "skipUnknown": true
+    "_readOnlyWhatHasText": "네거티브(음식·동물·풍경)가 1위이거나 사전필터에 걸린 사진은 읽을 텍스트가 없으므로 건너뜁니다. 이 판단은 목록이 아니라 라우터의 unknown 사유로 정해집니다 (PhotoPipeline.hasNothingToRead). 임계값 미달로 생긴 unknown 은 글자로 가득할 수 있으므로 건너뛰지 않습니다 — 예전에 이 둘을 같이 취급해서, 임계값이 null 인 동안 모든 사진이 unknown 이 되어 텍스트 경로 전체가 조용히 죽어 있었습니다."
   },
 
   "perClass": {

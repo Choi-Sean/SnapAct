@@ -45,15 +45,31 @@ struct OCRTests {
         #expect(s.defaults.maxLanguages > 0)
     }
 
-    @Test("care_tag · 네거티브 · unknown 은 OCR 을 건너뛴다")
+    @Test("읽을 게 없는 사진만 건너뛴다 — unknown 은 한 가지가 아니다")
     func skipsWhereTextIsNotThePoint() throws {
         let s = try spec()
         // care_tag is laundry symbols, not text.
-        #expect(!s.needsOCR(CategoryID("care_tag"), isNegative: false))
-        #expect(!s.needsOCR(CategoryID("neg_food"), isNegative: true))
-        #expect(!s.needsOCR(.unknown, isNegative: false))
-        #expect(s.needsOCR(CategoryID("receipt"), isNegative: false))
-        #expect(s.needsOCR(CategoryID("business_card"), isNegative: false))
+        #expect(!s.needsOCR(CategoryID("care_tag"), hasNothingToRead: false))
+        // A photo of a dog.
+        #expect(!s.needsOCR(CategoryID("neg_food"), hasNothingToRead: true))
+        // Unknown because nothing cleared the threshold — may be full of text.
+        #expect(s.needsOCR(.unknown, hasNothingToRead: false))
+        // Unknown because the prefilter saw scenery.
+        #expect(!s.needsOCR(.unknown, hasNothingToRead: true))
+        #expect(s.needsOCR(CategoryID("receipt"), hasNothingToRead: false))
+    }
+
+    @Test("라우터의 unknown 사유가 OCR 여부를 가른다")
+    func unknownReasonDecidesOCR() {
+        func routing(_ reason: UnknownReason?) -> RoutingResult {
+            RoutingResult(category: .unknown, score: 0.2, margin: 0.01, alternates: [],
+                          source: .clip, unknownReason: reason, structuralAdjustments: [:])
+        }
+        #expect(PhotoPipeline.hasNothingToRead(routing(.topClassIsNegative(CategoryID("neg_food")))))
+        #expect(PhotoPipeline.hasNothingToRead(routing(.prefilterRejected(label: "food", confidence: 0.9))))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(.thresholdsNotConfigured)))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(.scoreBelowThreshold(score: 0.1, threshold: 0.2))))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(nil)))
     }
 
     @Test("skip 대상 클래스가 실재한다")

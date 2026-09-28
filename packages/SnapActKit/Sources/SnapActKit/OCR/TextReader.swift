@@ -48,10 +48,10 @@ public struct TextReader: Sendable {
     ///   call this on the main queue (ios-platform.md).
     public func read(_ image: CGImage,
                      category: CategoryID,
-                     isNegative: Bool = false,
+                     hasNothingToRead: Bool = false,
                      isScreenshot: Bool = false,
                      preferredLanguages: [String] = Locale.preferredLanguages) throws -> TextReadResult {
-        guard spec.needsOCR(category, isNegative: isNegative) else {
+        guard spec.needsOCR(category, hasNothingToRead: hasNothingToRead) else {
             return TextReadResult(spans: [], plan: nil, durationMs: 0,
                                   skipped: .classDoesNotNeedOCR(category))
         }

@@ -18,11 +18,16 @@ public struct RankingConfig: Decodable, Sendable {
     public struct Smoothing: Decodable, Sendable {
         /// How much evidence it takes to overturn the default order.
         ///
-        /// Measured against the spreadsheet's "three consecutive picks moves
-        /// it to the top": with priors 0.70 / 0.45 / 0.35, alpha 10 flips the
-        /// first secondary action on the third pick but the rest only on the
-        /// fourth. Alpha 8 flips both on the third. Left at 10 as specified —
-        /// see the test that measures it.
+        /// Chosen by measurement against the spreadsheet's rule that three
+        /// consecutive picks move an action to the top. With priors
+        /// 0.70 / 0.45 / 0.35 the flip points are:
+        ///
+        ///   alpha 8   third pick, third pick      <- satisfies the rule
+        ///   alpha 10  third pick, FOURTH pick
+        ///   alpha 15  fourth pick, sixth pick
+        ///
+        /// So 8, not the 10 the brief started from — which was marked
+        /// configurable and only satisfies the rule for the higher prior.
         public let alpha: Double
     }
 

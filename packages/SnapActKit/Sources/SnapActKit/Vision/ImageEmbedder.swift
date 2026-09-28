@@ -125,6 +125,70 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
         return out
     }
 
+    /// Which hardware the model will actually run on.
+    ///
+    /// Not a curiosity. Measured over 662 real photos, CPU and Neural Engine
+    /// disagree about the top class 6.3% of the time (embedding cosine median
+    /// 0.992, minimum 0.971) — so "which device ran this" is a real
+    /// confounder in any evaluation, and class_embeddings.json plus whatever
+    /// thresholds get tuned are all Neural Engine numbers.
+    ///
+    /// Asking Core ML directly rather than assuming: requesting
+    /// .cpuAndNeuralEngine does not guarantee the Neural Engine was used, and
+    /// a silent fall back to CPU would otherwise look like a worse model.
+    ///
+    /// Costs a compile and a plan load, so this is called once by whoever
+    /// records it, not per photo.
+    public func computeDeviceSummary() async throws -> ComputeDeviceSummary {
+        guard let url = bundle.url(forResource: Self.modelName, withExtension: "mlpackage") else {
+            throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")
+        }
+        let compiled = try await MLModel.compileModel(at: url)
+        let plan = try await MLComputePlan.load(contentsOf: compiled, configuration: configuration)
+        // Throws rather than returning zeros: a summary of "nothing ran
+        // anywhere" is indistinguishable from a summary that failed to be
+        // taken, and the whole point of this is to notice a silent fallback.
+        guard case let .program(program) = plan.modelStructure else {
+            throw EncoderError.unexpectedInterface(
+                "MLComputePlan 구조가 program 이 아닙니다: \(plan.modelStructure)")
+        }
+        guard let function = program.functions["main"] else {
+            throw EncoderError.unexpectedInterface(
+                "program 에 main 함수가 없습니다: \(Array(program.functions.keys))")
+        }
+        var neuralEngine = 0, gpu = 0, cpu = 0
+        for operation in function.block.operations {
+            // MLComputeDevice is an ENUM, not a protocol with class
+            // conformers — so `case is MLNeuralEngineComputeDevice` never
+            // matches and every count silently stays zero. Its description
+            // prints as "<MLNeuralEngineComputeDevice: 0x…>", which makes the
+            // wrong version look like it should work.
+            guard let preferred = plan.deviceUsage(for: operation)?.preferred else { continue }
+            switch preferred {
+            case .neuralEngine: neuralEngine += 1
+            case .gpu: gpu += 1
+            case .cpu: cpu += 1
+            @unknown default: break
+            }
+        }
+        return ComputeDeviceSummary(neuralEngine: neuralEngine, gpu: gpu, cpu: cpu)
+    }
+
+    public struct ComputeDeviceSummary: Sendable, Codable, Equatable {
+        public let neuralEngine: Int
+        public let gpu: Int
+        public let cpu: Int
+
+        public var total: Int { neuralEngine + gpu + cpu }
+        /// 1.0 means everything ran where the reference embeddings came from.
+        public var neuralEngineFraction: Double {
+            total == 0 ? 0 : Double(neuralEngine) / Double(total)
+        }
+        public var description: String {
+            "ANE \(neuralEngine) / GPU \(gpu) / CPU \(cpu)"
+        }
+    }
+
     /// Fails at load rather than producing nonsense later if the bundled model
     /// is replaced with one that has a different interface.
     private static func verifyInterface(_ model: MLModel) throws {

@@ -708,6 +708,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
                 </Text>
               )}
               <Text style={styles.fieldLabel}>{mealRelationLabel(result.medication.relation_to_meal) ?? t.home.medicationTimingUnspecified}</Text>
+              <Text style={styles.medicationWarning}>{t.home.medicationVerifyWarning}</Text>
             </View>
           )}
 
@@ -764,6 +765,7 @@ export default function AnalyzeScreen({ history, onBatchSaved, onSaved, sharedPh
         subtitle={
           result?.suggested_action === 'reminder' ? t.home.timeConfirm.subtitleMedication : t.home.timeConfirm.subtitleEvent
         }
+        photoUri={result?.suggested_action === 'reminder' ? photo?.uri : undefined}
         onCancel={() => setTimeConfirmVisible(false)}
         onConfirm={handleTimeConfirm}
       />
@@ -865,6 +867,7 @@ const styles = StyleSheet.create({
   cardBody: { fontSize: 14, color: '#444' },
   fieldBlock: { gap: 2 },
   fieldLabel: { fontSize: 13, color: '#444' },
+  medicationWarning: { fontSize: 12.5, color: '#b45309', fontWeight: '700', marginTop: 6 },
   receiptPreview: {
     fontFamily: 'monospace',
     fontSize: 13,

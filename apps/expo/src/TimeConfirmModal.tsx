@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useLanguage } from './i18n/LanguageProvider';
 import { t as fmt } from './i18n/dictionaries';
@@ -15,6 +15,10 @@ interface Props {
   visible: boolean;
   slotCount: number;
   subtitle: string;
+  // Shown so the slot count (read from the photo by AI — see
+  // medicationVerifyWarning) can be double-checked right where it's locked
+  // in, not just back on the result screen behind this modal.
+  photoUri?: string;
   onCancel: () => void;
   onConfirm: (times: TimeSelection[]) => void;
 }
@@ -28,7 +32,7 @@ function formatHour(locale: string, hour: number): string {
 // Generalized "pick a time when the photo didn't state one" step — used both
 // for medication doses (one slot per times_per_day) and calendar events
 // (a single slot) whenever the backend reports needs_time_selection.
-export default function TimeConfirmModal({ visible, slotCount, subtitle, onCancel, onConfirm }: Props) {
+export default function TimeConfirmModal({ visible, slotCount, subtitle, photoUri, onCancel, onConfirm }: Props) {
   const { t, locale } = useLanguage();
   const [selections, setSelections] = useState<number[]>([]);
 
@@ -47,6 +51,7 @@ export default function TimeConfirmModal({ visible, slotCount, subtitle, onCance
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.title}>{t.home.timeConfirm.title}</Text>
+          {photoUri && <Image source={{ uri: photoUri }} style={styles.photo} resizeMode="cover" />}
           <Text style={styles.subtitle}>{subtitle}</Text>
 
           <View style={styles.slots}>
@@ -101,6 +106,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   title: { fontSize: 19, fontWeight: '800', color: '#111' },
+  photo: { width: '100%', height: 140, borderRadius: 12, marginTop: 4 },
   subtitle: { fontSize: 13, color: '#777', lineHeight: 18 },
   slots: { gap: 14, marginTop: 8 },
   slotRow: { gap: 8 },

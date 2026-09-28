@@ -96,6 +96,7 @@ export interface Dictionary {
     medicationTimingAfterMeal: string;
     medicationTimingWithMeal: string;
     medicationTimingUnspecified: string;
+    medicationVerifyWarning: string;
     receiptSubtotalLabel: string;
     receiptTaxLabel: string;
     receiptTotalLabel: string;
@@ -379,6 +380,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: 'After meals',
       medicationTimingWithMeal: 'With meals',
       medicationTimingUnspecified: 'No timing specified',
+      medicationVerifyWarning: 'AI-read from the photo — check the dosage and frequency against the label before confirming.',
       receiptSubtotalLabel: 'Subtotal',
       receiptTaxLabel: 'Tax',
       receiptTotalLabel: 'Total',
@@ -397,7 +399,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       saveFailTitle: 'Save failed',
       timeConfirm: {
         title: 'Confirm reminder time',
-        subtitleMedication: 'No exact time was found on the label — pick when to be reminded.',
+        subtitleMedication: 'No exact time was found on the label — pick when to be reminded. Double-check the dose count below against the photo first.',
         subtitleEvent: 'No exact time was found in the photo — pick a time for this event.',
         doseLabelTemplate: 'Dose {n}',
         confirmButton: 'Confirm & Save',
@@ -679,6 +681,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: '식후',
       medicationTimingWithMeal: '식사와 함께',
       medicationTimingUnspecified: '시간 미지정',
+      medicationVerifyWarning: 'AI가 사진에서 읽은 값이에요 — 확정하기 전에 용량·횟수를 약 봉투/라벨과 꼭 대조해주세요.',
       receiptSubtotalLabel: '소계',
       receiptTaxLabel: '세금',
       receiptTotalLabel: '합계',
@@ -697,7 +700,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       saveFailTitle: '저장 실패',
       timeConfirm: {
         title: '알림 시간 선택',
-        subtitleMedication: '정확한 복용 시간이 적혀있지 않아요. 알림 받을 시간을 선택해주세요.',
+        subtitleMedication: '정확한 복용 시간이 적혀있지 않아요. 알림 받을 시간을 선택해주세요. 아래 횟수부터 사진과 대조해서 확인해주세요.',
         subtitleEvent: '사진에서 정확한 시간을 찾지 못했어요. 일정 시간을 선택해주세요.',
         doseLabelTemplate: '{n}회차',
         confirmButton: '확인하고 저장',
@@ -988,6 +991,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       medicationTimingAfterMeal: 'Después de las comidas',
       medicationTimingWithMeal: 'Con las comidas',
       medicationTimingUnspecified: 'Sin horario especificado',
+      medicationVerifyWarning: 'Leído por IA desde la foto — verifica la dosis y frecuencia con la etiqueta antes de confirmar.',
       receiptSubtotalLabel: 'Subtotal',
       receiptTaxLabel: 'Impuesto',
       receiptTotalLabel: 'Total',
@@ -1006,7 +1010,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       saveFailTitle: 'Error al guardar',
       timeConfirm: {
         title: 'Confirmar hora del recordatorio',
-        subtitleMedication: 'No se encontró una hora exacta en la etiqueta — elige cuándo quieres el recordatorio.',
+        subtitleMedication: 'No se encontró una hora exacta en la etiqueta — elige cuándo quieres el recordatorio. Primero verifica el número de dosis abajo con la foto.',
         subtitleEvent: 'No se encontró una hora exacta en la foto — elige una hora para este evento.',
         doseLabelTemplate: 'Toma {n}',
         confirmButton: 'Confirmar y guardar',

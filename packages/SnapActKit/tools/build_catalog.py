@@ -171,17 +171,50 @@ def _cell(row, i):
     return str(row[i]).strip() if i < len(row) and row[i] is not None else ""
 
 
+class Columns:
+    """Resolves columns by HEADER NAME, not position.
+
+    Positions were hardcoded until a later edit inserted "iOS 액션" and
+    "Android 액션" between 부 액션 and 폴백. Everything after shifted by two,
+    so index 10 — which had been the fallback — started returning an iOS API
+    string. Nothing errored; the catalog would simply have carried iOS
+    framework names in its fallback field.
+    """
+
+    def __init__(self, header_row, required: list[str], sheet: str):
+        self.index = {}
+        for position, cell in enumerate(header_row):
+            name = str(cell).strip() if cell is not None else ""
+            if name and name not in self.index:
+                self.index[name] = position
+        missing = [name for name in required if name not in self.index]
+        if missing:
+            raise SystemExit(
+                f"'{sheet}' 시트에 필요한 열이 없습니다: {missing}\n"
+                f"  있는 열: {list(self.index)}"
+            )
+
+    def get(self, row, name: str, default: str = "") -> str:
+        position = self.index.get(name)
+        if position is None:
+            return default
+        return _cell(row, position)
+
+
 def load_verbs(wb) -> dict:
+    rows = list(wb["액션어휘"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["동사", "대상 API", "확인 등급", "되돌리기"], "액션어휘")
     verbs = {}
-    for row in list(wb["액션어휘"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 0)
+    for row in rows[1:]:
+        name = cols.get(row, "동사")
         if not re.fullmatch(r"[a-z_][a-z0-9_]*", name):
             continue  # the sheet's trailing prose rows ("에이전트 규칙", "· ...")
         verbs[name] = {
-            "api": _cell(row, 1),
-            "confirmation": CONFIRMATION.get(_cell(row, 2), _cell(row, 2)),
-            "undoable": _cell(row, 3) == "가능",
-            "note": _cell(row, 4),
+            "api": cols.get(row, "대상 API"),
+            "confirmation": CONFIRMATION.get(cols.get(row, "확인 등급"),
+                                             cols.get(row, "확인 등급")),
+            "undoable": cols.get(row, "되돌리기") == "가능",
+            "note": cols.get(row, "비고"),
         }
     return verbs
 
@@ -220,14 +253,17 @@ def extract(text: str, whitelist: set[str], aliases: dict[str, list[str]], *, sp
 
 
 def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tuple[dict, list[dict]]:
+    rows = list(wb["클래스별액션"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["ID", "클래스", "우선도", "Tier", "종료계층",
+                             "주 액션", "부 액션", "폴백"], "클래스별액션")
     classes, unmapped_report = {}, []
-    for row in list(wb["클래스별액션"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 1)
+    for row in rows[1:]:
+        name = cols.get(row, "클래스")
         if not name:
             continue
 
-        primary, un_primary = extract(_cell(row, 8), whitelist, aliases, split=False)
-        secondary, un_secondary = extract(_cell(row, 9), whitelist, aliases, split=True)
+        primary, un_primary = extract(cols.get(row, "주 액션"), whitelist, aliases, split=False)
+        secondary, un_secondary = extract(cols.get(row, "부 액션"), whitelist, aliases, split=True)
 
         for slot, items in (("primary", un_primary), ("secondary", un_secondary)):
             for display in items:
@@ -239,13 +275,13 @@ def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tupl
             a["baseScore"] = SCORE_SECONDARY_FIRST if i == 0 else SCORE_SECONDARY_REST
 
         classes[name] = {
-            "id": int(_cell(row, 0)) if _cell(row, 0).isdigit() else None,
-            "motive": _cell(row, 2),
-            "situation": _cell(row, 3),
-            "priority": _cell(row, 4),
-            "tier": int(_cell(row, 5)) if _cell(row, 5).isdigit() else None,
-            "terminatingLayer": _cell(row, 6),
-            "extractionFields": [f.strip() for f in _cell(row, 7).split(",") if f.strip()],
+            "id": int(cols.get(row, "ID")) if cols.get(row, "ID").isdigit() else None,
+            "motive": cols.get(row, "동기"),
+            "situation": cols.get(row, "사용자 상황"),
+            "priority": cols.get(row, "우선도"),
+            "tier": int(cols.get(row, "Tier")) if cols.get(row, "Tier").isdigit() else None,
+            "terminatingLayer": cols.get(row, "종료계층"),
+            "extractionFields": [f.strip() for f in cols.get(row, "추출 필드").split(",") if f.strip()],
             "primary": primary,
             "secondary": secondary,
             "unmapped": [
@@ -253,9 +289,9 @@ def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tupl
                 for s, items in (("primary", un_primary), ("secondary", un_secondary))
                 for d in items
             ],
-            "fallback": _cell(row, 10),
-            "promotionBasis": _cell(row, 11),
-            "pitfalls": _cell(row, 12),
+            "fallback": cols.get(row, "폴백"),
+            "promotionBasis": cols.get(row, "승격 근거"),
+            "pitfalls": cols.get(row, "함정·특이"),
             # Filled by apply_review_adjustments.
             "group": None,
             "aliasOf": None,
@@ -268,33 +304,37 @@ def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tupl
 
 
 def load_blocking(wb) -> dict:
+    rows = list(wb["차단클래스"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["ID", "클래스"], "차단클래스")
     out = {}
-    for row in list(wb["차단클래스"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 1)
+    for row in rows[1:]:
+        name = cols.get(row, "클래스")
         if not re.fullmatch(r"[a-z_]+", name):
             continue  # trailing "공통 원칙" prose rows
         out[name] = {
-            "id": int(_cell(row, 0)) if _cell(row, 0).isdigit() else None,
-            "visualDiscriminators": _cell(row, 2),
-            "userFacing": _cell(row, 3),
-            "provides": _cell(row, 4),
-            "confusionRisk": _cell(row, 5),
+            "id": int(cols.get(row, "ID")) if cols.get(row, "ID").isdigit() else None,
+            "visualDiscriminators": cols.get(row, "시각적 구분자"),
+            "userFacing": cols.get(row, "사용자에게 보이는 것"),
+            "provides": cols.get(row, "제공하는 것"),
+            "confusionRisk": cols.get(row, "혼동 위험"),
             "tier": 0,
         }
     return out
 
 
 def load_signals(wb) -> list[dict]:
+    rows = list(wb["랭킹신호"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["신호", "출처"], "랭킹신호")
     out = []
-    for row in list(wb["랭킹신호"].iter_rows(values_only=True))[1:]:
-        name, source = _cell(row, 0), _cell(row, 1)
+    for row in rows[1:]:
+        name, source = cols.get(row, "신호"), cols.get(row, "출처")
         if not name or not source:
             continue  # trailing "핵심 원칙" prose rows have no source
         out.append({
             "signal": name,
             "source": source,
-            "inference": _cell(row, 2),
-            "affects": _cell(row, 3),
+            "inference": cols.get(row, "추론 내용"),
+            "affects": cols.get(row, "영향받는 클래스·액션"),
         })
     return out
 

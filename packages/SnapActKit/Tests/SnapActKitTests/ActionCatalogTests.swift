@@ -55,6 +55,30 @@ struct ActionCatalogTests {
         }
     }
 
+    @Test("필드가 엑셀의 엉뚱한 열에서 읽히지 않았다")
+    func fieldsComeFromTheRightColumns() throws {
+        // The generator read columns by position until an edit inserted
+        // "iOS 액션" and "Android 액션" in the middle, shifting everything
+        // after by two. Index 10 had been the fallback and started returning
+        // an iOS framework name instead. Nothing errored — the catalog would
+        // just have carried "Contacts (CNContactStore…)" as a fallback.
+        let catalog = try unvalidated()
+        let platformAPIMarkers = ["CNContact", "Intent.ACTION", "SFSafariViewController",
+                                  "NEHotspotConfiguration", "UIPasteboard", "EKEvent"]
+        for (category, photoClass) in catalog.classes {
+            for marker in platformAPIMarkers {
+                #expect(!photoClass.fallback.contains(marker),
+                        "\(category).fallback 에 플랫폼 API 문자열이 들어왔습니다: \(photoClass.fallback)")
+            }
+            // 승격 근거 is one of three fixed words; anything else means the
+            // column moved.
+            if !photoClass.promotionBasis.isEmpty {
+                #expect(["구조해석", "의미해석", "전용API"].contains(photoClass.promotionBasis),
+                        "\(category).promotionBasis = \(photoClass.promotionBasis)")
+            }
+        }
+    }
+
     // MARK: - Review decisions that a spreadsheet edit could silently undo
 
     @Test("캡션 동사는 존재하지 않는다 — PhotoKit 에 쓰기 API 가 없다")

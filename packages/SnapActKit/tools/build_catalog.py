@@ -28,6 +28,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from collections import Counter
+
 import openpyxl
 
 REPO = Path(__file__).resolve().parents[3]
@@ -45,6 +47,36 @@ SCORE_PRIMARY = 0.70
 SCORE_SECONDARY_FIRST = 0.45
 SCORE_SECONDARY_REST = 0.35
 SCORE_UNIVERSAL = 0.20
+
+# ---------------------------------------------------------------------------
+# Class-level priors from the review (검토결과 + 랭킹 초기 점수 columns).
+#
+# The score is `우선도 기준점 × 검토결과 배수`, reverse-engineered from the
+# filled cells: P1=100 / P2=60 / P3=30, 승인=1.0 / 수정필요=0.7. 보류 and
+# 삭제 were left blank — no multiplier was assigned to them.
+#
+# What the score actually controls: ranking only ever compares candidates
+# WITHIN one photo, so a class score never competes with another class's.
+# It sets the balance between this class's own actions and the universal
+# ones, which are fixed at 0.20 and never scaled. Measured:
+#
+#   score 100 -> primary 0.700   class action wins
+#   score  30 -> primary 0.210   barely wins
+#   score  21 -> primary 0.147   the universal action wins
+#
+# A blank score therefore becomes 0: the class's specific actions are not
+# promoted above the generic ones yet. That is not a guess dressed as a
+# number — it is the absence of a score, and it matches every one of the ten
+# 보류 reasons, which are all "the capability to handle this class is not
+# there yet", never "these actions are wrong".
+#
+# It is also not permanent. smoothedRate is
+# (clicks + alpha*basePrior)/(impressions + alpha), so at basePrior 0 a
+# repeatedly tapped action still climbs. Filling the score in the
+# spreadsheet is what promotes it from the start.
+PRIORITY_BASE = {"P1": 100.0, "P2": 60.0, "P3": 30.0}
+VERDICT_MULTIPLIER = {"승인": 1.0, "수정필요": 0.7}
+NO_SCORE_VERDICTS = {"보류", "삭제"}
 
 # From the 읽어보기 sheet: "모든 클래스에 유니버설 액션(노트 저장·리마인더·복사·
 # 검색·번역)과 [기타] 버튼이 항상 함께 깔립니다." It is prose in a readme sheet
@@ -171,17 +203,50 @@ def _cell(row, i):
     return str(row[i]).strip() if i < len(row) and row[i] is not None else ""
 
 
+class Columns:
+    """Resolves columns by HEADER NAME, not position.
+
+    Positions were hardcoded until a later edit inserted "iOS 액션" and
+    "Android 액션" between 부 액션 and 폴백. Everything after shifted by two,
+    so index 10 — which had been the fallback — started returning an iOS API
+    string. Nothing errored; the catalog would simply have carried iOS
+    framework names in its fallback field.
+    """
+
+    def __init__(self, header_row, required: list[str], sheet: str):
+        self.index = {}
+        for position, cell in enumerate(header_row):
+            name = str(cell).strip() if cell is not None else ""
+            if name and name not in self.index:
+                self.index[name] = position
+        missing = [name for name in required if name not in self.index]
+        if missing:
+            raise SystemExit(
+                f"'{sheet}' 시트에 필요한 열이 없습니다: {missing}\n"
+                f"  있는 열: {list(self.index)}"
+            )
+
+    def get(self, row, name: str, default: str = "") -> str:
+        position = self.index.get(name)
+        if position is None:
+            return default
+        return _cell(row, position)
+
+
 def load_verbs(wb) -> dict:
+    rows = list(wb["액션어휘"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["동사", "대상 API", "확인 등급", "되돌리기"], "액션어휘")
     verbs = {}
-    for row in list(wb["액션어휘"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 0)
+    for row in rows[1:]:
+        name = cols.get(row, "동사")
         if not re.fullmatch(r"[a-z_][a-z0-9_]*", name):
             continue  # the sheet's trailing prose rows ("에이전트 규칙", "· ...")
         verbs[name] = {
-            "api": _cell(row, 1),
-            "confirmation": CONFIRMATION.get(_cell(row, 2), _cell(row, 2)),
-            "undoable": _cell(row, 3) == "가능",
-            "note": _cell(row, 4),
+            "api": cols.get(row, "대상 API"),
+            "confirmation": CONFIRMATION.get(cols.get(row, "확인 등급"),
+                                             cols.get(row, "확인 등급")),
+            "undoable": cols.get(row, "되돌리기") == "가능",
+            "note": cols.get(row, "비고"),
         }
     return verbs
 
@@ -220,32 +285,39 @@ def extract(text: str, whitelist: set[str], aliases: dict[str, list[str]], *, sp
 
 
 def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tuple[dict, list[dict]]:
+    rows = list(wb["클래스별액션"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["ID", "클래스", "우선도", "Tier", "종료계층",
+                             "주 액션", "부 액션", "폴백", "검토결과"], "클래스별액션")
     classes, unmapped_report = {}, []
-    for row in list(wb["클래스별액션"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 1)
+    for row in rows[1:]:
+        name = cols.get(row, "클래스")
         if not name:
             continue
 
-        primary, un_primary = extract(_cell(row, 8), whitelist, aliases, split=False)
-        secondary, un_secondary = extract(_cell(row, 9), whitelist, aliases, split=True)
+        primary, un_primary = extract(cols.get(row, "주 액션"), whitelist, aliases, split=False)
+        secondary, un_secondary = extract(cols.get(row, "부 액션"), whitelist, aliases, split=True)
 
         for slot, items in (("primary", un_primary), ("secondary", un_secondary)):
             for display in items:
                 unmapped_report.append({"class": name, "slot": slot, "display": display})
 
-        for i, a in enumerate(primary):
+        verdict = cols.get(row, "검토결과")
+        class_score = _class_score(cols.get(row, "랭킹 초기 점수 (0-100)"),
+                                   cols.get(row, "우선도"), verdict)
+        # Slot weight first, class scaling after — see _scale.
+        for a in primary:
             a["baseScore"] = SCORE_PRIMARY
         for i, a in enumerate(secondary):
             a["baseScore"] = SCORE_SECONDARY_FIRST if i == 0 else SCORE_SECONDARY_REST
 
         classes[name] = {
-            "id": int(_cell(row, 0)) if _cell(row, 0).isdigit() else None,
-            "motive": _cell(row, 2),
-            "situation": _cell(row, 3),
-            "priority": _cell(row, 4),
-            "tier": int(_cell(row, 5)) if _cell(row, 5).isdigit() else None,
-            "terminatingLayer": _cell(row, 6),
-            "extractionFields": [f.strip() for f in _cell(row, 7).split(",") if f.strip()],
+            "id": int(cols.get(row, "ID")) if cols.get(row, "ID").isdigit() else None,
+            "motive": cols.get(row, "동기"),
+            "situation": cols.get(row, "사용자 상황"),
+            "priority": cols.get(row, "우선도"),
+            "tier": int(cols.get(row, "Tier")) if cols.get(row, "Tier").isdigit() else None,
+            "terminatingLayer": cols.get(row, "종료계층"),
+            "extractionFields": [f.strip() for f in cols.get(row, "추출 필드").split(",") if f.strip()],
             "primary": primary,
             "secondary": secondary,
             "unmapped": [
@@ -253,9 +325,11 @@ def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tupl
                 for s, items in (("primary", un_primary), ("secondary", un_secondary))
                 for d in items
             ],
-            "fallback": _cell(row, 10),
-            "promotionBasis": _cell(row, 11),
-            "pitfalls": _cell(row, 12),
+            "reviewVerdict": cols.get(row, "검토결과"),
+            "classScore": class_score,
+            "fallback": cols.get(row, "폴백"),
+            "promotionBasis": cols.get(row, "승격 근거"),
+            "pitfalls": cols.get(row, "함정·특이"),
             # Filled by apply_review_adjustments.
             "group": None,
             "aliasOf": None,
@@ -267,34 +341,83 @@ def load_classes(wb, whitelist: set[str], aliases: dict[str, list[str]]) -> tupl
     return classes, unmapped_report
 
 
+def _class_score(raw: str, priority: str, verdict: str) -> float:
+    """The review's score, or the formula behind it, or zero.
+
+    Reads the column when it is filled. When it is not, recomputes it from
+    우선도 and 검토결과 — which reproduces every filled cell exactly — so a
+    newly added class with a verdict but no score still gets the right prior
+    instead of silently dropping to zero. Only the verdicts the review left
+    without a multiplier (보류, 삭제) end up at zero.
+    """
+    if raw:
+        try:
+            return float(raw)
+        except ValueError:
+            pass
+    if verdict in NO_SCORE_VERDICTS:
+        return 0.0
+    base = PRIORITY_BASE.get(priority)
+    multiplier = VERDICT_MULTIPLIER.get(verdict)
+    if base is None or multiplier is None:
+        return 0.0
+    return base * multiplier
+
+
+def _scale(classes: dict, warn) -> None:
+    """Applies the class score to its own actions.
+
+    Runs last so it covers actions an alias materialised from another class:
+    payment_screenshot inherits receipt's list but is 보류 itself, and must be
+    scaled by its own score rather than receipt's.
+
+    Universal actions are deliberately untouched — they belong to no class,
+    are present on every photo including unknown, and scaling them by a
+    category would make the one guaranteed action list depend on the guess
+    that was supposed to be optional.
+    """
+    for name, cls in classes.items():
+        factor = cls["classScore"] / 100.0
+        for slot in ("primary", "secondary"):
+            for action in cls[slot]:
+                action["slotScore"] = action["baseScore"]
+                action["baseScore"] = round(action["baseScore"] * factor, 4)
+        if factor == 0 and cls["reviewVerdict"] not in NO_SCORE_VERDICTS:
+            warn(f"{name}: 점수가 0 인데 검토결과가 '{cls['reviewVerdict']}' 입니다")
+
+
 def load_blocking(wb) -> dict:
+    rows = list(wb["차단클래스"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["ID", "클래스"], "차단클래스")
     out = {}
-    for row in list(wb["차단클래스"].iter_rows(values_only=True))[1:]:
-        name = _cell(row, 1)
+    for row in rows[1:]:
+        name = cols.get(row, "클래스")
         if not re.fullmatch(r"[a-z_]+", name):
             continue  # trailing "공통 원칙" prose rows
         out[name] = {
-            "id": int(_cell(row, 0)) if _cell(row, 0).isdigit() else None,
-            "visualDiscriminators": _cell(row, 2),
-            "userFacing": _cell(row, 3),
-            "provides": _cell(row, 4),
-            "confusionRisk": _cell(row, 5),
+            "id": int(cols.get(row, "ID")) if cols.get(row, "ID").isdigit() else None,
+            "visualDiscriminators": cols.get(row, "시각적 구분자"),
+            "userFacing": cols.get(row, "사용자에게 보이는 것"),
+            "provides": cols.get(row, "제공하는 것"),
+            "confusionRisk": cols.get(row, "혼동 위험"),
             "tier": 0,
         }
     return out
 
 
 def load_signals(wb) -> list[dict]:
+    rows = list(wb["랭킹신호"].iter_rows(values_only=True))
+    cols = Columns(rows[0], ["신호", "출처"], "랭킹신호")
     out = []
-    for row in list(wb["랭킹신호"].iter_rows(values_only=True))[1:]:
-        name, source = _cell(row, 0), _cell(row, 1)
+    for row in rows[1:]:
+        name, source = cols.get(row, "신호"), cols.get(row, "출처")
         if not name or not source:
             continue  # trailing "핵심 원칙" prose rows have no source
         out.append({
             "signal": name,
             "source": source,
-            "inference": _cell(row, 2),
-            "affects": _cell(row, 3),
+            "inference": cols.get(row, "추론 내용"),
+            "affects": cols.get(row, "영향받는 클래스·액션"),
         })
     return out
 
@@ -442,6 +565,7 @@ def main() -> int:
     signals = load_signals(wb)
     apply_review_adjustments(classes, verbs, warnings.append)
 
+    _scale(classes, warnings.append)
     errors = validate(classes, verbs, blocking)
 
     n_primary_ok = sum(1 for c in classes.values() if c["primary"])
@@ -450,7 +574,11 @@ def main() -> int:
     n_unmapped_primary = sum(1 for c in classes.values() for u in c["unmapped"] if u["slot"] == "primary")
     n_unmapped_secondary = sum(1 for c in classes.values() for u in c["unmapped"] if u["slot"] == "secondary")
 
+    verdicts = Counter(c["reviewVerdict"] or "(미기입)" for c in classes.values())
+    zero = [n for n, c in classes.items() if c["classScore"] == 0]
     print(f"클래스 {len(classes)}  차단 {len(blocking)}  동사 {len(verbs)}  신호 {len(signals)}")
+    print("검토결과 " + " · ".join(f"{k} {v}" for k, v in verdicts.most_common()))
+    print(f"점수 0 (클래스 액션을 유니버설 위로 올리지 않음) {len(zero)}개: {sorted(zero)}")
     print(f"주 액션 매핑 {n_primary_ok}/{len(classes)}   미매핑: 주 {n_unmapped_primary} · 부 {n_unmapped_secondary}")
     print(f"주 액션 없는 클래스 {n_no_primary}개 · 액션이 하나도 없는 클래스 {n_no_actions}개")
     print("  (유니버설 액션은 항상 깔리므로 빈 화면이 되지는 않습니다)")

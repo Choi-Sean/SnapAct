@@ -39,7 +39,13 @@ public extension ActionCatalog {
     /// personalisation. Ranking multiplies this; it never reorders by it alone.
     struct CatalogAction: Decodable, Sendable, Hashable {
         public let verb: VerbID
+        /// Prior after the class score has been applied. This is what ranking
+        /// uses.
         public let baseScore: Double
+        /// Before the class score — the slot's own weight (primary / first
+        /// secondary / rest). Kept so the debug screen can show whether a low
+        /// prior came from the slot or from the review.
+        public let slotScore: Double?
         /// Korean label from the spreadsheet. Absent on universal actions,
         /// which are named by the UI rather than per class.
         public let display: String?
@@ -112,6 +118,14 @@ public extension ActionCatalog {
         /// provenance so the debug screen can say where they came from.
         public let aliasOf: CategoryID?
         public let resolution: Resolution
+        /// 승인 · 수정필요 · 보류 · 삭제, straight from the review column.
+        public let reviewVerdict: String
+        /// 0-100. Scales this class's own actions against the universal ones,
+        /// which stay at 0.20. Zero means the review left it blank (보류 or
+        /// 삭제): the class's specific actions are not promoted above the
+        /// generic ones yet, though a repeatedly tapped one still climbs
+        /// because smoothing is additive.
+        public let classScore: Double
         public let maskingRules: [String]
         /// When the screenshot signal fires, offer these alongside rather than
         /// instead of this class. Ranking reorders; it never removes.

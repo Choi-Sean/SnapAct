@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "_note": "손으로 편집합니다. 점수식의 상수와 가중치를 코드에 박지 않으려고 분리했습니다.",
+
+  "smoothing": {
+    "_formula": "smoothedRate = (clicks + alpha * basePrior) / (impressions + alpha). 카운터가 0이면 식이 basePrior 와 같아져 첫 사용자도 정상 동작합니다.",
+    "_alphaNote": "alpha 는 '기본 순서를 뒤집는 데 몇 번이 필요한가'를 정합니다. 엑셀 랭킹신호 시트가 '같은 클래스에서 3회 연속 같은 선택 -> 그 액션을 최상단' 을 요구하므로, 그 조건을 만족하는 값을 실측으로 고른 것이 8 입니다. (주 0.70 기준 역전 시점 — alpha=8: 부 첫째 3회 / 부 나머지 3회, alpha=10: 3회 / 4회, alpha=15: 4회 / 6회.) 프롬프트의 초기값은 10 이었으나 '설정 가능' 으로 지정돼 있었고, 10 은 부 액션 첫째만 3회를 만족합니다.",
+    "alpha": 8.0
+  },
+
+  "exploration": {
+    "_note": "상위 3개만 노출하면 4위 이하는 영원히 학습되지 않습니다. 개인화가 초기 순서에 영구히 갇히는 것을 막는 장치입니다.",
+    "probability": 0.10,
+    "topK": 3,
+    "poolStart": 4,
+    "poolEnd": 8
+  },
+
+  "preconditions": {
+    "_note": "전제를 못 채우면 후보에서 제외합니다. 가능성 판정은 규칙이지 학습 대상이 아닙니다.",
+    "connect_wifi": { "requiresPattern": "(?i)(ssid|비밀번호|password|와이파이|wi-?fi)" },
+    "translate": { "requiresText": true },
+    "copy_text": { "requiresText": true },
+    "split_bill": { "requiresPattern": "[0-9][0-9,.]{2,}" },
+    "convert_currency": { "requiresPattern": "(?i)(\\$|€|£|¥|₩|usd|eur|jpy|krw|원)" }
+  },
+
+  "permissionFallbacks": {
+    "_note": "권한이 거부되면 동사를 지우지 않고 폴백으로 치환합니다. 엑셀 '폴백' 열과 ios-platform.md 의 권한 거부 표가 근거입니다.",
+    "create_contact": "export_file",
+    "create_event": "export_file",
+    "create_reminder": "save_note",
+    "create_recurring_reminder": "save_note",
+    "log_health_sample": "export_file",
+    "connect_wifi": "copy_text",
+    "add_to_album": "save_note"
+  },
+
+  "contextBoosts": {
+    "_note": "엑셀 랭킹신호 시트 기반. 곱셈으로 적용합니다. 1.0 은 영향 없음.",
+    "_todo": "가중치는 실사용 로그가 쌓인 뒤 결정. null 이면 적용되지 않습니다.",
+    "weekdayDaytime": { "verbs": ["export_file"], "boost": null },
+    "weekendEvening": { "verbs": ["split_bill"], "boost": null },
+    "capturedJustNow": {
+      "_note": "3초 전 촬영 = 지금 뭔가 하려는 중. 의도가 명확합니다.",
+      "verbs": ["create_event", "create_reminder", "create_contact"], "boost": null
+    },
+    "capturedLongAgo": {
+      "_note": "사진첩 정리 중. 의도가 불명확하므로 보관 계열을 올립니다.",
+      "verbs": ["save_note", "add_to_album"], "boost": null
+    },
+    "screenshot": { "verbs": ["copy_text", "save_note"], "boost": null }
+  },
+
+  "profileBoosts": {
+    "_note": "온보딩에서 최초 1회 고르는 성향. 정렬 가중치의 기본값 역할입니다.",
+    "_todo": "가중치 미정. null 이면 적용되지 않습니다.",
+    "expense":  { "verbs": ["export_file", "save_note"], "boost": null },
+    "budget":   { "verbs": ["save_note", "split_bill"], "boost": null },
+    "schedule": { "verbs": ["create_event", "create_reminder"], "boost": null },
+    "health":   { "verbs": ["log_health_sample"], "boost": null },
+    "travel":   { "verbs": ["translate", "convert_currency"], "boost": null }
+  }
+}

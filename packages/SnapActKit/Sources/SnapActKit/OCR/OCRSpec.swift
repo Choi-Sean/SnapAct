@@ -28,8 +28,8 @@ public struct OCRSpec: Decodable, Sendable {
         // explaining each decision. Those sit alongside real entries inside
         // typed dictionaries, so they are filtered rather than banned — the
         // notes are worth more than the uniformity.
-        perClass = try container.decodeIgnoringCommentKeys(
-            [CategoryID: PerClass].self, forKey: .perClass)
+        perClass = try container.decodeMapSkippingComments(PerClass.self, forKey: .perClass)
+            .reduce(into: [CategoryID: PerClass]()) { $0[CategoryID($1.key)] = $1.value }
     }
 
     public struct Defaults: Decodable, Sendable {
@@ -47,7 +47,6 @@ public struct OCRSpec: Decodable, Sendable {
 
     public struct SkipClasses: Decodable, Sendable {
         public let classes: [CategoryID]
-        public let skipUnknown: Bool
     }
 
     public struct PerClass: Decodable, Sendable {
@@ -66,36 +65,6 @@ public struct OCRSpec: Decodable, Sendable {
         case fast, accurate
 
         var vision: VNRequestTextRecognitionLevel { self == .fast ? .fast : .accurate }
-    }
-}
-
-extension KeyedDecodingContainer {
-    /// Decodes a dictionary, dropping keys that begin with "_".
-    ///
-    /// JSON has no comments, and a hand-edited config that cannot explain
-    /// itself gets edited wrongly. Underscore keys are the convention used
-    /// across these files for that explanation.
-    func decodeIgnoringCommentKeys<Value: Decodable>(
-        _ type: [CategoryID: Value].Type, forKey key: Key
-    ) throws -> [CategoryID: Value] {
-        let raw = try decode([String: CommentOr<Value>].self, forKey: key)
-        return raw.reduce(into: [CategoryID: Value]()) { result, entry in
-            guard !entry.key.hasPrefix("_"), let value = entry.value.value else { return }
-            result[CategoryID(entry.key)] = value
-        }
-    }
-}
-
-/// A value, or a comment string that should be skipped.
-struct CommentOr<Value: Decodable>: Decodable {
-    let value: Value?
-    init(from decoder: Decoder) throws {
-        if let string = try? decoder.singleValueContainer().decode(String.self) {
-            _ = string
-            value = nil
-        } else {
-            value = try Value(from: decoder)
-        }
     }
 }
 
@@ -118,12 +87,16 @@ public extension OCRSpec {
 
     /// Whether this category is worth OCRing at all.
     ///
-    /// `unknown` and the negatives are skipped because there is no text to act
-    /// on in a photo of a dog — and OCR is the expensive step, so skipping it
-    /// is most of what cost control means here.
-    func needsOCR(_ category: CategoryID, isNegative: Bool) -> Bool {
-        if isNegative { return false }
-        if category == .unknown { return !skipClasses.skipUnknown }
+    /// - Parameter hasNothingToRead: the caller's judgement, not a lookup.
+    ///   `unknown` is not one situation: a negative top class or a prefilter
+    ///   rejection means a photo of a dog, while an unknown produced by a
+    ///   confidence threshold may be covered in text. An earlier version had a
+    ///   `skipUnknown` flag that treated both alike, and the effect was that
+    ///   with thresholds still null EVERY photo was unknown and the entire
+    ///   text path was silently dead. One flag, decided by the caller that
+    ///   knows which kind it is holding — see PhotoPipeline.hasNothingToRead.
+    func needsOCR(_ category: CategoryID, hasNothingToRead: Bool) -> Bool {
+        if hasNothingToRead { return false }
         return !skipClasses.classes.contains(category)
     }
 }

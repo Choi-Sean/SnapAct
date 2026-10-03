@@ -48,3 +48,28 @@ struct StringKey: CodingKey {
     init?(stringValue: String) { self.stringValue = stringValue }
     init?(intValue: Int) { nil }
 }
+
+
+extension KeyedDecodingContainer {
+    /// Decodes a JSON object, skipping keys that begin with "_".
+    ///
+    /// JSON has no comments, and a hand-edited config that cannot explain
+    /// itself gets edited wrongly — so these files carry "_note"/"_todo" keys
+    /// alongside real entries.
+    ///
+    /// Filtering happens on the KEY, never by inspecting the value. An earlier
+    /// version tried "if it decodes as a String it must be a comment", which
+    /// silently discarded every entry of a String-valued map: the whole
+    /// permissionFallbacks table vanished and denied permissions stopped
+    /// falling back, with no error anywhere.
+    func decodeMapSkippingComments<Value: Decodable>(
+        _ type: Value.Type, forKey key: Key
+    ) throws -> [String: Value] {
+        let nested = try nestedContainer(keyedBy: StringKey.self, forKey: key)
+        var out: [String: Value] = [:]
+        for nestedKey in nested.allKeys where !nestedKey.stringValue.hasPrefix("_") {
+            out[nestedKey.stringValue] = try nested.decode(Value.self, forKey: nestedKey)
+        }
+        return out
+    }
+}

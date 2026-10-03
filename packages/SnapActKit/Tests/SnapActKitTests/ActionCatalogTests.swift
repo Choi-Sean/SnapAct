@@ -55,6 +55,67 @@ struct ActionCatalogTests {
         }
     }
 
+    @Test("클래스 점수가 액션 prior 에 반영됐다")
+    func classScoreScalesActions() throws {
+        let catalog = try unvalidated()
+        for (category, photoClass) in catalog.classes {
+            let factor = photoClass.classScore / 100.0
+            for action in photoClass.primary + photoClass.secondary {
+                let slot = try #require(action.slotScore)
+                #expect(abs(action.baseScore - slot * factor) < 1e-6,
+                        "\(category).\(action.verb): slot \(slot) × \(factor) ≠ \(action.baseScore)")
+            }
+        }
+    }
+
+    @Test("유니버설 액션은 클래스 점수로 스케일되지 않는다")
+    func universalActionsAreNotScaled() throws {
+        // They belong to no class and are present on every photo including
+        // unknown. Scaling them by a category would make the one guaranteed
+        // action list depend on the guess that was supposed to be optional.
+        let catalog = try unvalidated()
+        for action in catalog.universalActions {
+            #expect(action.baseScore == catalog.baseScores.universal)
+            #expect(action.slotScore == nil)
+        }
+    }
+
+    @Test("보류·삭제 클래스는 점수 0 이고 액션은 그대로 남는다")
+    func heldAndDeletedScoreZeroButKeepActions() throws {
+        let catalog = try unvalidated()
+        let zeroed = catalog.classes.filter { $0.value.classScore == 0 }
+        #expect(zeroed.count >= 10, "점수 0 인 클래스 \(zeroed.count)개")
+        for (category, photoClass) in zeroed {
+            #expect(["보류", "삭제"].contains(photoClass.reviewVerdict),
+                    "\(category) 점수가 0 인데 검토결과는 \(photoClass.reviewVerdict)")
+            // Ranking never removes. A deferred class still offers its
+            // buttons; they simply start below the universal ones.
+            #expect(!photoClass.primary.isEmpty, "\(category) 의 주 액션이 사라졌습니다")
+        }
+    }
+
+    @Test("alias 클래스는 물려받은 액션도 자기 점수로 스케일된다")
+    func aliasUsesItsOwnScore() throws {
+        let catalog = try unvalidated()
+        let payment = try #require(catalog[CategoryID("payment_screenshot")])
+        let receipt = try #require(catalog[CategoryID("receipt")])
+        #expect(payment.aliasOf == CategoryID("receipt"))
+        #expect(payment.primary.map(\.verb) == receipt.primary.map(\.verb))
+        // Same verbs, different priors: payment_screenshot is 보류 while
+        // receipt is 수정필요, so inheriting receipt's score would promote a
+        // deferred class.
+        #expect(payment.classScore != receipt.classScore)
+        #expect(payment.primary.first?.baseScore == 0)
+    }
+
+    @Test("검토결과가 37클래스 전부에 기입돼 있다")
+    func everyClassHasAVerdict() throws {
+        let missing = try unvalidated().classes
+            .filter { $0.value.reviewVerdict.isEmpty }
+            .keys.map(\.rawValue).sorted()
+        #expect(missing.isEmpty, "검토결과 공백: \(missing)")
+    }
+
     @Test("필드가 엑셀의 엉뚱한 열에서 읽히지 않았다")
     func fieldsComeFromTheRightColumns() throws {
         // The generator read columns by position until an edit inserted

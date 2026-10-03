@@ -5,6 +5,10 @@ public struct ActionCandidate: Sendable, Equatable {
     public let verb: VerbID
     public let display: String?
     public let basePrior: Double
+    /// The slot weight before the class score scaled it. Lets the debug
+    /// screen say whether a low prior came from the action's position or from
+    /// the review's verdict on the class.
+    public let slotScore: Double?
     public let origin: Origin
 
     public enum Origin: String, Sendable {
@@ -48,7 +52,8 @@ public struct CandidateGenerator: Sendable {
             guard !seen.contains(action.verb) else { return }
             seen.insert(action.verb)
             out.append(ActionCandidate(verb: action.verb, display: action.display,
-                                       basePrior: action.baseScore, origin: origin))
+                                       basePrior: action.baseScore,
+                                       slotScore: action.slotScore, origin: origin))
         }
 
         if let photoClass = catalog[category] {
@@ -95,6 +100,7 @@ public struct CandidateGenerator: Sendable {
         guard deniedPermissions.contains(candidate.verb),
               let fallback = config.permissionFallbacks[candidate.verb] else { return candidate }
         return ActionCandidate(verb: fallback, display: candidate.display,
-                               basePrior: candidate.basePrior, origin: .permissionFallback)
+                               basePrior: candidate.basePrior,
+                               slotScore: candidate.slotScore, origin: .permissionFallback)
     }
 }

@@ -240,14 +240,27 @@ public struct DebugRootView: View {
                       systemImage: "shuffle")
                     .font(.caption).foregroundStyle(.purple)
             }
-            grid(columns: ["#", "동사", "basePrior", "clicks/impr", "smoothed",
+            if let photoClass = model.photoClass(for: outcome.routing.category) {
+                HStack(spacing: 24) {
+                    figure("검토결과", photoClass.reviewVerdict)
+                    figure("클래스 점수", String(format: "%.0f", photoClass.classScore))
+                }
+                if photoClass.classScore == 0 {
+                    Text("점수 0 (\(photoClass.reviewVerdict)) — 이 클래스의 고유 액션은 유니버설 액션 "
+                         + "위로 올라가지 않습니다. 엑셀의 '랭킹 초기 점수' 를 채우면 바뀝니다.")
+                        .font(.caption).foregroundStyle(.orange)
+                }
+            }
+            grid(columns: ["#", "동사", "slot", "basePrior", "clicks/impr", "smoothed",
                            "ctx", "profile", "점수", "원순위", ""]) {
                 ForEach(Array(outcome.ranking.actions.enumerated()), id: \.offset) { index, action in
                     GridRow {
                         Text("\(index + 1)").monospaced()
                         Text(action.verb.rawValue).monospaced()
                             .foregroundStyle(index < 3 ? .primary : .secondary)
-                        Text(String(format: "%.2f", action.candidate.basePrior)).monospaced()
+                        Text(action.candidate.slotScore.map { String(format: "%.2f", $0) } ?? "-")
+                            .monospaced().foregroundStyle(.secondary)
+                        Text(String(format: "%.3f", action.candidate.basePrior)).monospaced()
                         Text("\(action.counter.clicks)/\(action.counter.impressions)").monospaced()
                         Text(String(format: "%.4f", action.smoothedRate)).monospaced()
                         Text(String(format: "%.2f", action.contextBoost)).monospaced()

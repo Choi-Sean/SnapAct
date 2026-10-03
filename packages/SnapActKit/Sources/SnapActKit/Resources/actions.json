@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFrom": "docs/SnapAct_클래스별액션_검토.xlsx",
-  "generatedAt": "2026-10-03T17:22:03+00:00",
+  "generatedAt": "2026-10-03T17:42:53+00:00",
   "sourceSha256": "7a03782ad3d75092ff50d17fa9aac0f44813b4842ef501d71d730a995d3470d5",
   "baseScores": {
     "primary": 0.7,
@@ -174,32 +174,39 @@
         {
           "verb": "create_contact",
           "display": "연락처 추가",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "call",
           "display": "전화 걸기",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "compose_message",
           "display": "메일 초안",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "open_map",
           "display": "회사 위치 지도",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "export_file",
           "display": "vCard 내보내기",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "권한 거부 → vCard 파일 + 공유 시트",
       "promotionBasis": "구조해석",
       "pitfalls": "payment_card와 최난도 혼동쌍 — 애매하면 차단. 이메일 도메인으로 회사명 교차검증. vCard QR 있으면 L0에서 종료",
@@ -226,22 +233,27 @@
         {
           "verb": "connect_wifi",
           "display": "Wi-Fi 접속",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "copy_text",
           "display": "비밀번호 복사",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "save_note",
           "display": "노트 저장(재방문용)",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "추출 실패 → 비밀번호 복사",
       "promotionBasis": "전용API",
       "pitfalls": "완전 온디바이스 — LLM·서버·자체모델 전부 불필요. l/1/O/0 오독이 치명적. Android는 시스템 다이얼로그 필요",
@@ -268,32 +280,39 @@
         {
           "verb": "search",
           "display": "모델명 검색",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "search",
           "display": "매뉴얼 조회",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
+        },
+        {
+          "verb": "save_note",
+          "display": "보증 등록",
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "copy_text",
           "display": "모델명 복사",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
-      "unmapped": [
-        {
-          "slot": "secondary",
-          "display": "보증 등록"
-        }
-      ],
+      "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "검색어 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "검색 의도가 100% 명확. 모델/시리얼 구분이 관건",
@@ -318,22 +337,27 @@
         {
           "verb": "show_detail",
           "display": "세탁법 설명 표시",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "save_note",
           "display": "의류와 함께 기록",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "이미지 검색",
       "promotionBasis": "의미해석",
       "pitfalls": "텍스트가 없어 L2를 건너뜀 — 계층 모델의 예외. 기호가 국제표준이라 정확도는 높음. 실사용 빈도 낮음",
@@ -360,27 +384,33 @@
         {
           "verb": "save_note",
           "display": "독서 목록에 추가 (자체 저장소)",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "search",
           "display": "서점·도서관 검색",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "search",
           "display": "리뷰 조회",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "add_to_album",
           "display": "앨범에 추가",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "제목 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "ISBN 바코드가 있으면 L0에서 종료 — 그 경우 클래스 불필요",
@@ -409,22 +439,27 @@
         {
           "verb": "create_contact",
           "display": "연락처 추가",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "open_url",
           "display": "링크 열기",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "스크린샷은 EXIF로 무료 감지. OCR 정확도 거의 100%. 앱별 레이아웃 고정. 실사용 빈도가 명함보다 높을 수 있음",
@@ -453,27 +488,33 @@
         {
           "verb": "create_reminder",
           "display": "납부 알림",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "copy_text",
           "display": "계좌번호 복사",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "create_event",
           "display": "캘린더 일정",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "copy_text",
           "display": "금액 복사",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "권한 거부 → 자체 저장소 + 로컬 알림",
       "promotionBasis": "구조해석",
       "pitfalls": "receipt와 방향 반대 — 미래 날짜 + 계좌번호로 판별. financial_doc(통장·명세서)과 혼동 주의. 은행앱 금액 미리채움은 불가",
@@ -503,27 +544,33 @@
         {
           "verb": "create_event",
           "display": "캘린더 일정",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "open_map",
           "display": "장소 지도",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "create_reminder",
           "display": "사전 알림",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "open_url",
           "display": "예매 링크",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "권한 거부 → ICS 내보내기",
       "promotionBasis": "구조해석",
       "pitfalls": "연도 미기재가 흔함 → 추정임을 표시. 과거 날짜면 경고. menu와 혼동(둘 다 텍스트+이미지) → 일시 필드 유무로 분기",
@@ -551,27 +598,33 @@
         {
           "verb": "create_event",
           "display": "캘린더 일정 + 사전 알림 (전날 + 1시간 전)",
-          "baseScore": 0.7
+          "baseScore": 0.49,
+          "slotScore": 0.7
         },
         {
           "verb": "create_reminder",
           "display": "캘린더 일정 + 사전 알림 (전날 + 1시간 전)",
-          "baseScore": 0.7
+          "baseScore": 0.49,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "open_map",
           "display": "병원 위치 지도",
-          "baseScore": 0.45
+          "baseScore": 0.315,
+          "slotScore": 0.45
         },
         {
           "verb": "call",
           "display": "전화 걸기",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 70.0,
       "fallback": "ICS 내보내기",
       "promotionBasis": "구조해석",
       "pitfalls": "Tier 0 — 의료기관·진료과가 진료 이력 노출. 캘린더는 로컬 API라 업로드 없이 완결 가능. 일정 제목에 진료과 포함 여부를 사용자가 선택(캘린더는 공유될 수 있음)",
@@ -598,22 +651,27 @@
         {
           "verb": "create_reminder",
           "display": "규제 알림",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "주차 위치 좌표 저장",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "show_detail",
           "display": "규정 요약 표시",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "규정 텍스트 표시",
       "promotionBasis": "의미해석",
       "pitfalls": "'클래스가 필요한 이유'의 교과서 사례 — 텍스트 복사는 무의미, 규칙 해석이 전부. 좌표 축적 = 이동 이력이므로 로컬 전용. 주차 '위치'는 클래스 아님(신호 기반), '규정'만 클래스",
@@ -638,17 +696,21 @@
         {
           "verb": "create_recurring_reminder",
           "display": "반복 복약 알림",
-          "baseScore": 0.7
+          "baseScore": 0.49,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "약 봉투 사진 보관 (자체 저장소)",
-          "baseScore": 0.45
+          "baseScore": 0.315,
+          "slotScore": 0.45
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 70.0,
       "fallback": "L5a 불가 기기 → 규칙 기반만",
       "promotionBasis": "구조해석",
       "pitfalls": "용량(dose) 자동 추출 금지 — '1일 3회'→'1일 2회' 오독은 실제 복약 오류. 용량은 원본 크롭 표시로 대체. HealthKit 복약 쓰기 불가 → EKReminder 자체 구현. 온디바이스(L5a) 완결",
@@ -675,27 +737,33 @@
         {
           "verb": "create_reminder",
           "display": "수령 알림",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "search",
           "display": "배송 조회",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "copy_text",
           "display": "운송장 복사",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "call",
           "display": "재배송 전화",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "운송장 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "한국·일본 빈도 높음. 바코드 있으면 L0 우선",
@@ -721,22 +789,27 @@
         {
           "verb": "create_event",
           "display": "캘린더 일괄 생성",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "이미지 보관",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "create_event",
           "display": "개별 항목 선택 추가",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "ICS 내보내기",
       "promotionBasis": "구조해석",
       "pitfalls": "격자 구조는 VIS에만 존재 — 텍스트 flatten 시 정보 소실. iOS 26 RecognizeDocumentsRequest가 완화할 수 있음(검증 필요). receipt와 혼동(둘 다 표) → 시간축 유무로 분기",
@@ -766,32 +839,39 @@
         {
           "verb": "create_event",
           "display": "캘린더 일정 + 사전 알림",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         },
         {
           "verb": "create_reminder",
           "display": "캘린더 일정 + 사전 알림",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "open_map",
           "display": "장소 지도",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
+        },
+        {
+          "verb": "open_url",
+          "display": "항공편 추적",
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "save_note",
           "display": "바코드 이미지 보관",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
-      "unmapped": [
-        {
-          "slot": "secondary",
-          "display": "항공편 추적"
-        }
-      ],
+      "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "ICS 내보내기",
       "promotionBasis": "구조해석",
       "pitfalls": "Wallet 추가 불가 — 서명된 .pkpass가 필요하므로 사진에서 생성 못 함. 바코드 이미지를 자체 저장소에 보관하는 것이 현실적 대안",
@@ -819,27 +899,33 @@
         {
           "verb": "create_reminder",
           "display": "만료 알림",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "코드 보관",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "copy_text",
           "display": "코드 복사",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "open_url",
           "display": "잔액 조회 링크",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "코드 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "만료일 vs 발행일 구분이 관건. 바코드 있으면 함께 보관",
@@ -867,27 +953,33 @@
         {
           "verb": "create_event",
           "display": "캘린더 일정",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "open_map",
           "display": "장소 지도",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "copy_text",
           "display": "확인번호 복사",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "call",
           "display": "전화 걸기",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "ICS 내보내기",
       "promotionBasis": "구조해석",
       "pitfalls": "스크린샷 — OCR 정확도 거의 100%, 전처리 생략 가능. 항공·호텔·식당 서식이 각각 고정",
@@ -914,22 +1006,27 @@
         {
           "verb": "create_event",
           "display": "캘린더 일정",
-          "baseScore": 0.7
+          "baseScore": 0.294,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.45
+          "baseScore": 0.189,
+          "slotScore": 0.45
         },
         {
           "verb": "create_reminder",
           "display": "알림 생성",
-          "baseScore": 0.35
+          "baseScore": 0.147,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 42.0,
       "fallback": "요약만 표시",
       "promotionBasis": "의미해석",
       "pitfalls": "제3자 데이터 — 추출 결과를 저장하지 않고 알림 생성에만 사용. 대화 내용 자체는 보관 금지. 인물 식별 금지",
@@ -956,22 +1053,27 @@
         {
           "verb": "create_reminder",
           "display": "보증 만료 알림",
-          "baseScore": 0.7
+          "baseScore": 0.21,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "export_file",
           "display": "문서 PDF 보관",
-          "baseScore": 0.45
+          "baseScore": 0.135,
+          "slotScore": 0.45
         },
         {
           "verb": "open_url",
           "display": "제조사 지원 링크",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 30.0,
       "fallback": "PDF 저장",
       "promotionBasis": "의미해석",
       "pitfalls": "구매일 + 보증기간 계산이 필요. receipt와 함께 묶으면 가치 상승",
@@ -999,22 +1101,27 @@
         {
           "verb": "create_recurring_reminder",
           "display": "반복 물주기 알림",
-          "baseScore": 0.7
+          "baseScore": 0.21,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "show_detail",
           "display": "관리법 표시",
-          "baseScore": 0.45
+          "baseScore": 0.135,
+          "slotScore": 0.45
         },
         {
           "verb": "save_note",
           "display": "식물 목록 추가",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 30.0,
       "fallback": "관리법 텍스트 표시",
       "promotionBasis": "의미해석",
       "pitfalls": "'주 1회' → 반복 규칙 변환. 종 식별(Visual Look Up 중복)이 아니라 관리 라벨 판독임에 주의",
@@ -1044,42 +1151,51 @@
         {
           "verb": "save_note",
           "display": "지출 기록",
-          "baseScore": 0.7
+          "baseScore": 0.49,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "split_bill",
           "display": "더치페이 계산",
-          "baseScore": 0.45
+          "baseScore": 0.315,
+          "slotScore": 0.45
         },
         {
           "verb": "convert_currency",
           "display": "환율 환산",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         },
         {
           "verb": "export_file",
           "display": "경비용 PDF",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         },
         {
           "verb": "copy_text",
           "display": "금액 복사",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         },
         {
           "verb": "create_reminder",
           "display": "반품 기한 알림",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         },
         {
           "verb": "add_to_album",
           "display": "앨범에 추가",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 70.0,
       "fallback": "금액 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "카드번호 마스킹 필수(Luhn 통과 시 즉시). 다중 사진 클래스 — 월별 집계 + 묶음 내보내기가 본질. 3개월치 = 생활 패턴이므로 집계는 온디바이스 전용. 자동 지출 기록은 카드사 문자 자동수집과 중복이라 미제공(현금 영수증만 우위)",
@@ -1106,22 +1222,27 @@
         {
           "verb": "log_health_sample",
           "display": "건강 기록",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "show_detail",
           "display": "추이 그래프",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "export_file",
           "display": "CSV 내보내기(진료용)",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "권한 거부 → 자체 저장소 + CSV",
       "promotionBasis": "전용API",
       "pitfalls": "최고 후보 — 완전 언어 독립(7세그먼트) + 고정 레이아웃 + 전용 API + 촬영 습관 존재. 반복 사용률 매우 높음(매일 측정). 온디바이스 완결 필수. Android는 Health Connect로 동등 대응",
@@ -1152,27 +1273,33 @@
         {
           "verb": "log_health_sample",
           "display": "영양 기록",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "show_detail",
+          "display": "1회 제공량 환산",
+          "baseScore": 0.45,
+          "slotScore": 0.45
+        },
+        {
+          "verb": "show_detail",
           "display": "성분 표시",
-          "baseScore": 0.45
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "add_to_album",
           "display": "앨범에 추가",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
-      "unmapped": [
-        {
-          "slot": "secondary",
-          "display": "1회 제공량 환산"
-        }
-      ],
+      "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "권한 거부 → 자체 저장소",
       "promotionBasis": "구조해석",
       "pitfalls": "법정 고정 서식 → 소형 모델 정확도 최상, ROI 제한 가능. 사용자가 섭식 관련 어려움을 보이면 수치 강조·목표 대비 표시를 하지 않는다",
@@ -1199,26 +1326,33 @@
         {
           "verb": "export_file",
           "display": "PDF 변환 후 저장",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
-          "verb": "export_via_share_sheet",
-          "display": "공유 시트 내보내기",
-          "baseScore": 0.45
-        }
-      ],
-      "unmapped": [
-        {
-          "slot": "secondary",
-          "display": "텍스트 추출"
+          "verb": "show_detail",
+          "display": "텍스트 추출",
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
-          "slot": "secondary",
-          "display": "요약"
+          "verb": "show_detail",
+          "display": "요약",
+          "baseScore": 0.0,
+          "slotScore": 0.35
+        },
+        {
+          "verb": "export_via_share_sheet",
+          "display": "공유 시트 내보내기",
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
+      "unmapped": [],
+      "reviewVerdict": "삭제",
+      "classScore": 0.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "원근 보정 필수(VNDetectDocumentSegmentation). 사실상 잔여 경로에 가까움 — 클래스로 유지할지 검토 필요",
@@ -1246,17 +1380,21 @@
         {
           "verb": "log_health_sample",
           "display": "운동 기록",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "show_detail",
           "display": "추이 그래프",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "자체 저장소",
       "promotionBasis": "전용API",
       "pitfalls": "러닝머신·실내자전거 종료 화면. device_display와 판독 방식은 동일(7세그먼트/LCD)",
@@ -1283,42 +1421,51 @@
         {
           "verb": "save_note",
           "display": "지출 기록",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "split_bill",
           "display": "더치페이 계산",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "convert_currency",
           "display": "환율 환산",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "export_file",
           "display": "경비용 PDF",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "copy_text",
           "display": "금액 복사",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "create_reminder",
           "display": "반품 기한 알림",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "add_to_album",
           "display": "앨범에 추가",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "금액 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "계좌번호 마스킹 필수. financial_doc과 경계가 모호 — 스크린샷 여부로 구분",
@@ -1348,27 +1495,33 @@
         {
           "verb": "search",
           "display": "해결책 검색",
-          "baseScore": 0.7
+          "baseScore": 0.7,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "copy_text",
           "display": "코드 복사",
-          "baseScore": 0.45
+          "baseScore": 0.45,
+          "slotScore": 0.45
         },
         {
           "verb": "open_url",
           "display": "제조사 지원 페이지",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         },
         {
           "verb": "save_note",
           "display": "노트 저장(AS 문의용)",
-          "baseScore": 0.35
+          "baseScore": 0.35,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 100.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "촬영 빈도 높고 의도가 100% 명확. 구현 단순. 스크린샷과 기기 LCD 양쪽 모두 해당",
@@ -1395,24 +1548,28 @@
         {
           "verb": "translate",
           "display": "번역 + 요리 설명",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         },
         {
           "verb": "show_detail",
           "display": "번역 + 요리 설명",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "convert_currency",
           "display": "가격 환산",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "search",
           "display": "사진 검색",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [
@@ -1421,6 +1578,8 @@
           "display": "추천"
         }
       ],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "번역만",
       "promotionBasis": "의미해석",
       "pitfalls": "여행 시나리오. event_flyer와 혼동 → 일시 필드 유무로 분기. 가격 우측정렬 열이 시각적 구분자",
@@ -1446,22 +1605,27 @@
         {
           "verb": "translate",
           "display": "번역",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "copy_text",
           "display": "원문 복사",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "search",
           "display": "관련 검색",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "전용API",
       "pitfalls": "iOS Live Text와 기능이 겹침 — 차별점이 약해 클래스 유지 여부 검토 필요. 유니버설 '번역' 액션으로 충분할 수 있음",
@@ -1489,22 +1653,27 @@
         {
           "verb": "search",
           "display": "노선·도착 조회",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "정류장 저장",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "open_map",
           "display": "경로 안내",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "정류장명 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "지역별 서식 차이가 큼. 실시간 도착 정보는 외부 API 의존",
@@ -1530,27 +1699,33 @@
         {
           "verb": "save_note",
           "display": "영업시간 저장 (자체 저장소)",
-          "baseScore": 0.7
+          "baseScore": 0.42,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "create_reminder",
           "display": "방문 알림",
-          "baseScore": 0.45
+          "baseScore": 0.27,
+          "slotScore": 0.45
         },
         {
           "verb": "open_map",
           "display": "지도",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         },
         {
           "verb": "call",
           "display": "전화",
-          "baseScore": 0.35
+          "baseScore": 0.21,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 60.0,
       "fallback": "텍스트 표시",
       "promotionBasis": "의미해석",
       "pitfalls": "요일×시간 표 해석 필요. storefront(간판)와 함께 나오는 경우가 많음",
@@ -1576,27 +1751,33 @@
         {
           "verb": "show_detail",
           "display": "단계 요약 표시",
-          "baseScore": 0.7
+          "baseScore": 0.147,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "export_file",
           "display": "PDF 저장",
-          "baseScore": 0.45
+          "baseScore": 0.0945,
+          "slotScore": 0.45
         },
         {
           "verb": "translate",
           "display": "번역",
-          "baseScore": 0.35
+          "baseScore": 0.0735,
+          "slotScore": 0.35
         },
         {
           "verb": "search",
           "display": "검색",
-          "baseScore": 0.35
+          "baseScore": 0.0735,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 21.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "의미해석",
       "pitfalls": "긴 텍스트라 요약이 핵심. 다중 사진일 가능성 높음",
@@ -1624,27 +1805,33 @@
         {
           "verb": "search",
           "display": "가격 비교 검색",
-          "baseScore": 0.7
+          "baseScore": 0.21,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "장보기 목록 추가",
-          "baseScore": 0.45
+          "baseScore": 0.135,
+          "slotScore": 0.45
         },
         {
           "verb": "save_note",
           "display": "가격 기록",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         },
         {
           "verb": "copy_text",
           "display": "금액 복사",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 30.0,
       "fallback": "가격 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "단위가격 vs 총액 구분이 관건. 바코드 있으면 L0 우선",
@@ -1671,27 +1858,33 @@
         {
           "verb": "search",
           "display": "제품 검색",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "장보기 목록",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "search",
           "display": "가격 비교",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "search",
           "display": "리뷰 조회",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "제품명 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "바코드가 훨씬 정확 — 바코드 있으면 클래스 불필요. Visual Look Up과 중복 위험",
@@ -1719,27 +1912,33 @@
         {
           "verb": "search",
           "display": "와인 정보 조회",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "시음 노트 저장",
-          "baseScore": 0.45
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
           "verb": "search",
           "display": "평점 조회",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         },
         {
           "verb": "open_url",
           "display": "구매 링크",
-          "baseScore": 0.35
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "라벨 텍스트 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "니치하지만 충성도 높음. 병 곡면 왜곡 보정 필요",
@@ -1766,27 +1965,33 @@
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.7
+          "baseScore": 0.49,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "create_reminder",
           "display": "할 일 항목별 알림",
-          "baseScore": 0.45
+          "baseScore": 0.315,
+          "slotScore": 0.45
         },
         {
           "verb": "copy_text",
           "display": "텍스트 복사",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         },
         {
           "verb": "export_file",
           "display": "PDF",
-          "baseScore": 0.35
+          "baseScore": 0.245,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "수정필요",
+      "classScore": 70.0,
       "fallback": "원문 텍스트만 표시",
       "promotionBasis": "의미해석",
       "pitfalls": "필기 vs 인쇄는 텍스트로 판정 불가 → VIS 필수. 정리 과정에서 없는 내용 추가 위험 → 근거 대조 필수. 원문/정리본 토글 제공",
@@ -1813,26 +2018,33 @@
         {
           "verb": "export_file",
           "display": "PDF 묶음 생성",
-          "baseScore": 0.7
+          "baseScore": 0.0,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
-          "verb": "save_note",
-          "display": "노트 저장",
-          "baseScore": 0.45
-        }
-      ],
-      "unmapped": [
-        {
-          "slot": "secondary",
-          "display": "텍스트 추출"
+          "verb": "show_detail",
+          "display": "텍스트 추출",
+          "baseScore": 0.0,
+          "slotScore": 0.45
         },
         {
-          "slot": "secondary",
-          "display": "요약"
+          "verb": "show_detail",
+          "display": "요약",
+          "baseScore": 0.0,
+          "slotScore": 0.35
+        },
+        {
+          "verb": "save_note",
+          "display": "노트 저장",
+          "baseScore": 0.0,
+          "slotScore": 0.35
         }
       ],
+      "unmapped": [],
+      "reviewVerdict": "보류",
+      "classScore": 0.0,
       "fallback": "개별 이미지 저장",
       "promotionBasis": "구조해석",
       "pitfalls": "다중 사진 클래스 — 순서 정렬, 중복 제거, 묶음 경계 판정이 필요. 단일 사진 파이프라인과 다른 처리",
@@ -1858,27 +2070,33 @@
         {
           "verb": "copy_text",
           "display": "코드 텍스트 복사",
-          "baseScore": 0.7
+          "baseScore": 0.21,
+          "slotScore": 0.7
         }
       ],
       "secondary": [
         {
           "verb": "save_note",
           "display": "노트 저장",
-          "baseScore": 0.45
+          "baseScore": 0.135,
+          "slotScore": 0.45
         },
         {
           "verb": "show_detail",
           "display": "문법 강조 표시",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         },
         {
           "verb": "search",
           "display": "검색",
-          "baseScore": 0.35
+          "baseScore": 0.105,
+          "slotScore": 0.35
         }
       ],
       "unmapped": [],
+      "reviewVerdict": "승인",
+      "classScore": 30.0,
       "fallback": "텍스트 복사",
       "promotionBasis": "구조해석",
       "pitfalls": "스크린샷 — OCR 정확도 높음. 들여쓰기 보존이 관건. 실사용 빈도는 개발자 한정",

@@ -44,6 +44,12 @@ public final class DebugModel {
 
     public func select(_ id: Row.ID) { selected = id }
 
+    /// The catalog entry behind a routed category, so the screen can show the
+    /// review verdict that produced its priors.
+    public func photoClass(for category: CategoryID) -> ActionCatalog.PhotoClass? {
+        pipeline?.catalog[category]
+    }
+
     /// Whichever configuration values are still null, named — so "why is
     /// everything unknown" is answered on screen instead of by reading JSON.
     public var unconfigured: [String] {

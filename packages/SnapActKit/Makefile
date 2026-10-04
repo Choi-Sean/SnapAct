@@ -11,7 +11,7 @@ SWIFT := DEVELOPER_DIR=$(DEVELOPER_DIR) /usr/bin/xcrun swift
 REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../..)
 PY := $(REPO_ROOT)/.venv/bin/python
 
-.PHONY: help build test run clean doctor catalog catalog-check deadlock-check
+.PHONY: help build test run clean doctor catalog catalog-check deadlock-check pod-check
 
 help:
 	@echo "make build    패키지 빌드 (호스트 macOS)"
@@ -19,6 +19,7 @@ help:
 	@echo "make run      디버그 화면 실행 (macOS 창)"
 	@echo "make catalog  엑셀 -> Resources/actions.json 재생성"
 	@echo "make deadlock-check  동시 라우팅 교착 검사 (외부 타임아웃)"
+	@echo "make pod-check       iOS pod 이 패키지 소스를 실제로 집었는지 확인"
 	@echo "make doctor   툴체인 점검 (Xcode / Swift / SDK)"
 	@echo "make clean    빌드 산출물 삭제"
 
@@ -63,6 +64,11 @@ deadlock-check:
 	   if wait $$pid; then kill $$watchdog 2>/dev/null; \
 	   else echo "교착: 동시 $(DEADLOCK_CONCURRENCY)개가 $(DEADLOCK_TIMEOUT)초 안에 끝나지 않았습니다"; \
 	        echo "  Vision 호출이 협력 스레드를 막고 있습니다 — VisionWork 참고"; exit 1; fi )
+
+# CocoaPods 는 pod root 를 벗어나는 파일 패턴을 에러 없이 무시합니다. 그래서
+# 잘못된 podspec 도 'Installing SnapActKit' 을 찍고 빈 pod 을 만듭니다.
+pod-check:
+	@$(PY) tools/check_pod_sources.py
 
 clean:
 	rm -rf .build

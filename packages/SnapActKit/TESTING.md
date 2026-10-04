@@ -34,7 +34,7 @@ Makefile 이 `DEVELOPER_DIR` 을 직접 지정하므로 전역 설정은 건드�
 
 ```bash
 cd packages/SnapActKit
-make test           # 128개 테스트, 13개 스위트, 약 15초
+make test           # 138개 테스트, 15개 스위트, 약 20초
 make deadlock-check # 동시 라우팅 교착 검사 (외부 타임아웃)
 ```
 
@@ -55,6 +55,8 @@ make deadlock-check # 동시 라우팅 교착 검사 (외부 타임아웃)
 | **파이프라인** | 게이트가 가장 먼저. 차단된 사진은 라우팅도 OCR 도 안 한다 |
 | **디버그 화면** | 사진을 넣으면 분해 결과가 실제로 채워진다. 내보내기에 OCR 원문이 없다 |
 | **동시성** | 동시 라우팅·OCR 이 모든 태스크에 결과를 돌려준다 (교착 자체는 `make deadlock-check` 가 봅니다) |
+| **JS 로 넘기는 딕셔너리** | 앱으로 보내는 값에 `index.ts` 가 필수라 한 키가 전부 있고, 끝까지 JSON 으로 직렬화되고, 없는 값은 nil 박싱이 아니라 **키 자체가 빠진다** |
+| **리뷰 세션** | 분석 전 탭은 거절한다. 기록한 클릭이 **같은 사진의 다음 분석에 반영된다**. 초기화가 카운터와 로그를 함께 비운다 |
 
 ### 눈으로 보는 데모
 
@@ -150,7 +152,7 @@ make run
 (Translate / 인앱 환율 / Safari 사진검색 셋뿐) — 추천 자체가 L5 생성물이라
 **동사가 아직 존재하지 않는 것이 정확한 상태**입니다.
 
-## 2. 아직 안 되는 것## 2. 아직 안 되는 것 (솔직하게)
+## 2. 아직 안 되는 것 (솔직하게)
 
 | | 상태 |
 |---|---|
@@ -160,6 +162,7 @@ make run
 | 개인화 카운터 | ✅ App Group 공유 저장소. 가중치는 아직 null |
 | 로그 기록 | ✅ JSONL 로컬. 네트워크 전송 없음 |
 | 디버그 화면 내용 | ✅ `make run` 으로 띄우고 사진을 끌어다 놓으면 됩니다 |
+| **앱(Expo) 연결** | ⚠️ pod 으로 붙었고 설치까지 확인. **아직 한 번도 실행 못 했습니다** — 아래 5절 |
 | **차단 게이트 모델** | ❌ `training/` 에서 학습 중. 지금은 "모르겠다"고 보고하는 스텁 |
 | 필드 추출 · 실제 액션 실행 | ❌ 이번 세션 범위 밖 |
 
@@ -626,6 +629,78 @@ margin 분포가 거의 겹칩니다. 클래스 종류가 늘면 다시 재볼 �
 
 ---
 
+## 5-2. 앱(Expo)에 붙이기
+
+패키지는 두 빌드 시스템으로 동시에 컴파일됩니다. macOS 쪽은 `Package.swift`
+(테스트·디버그 화면·평가기), iOS 쪽은 `packages/SnapActKit/SnapActKit.podspec`
+입니다. Expo 의 prebuild 가 CocoaPods 를 쓰고, **CocoaPods 는 로컬 SwiftPM
+패키지에 의존할 수 없어서** 두 개가 필요합니다.
+
+```bash
+cd apps/expo
+npx expo prebuild --platform ios --no-install   # ios/ 생성 (gitignore 됨)
+cd ios && pod install
+```
+
+기대 출력에 이 두 줄이 있어야 합니다:
+
+```
+Installing SnapActKit (1.0.0)
+Installing SnapActKitBridge 1.0.0
+```
+
+`SnapActKitBridge` 만 보이면 패키지 pod 이 안 붙은 것입니다 —
+`modules/snapact-kit/expo-module.config.json` 의 `podspecPath` 를 보세요.
+
+```bash
+cd packages/SnapActKit && make pod-check
+# pod: 패키지 소스 30개 + 브리지 1개, DebugUI 2개 제외 — 정상
+```
+
+### 왜 소스를 복사해 두지 않았나
+
+첫 시도는 `../../../../../packages/...` glob 으로 패키지 소스를 Expo 모듈 pod
+안에 넣으려 했습니다. **CocoaPods 는 pod root 를 벗어나는 파일 패턴을 에러 없이
+무시합니다.** pod 은 브리지 파일 하나만 들고 설치됐고, `pod install` 은 성공을
+보고했습니다. 깨뜨려 보려면 `SnapActKit.podspec` 의 `s.source_files` 를
+`'../Sources/**/*.swift'` 로 바꾸고 `pod install` 을 다시 돌려 보세요 — 역시
+성공하고, 파일만 사라집니다. `make pod-check` 가 그걸 잡습니다 (30/30 없음으로
+보고하고 실패).
+
+### 실행하려면 (여기서 막혀 있습니다)
+
+| 필요한 것 | 현재 |
+|---|---|
+| iOS 플랫폼 (Xcode) | ❌ SDK 는 있지만 플랫폼 미설치 — `xcodebuild` 가 모든 iOS destination 을 거부 |
+| 시뮬레이터 런타임 | ❌ 하나도 없음 |
+| 연결된 iPhone | ❌ 없음 |
+
+그래서 `apps/expo/modules/snapact-kit/ios/SnapActKitModule.swift` 와
+`src/SnapActKitScreen.tsx` 는 **한 번도 실행되지 않았습니다.** 브리지가 40줄짜리
+Expo 배선만 남아 있는 이유입니다 — 실제 로직은 `PhotoReviewSession` 에 있고
+`make test` 가 봅니다.
+
+**실기기를 권합니다.** 시뮬레이터에는 Neural Engine 이 없어 CLIP 이 CPU 로
+돌고, 실측으로 CPU 와 ANE 는 최상위 클래스를 6.3% 어긋나게 고릅니다 —
+`class_embeddings.json` 과 임계값이 전부 ANE 수치입니다. Apple Intelligence
+중재도 실기기에서만 평가됩니다.
+
+### 앱에서 무엇을 보게 되나
+
+🧪 **Kit** 탭 — 네이티브 모듈이 링크된 빌드에서만 나타납니다 (Expo Go·OTA 에는
+없음). 사진을 고르면:
+
+- **설정 상태** — 측정된 임계값, Apple Intelligence 가용성, 아직 null 인 값 목록.
+  이게 비어 보이지 않는 한, 모든 사진이 `unknown` 으로 나오는 건 고장이 아니라
+  미완성입니다.
+- **OCR 전 / OCR 후** 전환 — OCR 과 중재가 실제로 순서를 바꿨는지 보는 유일한 방법
+- **액션마다 점수의 산수 전체** — prior, 슬롯 가중치, 노출/클릭, 보정률, 부스트.
+  순서만 보여주면 동의밖에 할 수 없고, 검토할 수 없습니다.
+- 버튼을 누르면 **기록만** 하고 같은 사진을 다시 분석합니다. α=8 이라 2순위가
+  **세 번째 선택에서** 1순위를 넘습니다 — 직접 세어 보세요.
+
+---
+
 ## 6. 문제가 생기면
 
 | 증상 | 원인 |
@@ -634,3 +709,6 @@ margin 분포가 거의 겹칩니다. 클래스 종류가 늘면 다시 재볼 �
 | `actions.json 이 없습니다` | `make catalog` 실행 |
 | `루트 .venv 가 없습니다` | 리포 루트에서 `make setup` |
 | 컴파일 가드만 실패 | `.build` 가 오래됐을 수 있습니다. `make clean && make test` |
+| `pod install` 이 플랫폼 호환 오류 | pod 바닥은 16.4 여야 합니다. 생성된 `ios/Podfile` 이 16.4 를 고정하고, pod 이 그보다 높으면 프로젝트 전체가 거부됩니다 |
+| Kit 탭이 안 보임 | 네이티브 모듈이 안 링크된 빌드입니다 (Expo Go·OTA). dev 또는 EAS 빌드가 필요합니다 |
+| `xcodebuild: Found no destinations` | Xcode Settings → Components 에서 iOS 플랫폼 설치, 또는 실기기 연결 |

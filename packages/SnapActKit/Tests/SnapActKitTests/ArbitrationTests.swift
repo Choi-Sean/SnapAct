@@ -98,6 +98,7 @@ struct ArbitrationTests {
     // MARK: - The real arbiter
 
     @Test("모델이 가용하면 영수증 텍스트를 실제로 판정한다")
+    @available(iOS 26, macOS 26, *)
     func answersWhenAvailable() async throws {
         print("  FoundationModels: \(FoundationModelsArbiter.availabilityDescription)")
         let outcome = await FoundationModelsArbiter()
@@ -136,6 +137,7 @@ struct ArbitrationTests {
     }
 
     @Test("가드레일이 거부하면 라우팅을 바꾸지 않고 사유를 남긴다")
+    @available(iOS 26, macOS 26, *)
     func guardrailRefusalIsRecordedAndHarmless() async throws {
         // Measured 12/12 refusals on ordinary Korean billing text — a due date
         // alone is enough, with or without an account number. Deterministic,
@@ -160,6 +162,7 @@ struct ArbitrationTests {
     }
 
     @Test("@Generable 이 닫힌 스키마를 만든다 — 모델 없이도 검증되는 부분")
+    @available(iOS 26, macOS 26, *)
     func generableProducesClosedSchema() throws {
         // The macro expanding is what guarantees the model cannot answer with
         // a class name outside the pair, or with prose. Apple Intelligence is
@@ -172,6 +175,7 @@ struct ArbitrationTests {
     }
 
     @Test("빈 텍스트는 모델을 호출하지 않는다")
+    @available(iOS 26, macOS 26, *)
     func emptyTextSkipsModel() async throws {
         let outcome = await FoundationModelsArbiter()
             .arbitrate(text: "   \n  ", candidateA: CategoryID("receipt"),
@@ -180,6 +184,7 @@ struct ArbitrationTests {
     }
 
     @Test("중재 쌍 설명이 내부 클래스명을 그대로 쓰지 않는다")
+    @available(iOS 26, macOS 26, *)
     func promptsDescribeRatherThanName() throws {
         // "bill_invoice" means nothing to a language model; "a future due date
         // and an account number" does.
@@ -191,6 +196,7 @@ struct ArbitrationTests {
     }
 
     @Test("needsOCRArbitration 의 모든 클래스에 설명이 있다")
+    @available(iOS 26, macOS 26, *)
     func everyArbitrationTargetIsDescribed() throws {
         let embeddings = try classes()
         var missing: [String] = []

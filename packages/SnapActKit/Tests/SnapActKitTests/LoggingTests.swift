@@ -197,6 +197,7 @@ struct LoggingTests {
     }
 
     @Test("컴퓨트 장치가 기록된다 — ANE 여부로 행을 걸러낼 수 있게")
+    @available(iOS 17.4, macOS 14.4, *)
     func recordsComputeDevices() async throws {
         // CPU and ANE disagree about the top class on 6.3% of real photos, so
         // a row is only comparable to another that ran on the same hardware.

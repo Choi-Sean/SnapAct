@@ -205,6 +205,19 @@ public struct PhotoPipeline: Sendable {
 }
 
 public extension PhotoPipeline {
+    /// Foundation Models where it exists, a declining stub below iOS 26.
+    ///
+    /// Declining is not a degraded mode bolted on for old devices — it is the
+    /// path a current device with Apple Intelligence switched off already
+    /// takes, and the one measured as working: routing stands and the reason
+    /// is logged.
+    static func defaultArbiter() -> any TextArbiter {
+        if #available(iOS 26, macOS 26, *) {
+            return FoundationModelsArbiter()
+        }
+        return UnavailableArbiter(reason: .modelUnavailable("FoundationModels requires iOS 26"))
+    }
+
     /// Wires everything from the bundled resources.
     static func bundled(embedder: (any ImageEmbedder)? = nil,
                         arbiter: (any TextArbiter)? = nil,
@@ -216,7 +229,7 @@ public extension PhotoPipeline {
             ocrSpec: try OCRSpec.load(),
             rankingConfig: try RankingConfig.load(),
             embedder: embedder ?? MobileCLIPEncoder(),
-            arbiter: arbiter ?? FoundationModelsArbiter(),
+            arbiter: arbiter ?? Self.defaultArbiter(),
             counters: counters ?? SharedCounterStore()
         )
     }

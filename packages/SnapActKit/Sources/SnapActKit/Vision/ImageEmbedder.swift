@@ -149,6 +149,7 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     ///
     /// Costs a compile and a plan load, so this is called once by whoever
     /// records it, not per photo.
+    @available(iOS 17.4, macOS 14.4, *)
     public func computeDeviceSummary() async throws -> ComputeDeviceSummary {
         guard let url = bundle.url(forResource: Self.modelName, withExtension: "mlpackage") else {
             throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")

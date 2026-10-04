@@ -11,7 +11,7 @@ import PackageDescription
 let package = Package(
     name: "SnapActKit",
     // FoundationModels (SystemLanguageModel, @Generable) is iOS 26 / macOS 26.
-    platforms: [.iOS(.v26), .macOS(.v26)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "SnapActKit", targets: ["SnapActKit"]),
         .executable(name: "SnapActDebugApp", targets: ["SnapActDebugApp"]),

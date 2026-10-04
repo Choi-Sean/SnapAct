@@ -11,6 +11,7 @@ import Foundation
 /// The cases are positional rather than named after classes because the pair
 /// is chosen at runtime from needsOCRArbitration; the prompt says which is
 /// which.
+@available(iOS 26, macOS 26, *)
 @Generable
 enum ArbitrationChoice {
     /// The first of the two descriptions in the prompt.
@@ -30,6 +31,13 @@ enum ArbitrationChoice {
 /// enabled, and on a machine where it is not, `availability` reports
 /// `appleIntelligenceNotEnabled` and every call declines. That is the common
 /// path today and it is the one exercised by the tests here.
+/// Gated to iOS 26 because FoundationModels does not exist before it. The rest
+/// of the package deliberately does not depend on that floor — routing, OCR,
+/// candidates and ranking all build against iOS 17 — so the app can ship to
+/// older devices and simply never get arbitration there. `PhotoPipeline`
+/// substitutes a declining arbiter below 26, which is the same path a device
+/// with Apple Intelligence switched off already takes.
+@available(iOS 26, macOS 26, *)
 public struct FoundationModelsArbiter: TextArbiter {
     /// Long OCR output is truncated: the discriminating facts (a date, an
     /// account number, a total) are near the start or end, and the context

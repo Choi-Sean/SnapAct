@@ -297,7 +297,13 @@ public struct DebugRootView: View {
                         .font(.caption).foregroundStyle(.red)
                 }
             }
-            figure("Foundation Models", FoundationModelsArbiter.availabilityDescription)
+            // Below iOS 26 the framework does not exist, which is a different
+            // thing from being switched off — the screen should say which.
+            if #available(iOS 26, macOS 26, *) {
+                figure("Foundation Models", FoundationModelsArbiter.availabilityDescription)
+            } else {
+                figure("Foundation Models", "이 OS 에 없음 (iOS 26+ 필요)")
+            }
             figure("기록된 로그", "\(model.logCount)건")
         }
     }

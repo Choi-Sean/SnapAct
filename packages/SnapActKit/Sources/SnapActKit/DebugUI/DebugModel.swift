@@ -97,7 +97,7 @@ public final class DebugModel {
     private func preparePipeline() throws -> PhotoPipeline {
         if let pipeline { return pipeline }
         let built = try PhotoPipeline.bundled(embedder: encoder,
-                                              arbiter: FoundationModelsArbiter(),
+                                              arbiter: PhotoPipeline.defaultArbiter(),
                                               counters: counters)
         pipeline = built
         return built
@@ -135,7 +135,7 @@ public final class DebugModel {
             }
         }
 
-        if computeDevices == nil {
+        if computeDevices == nil, #available(iOS 17.4, macOS 14.4, *) {
             computeDevices = try? await encoder.computeDeviceSummary()
         }
         status = "완료 — \(rows.count)장"

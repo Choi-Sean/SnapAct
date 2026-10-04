@@ -41,23 +41,33 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     public private(set) var loadFootprint: (before: UInt64, after: UInt64)?
     public private(set) var loadDuration: TimeInterval?
 
-    /// Halves the memory cost for free.
+    /// Never worse than Core ML's own default, and on some OS versions much
+    /// better.
     ///
-    /// Measured on this Mac, release build, one process per configuration:
+    /// Measured in a release build, one process per configuration. The
+    /// footprint of `.all` moved a lot between OS releases, so the numbers
+    /// are recorded per version rather than as a single fact:
     ///
-    ///   .cpuOnly             22.2 MB   196 ms load   9.9 ms inference
-    ///   .cpuAndNeuralEngine  22.7 MB   718 ms load   2.4 ms inference
-    ///   .cpuAndGPU           62.4 MB   205 ms load   4.8 ms inference
-    ///   .all (the default)   48.0 MB   736 ms load   1.8 ms inference
+    ///                        macOS 26.6        macOS 27.0.1
+    ///   .cpuOnly             22.2 MB            20.7 MB
+    ///   .cpuAndNeuralEngine  22.7 MB            21.9 MB
+    ///   .cpuAndGPU           62.4 MB            41.3 MB
+    ///   .all (Core ML's own) 48.0 MB            23.7 MB
     ///
-    /// `.all` reserves the GPU path as well and pays ~25 MB for it, while
-    /// actually running on the Neural Engine anyway: the embeddings from
-    /// `.all` and `.cpuAndNeuralEngine` are bit-identical (cosine 1.000000).
-    /// So this is not a speed/memory trade — it is 25 MB for nothing.
+    /// On 26.6 `.all` reserved the GPU path and paid ~25 MB for it while
+    /// running on the Neural Engine anyway — 25 MB for nothing. On 27.0.1
+    /// that penalty is almost gone and the gap is under 2 MB. The choice
+    /// still holds either way, and matters most on the older OS that users
+    /// are still on.
     ///
-    /// 22.7 MB against 21.7 MB of Float16 weights leaves roughly no overhead
-    /// left to remove. Quantising further would cost accuracy to save single
-    /// digits.
+    /// What did NOT change across the upgrade: `.all` and
+    /// `.cpuAndNeuralEngine` remain bit-identical (cosine 1.000000), and ANE
+    /// against the Python reference is still 0.999647. The OS moved memory
+    /// accounting, not arithmetic.
+    ///
+    /// 21.9 MB against 21.7 MB of Float16 weights leaves essentially no
+    /// overhead to remove. Quantising further would cost accuracy to save
+    /// single digits.
     ///
     /// CPU remains the fallback when the Neural Engine is unavailable, and it
     /// produces slightly different numbers — cosine 0.995 against the ANE

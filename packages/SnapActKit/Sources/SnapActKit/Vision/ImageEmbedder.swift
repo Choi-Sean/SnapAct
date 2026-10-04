@@ -30,9 +30,17 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     public static let outputFeature = "final_emb_1"
     public static let embeddingDimension = 512
 
+    /// Searches the caller's bundle first, then every candidate — the package
+    /// is built both as a Swift package and as a CocoaPod, which put resources
+    /// in different places. See ResourceBundle.
+    static func modelURL(in bundle: Bundle?) -> URL? {
+        bundle?.url(forResource: modelName, withExtension: "mlpackage")
+            ?? ResourceBundle.url(forResource: modelName, withExtension: "mlpackage")
+    }
+
     private let lock = NSLock()
     private var loaded: MLModel?
-    private let bundle: Bundle
+    private let bundle: Bundle?
     private let configuration: MLModelConfiguration
 
     /// Footprint in bytes immediately before and after the model was loaded.
@@ -81,8 +89,10 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
         return configuration
     }
 
+    /// `bundle` nil means "search the candidates" rather than "use
+    /// Bundle.module", because Bundle.module does not exist in a pod build.
     public init(bundle: Bundle? = nil, configuration: MLModelConfiguration? = nil) {
-        self.bundle = bundle ?? .module
+        self.bundle = bundle
         self.configuration = configuration ?? Self.defaultConfiguration()
     }
 
@@ -91,7 +101,7 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
         defer { lock.unlock() }
         if let loaded { return loaded }
 
-        guard let url = bundle.url(forResource: Self.modelName, withExtension: "mlpackage") else {
+        guard let url = Self.modelURL(in: bundle) else {
             throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")
         }
 
@@ -151,7 +161,7 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     /// records it, not per photo.
     @available(iOS 17.4, macOS 14.4, *)
     public func computeDeviceSummary() async throws -> ComputeDeviceSummary {
-        guard let url = bundle.url(forResource: Self.modelName, withExtension: "mlpackage") else {
+        guard let url = Self.modelURL(in: bundle) else {
             throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")
         }
         let compiled = try await MLModel.compileModel(at: url)

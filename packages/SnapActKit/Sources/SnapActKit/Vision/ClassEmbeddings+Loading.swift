@@ -13,8 +13,8 @@ public extension ClassEmbeddings {
     static let normTolerance: Double = 1e-3
 
     static func load(from bundle: Bundle? = nil, validating: Bool = true) throws -> ClassEmbeddings {
-        let bundle = bundle ?? .module
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+        guard let url = bundle.map({ $0.url(forResource: resourceName, withExtension: "json") })
+            ?? ResourceBundle.url(forResource: resourceName, withExtension: "json") else {
             throw EmbeddingError.resourceMissing(name: "\(resourceName).json")
         }
         let file: RawFile

@@ -1,3 +1,9 @@
+// The review screen is AppKit, so it exists on macOS only.
+//
+// Without this guard the package does not compile for iOS at all — which it
+// has to, now that the app vendors these sources. The iOS surface is the Expo
+// module in apps/expo/modules/snapact-kit; this file is the macOS reviewer.
+#if os(macOS)
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
@@ -358,3 +364,4 @@ public struct DebugRootView: View {
         }
     }
 }
+#endif

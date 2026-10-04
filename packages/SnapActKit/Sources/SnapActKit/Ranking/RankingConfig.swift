@@ -77,8 +77,8 @@ public extension RankingConfig {
     static let resourceName = "ranking_config"
 
     static func load(from bundle: Bundle? = nil) throws -> RankingConfig {
-        let bundle = bundle ?? .module
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+        guard let url = bundle.map({ $0.url(forResource: resourceName, withExtension: "json") })
+            ?? ResourceBundle.url(forResource: resourceName, withExtension: "json") else {
             throw RankingError.resourceMissing(name: "\(resourceName).json")
         }
         let config = try JSONDecoder().decode(RankingConfig.self, from: Data(contentsOf: url))

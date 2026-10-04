@@ -73,8 +73,8 @@ public extension OCRSpec {
     static let resourceName = "ocr_spec"
 
     static func load(from bundle: Bundle? = nil) throws -> OCRSpec {
-        let bundle = bundle ?? .module
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+        guard let url = bundle.map({ $0.url(forResource: resourceName, withExtension: "json") })
+            ?? ResourceBundle.url(forResource: resourceName, withExtension: "json") else {
             throw OCRError.resourceMissing(name: "\(resourceName).json")
         }
         let spec = try JSONDecoder().decode(OCRSpec.self, from: Data(contentsOf: url))

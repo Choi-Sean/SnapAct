@@ -26,14 +26,15 @@ public struct SignalExtractor: Sendable {
 
     public init() {}
 
-    /// - Warning: runs synchronous Vision requests. Not on the main queue.
-    public func signals(for image: CGImage, sourceURL: URL? = nil) -> SignalSet {
+    /// Async because the Vision requests inside block. They run on
+    /// VisionWork's queue — see VisionWork for why that is not optional.
+    public func signals(for image: CGImage, sourceURL: URL? = nil) async -> SignalSet {
         let aspectRatio = Double(image.width) / Double(max(image.height, 1))
         return SignalSet(
             aspectRatio: aspectRatio,
             isScreenshot: Self.looksLikeScreenshot(aspectRatio: aspectRatio, url: sourceURL),
-            hasDocumentEdges: Self.hasDocumentEdges(image),
-            hasText: (try? TextReader.containsText(image)) ?? true
+            hasDocumentEdges: await Self.hasDocumentEdges(image),
+            hasText: (try? await TextReader.containsText(image)) ?? true
         )
     }
 
@@ -55,16 +56,18 @@ public struct SignalExtractor: Sendable {
         return knownScreenAspectRatios.contains { abs($0 - aspectRatio) < 0.02 }
     }
 
-    static func hasDocumentEdges(_ image: CGImage) -> Bool {
-        let request = VNDetectDocumentSegmentationRequest()
+    static func hasDocumentEdges(_ image: CGImage) async -> Bool {
         do {
-            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+            return try await VisionWork.run {
+                let request = VNDetectDocumentSegmentationRequest()
+                try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+                return !(request.results ?? []).isEmpty
+            }
         } catch {
             // A failed detector must not claim "no document" — that would be a
             // measurement presented as a fact.
             return false
         }
-        return !(request.results ?? []).isEmpty
     }
 
     /// How long ago the photo was taken, from EXIF. Unknown reads as `recent`

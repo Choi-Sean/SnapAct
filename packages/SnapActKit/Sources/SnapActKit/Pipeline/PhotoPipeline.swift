@@ -101,7 +101,7 @@ public struct PhotoPipeline: Sendable {
         }
 
         mark = Date()
-        let signals = extractor.signals(for: image, sourceURL: sourceURL)
+        let signals = await extractor.signals(for: image, sourceURL: sourceURL)
         timings.signalsMs = Self.ms(since: mark)
 
         mark = Date()
@@ -143,7 +143,7 @@ public struct PhotoPipeline: Sendable {
         // confidence bar. Treating the two alike means that today, with
         // thresholds still null, EVERY photo is unknown and OCR never runs at
         // all — the whole text path silently dead.
-        let ocr = try textReader.read(image, category: outcome.routing.category,
+        let ocr = try await textReader.read(image, category: outcome.routing.category,
                                       hasNothingToRead: Self.hasNothingToRead(outcome.routing),
                                       isScreenshot: outcome.signals.isScreenshot)
         timings.ocrMs = Self.ms(since: mark)

@@ -35,7 +35,7 @@ public struct CLIPRouter: PhotoRouter {
 
     public func route(_ image: CGImage, signals: SignalSet) async throws -> RoutingResult {
         if config.prefilter.enabled, config.prefilter.isConfigured, let prefilter {
-            if let rejection = try prefilter.rejection(for: image, config: config.prefilter) {
+            if let rejection = try await prefilter.rejection(for: image, config: config.prefilter) {
                 return RoutingResult(
                     category: .unknown, score: rejection.confidence, margin: 0,
                     alternates: [], source: .prefilter,
@@ -152,24 +152,27 @@ public struct ScenePrefilter: Sendable {
 
     public init() {}
 
+    /// Async because the work inside blocks: it runs on VisionWork's queue
+    /// rather than the cooperative pool. Calling perform(_:) inline from an
+    /// async function deadlocked the whole process — see VisionWork.
     public func rejection(for image: CGImage,
-                          config: RoutingConfig.Prefilter) throws -> Rejection? {
+                          config: RoutingConfig.Prefilter) async throws -> Rejection? {
         guard let minConfidence = config.minConfidence else { return nil }
 
-        let request = VNClassifyImageRequest()
-        // perform(_:) is synchronous — callers must not be on the main queue
-        // (ios-platform.md).
-        try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
-
         let reject = Set(config.rejectLabels)
-        guard let observations = request.results else { return nil }
-        for observation in observations
-        where reject.contains(observation.identifier)
-            && Double(observation.confidence) >= minConfidence {
-            return Rejection(label: observation.identifier,
-                             confidence: Double(observation.confidence))
+        // VNClassificationObservation is not Sendable, so the plain values are
+        // pulled out inside the closure rather than carried across.
+        return try await VisionWork.run { () -> Rejection? in
+            let request = VNClassifyImageRequest()
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+            for observation in request.results ?? []
+            where reject.contains(observation.identifier)
+                && Double(observation.confidence) >= minConfidence {
+                return Rejection(label: observation.identifier,
+                                 confidence: Double(observation.confidence))
+            }
+            return nil
         }
-        return nil
     }
 
     /// Labels in `rejectLabels` that Vision does not actually know. Such a

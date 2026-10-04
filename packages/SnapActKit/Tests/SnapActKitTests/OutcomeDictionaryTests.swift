@@ -127,3 +127,83 @@ struct OutcomeDictionaryTests {
         #expect(JSONSerialization.isValidJSONObject(dict))
     }
 }
+
+/// Covers PhotoReviewSession, which is everything the Expo bridge would
+/// otherwise own. See that type's comment for why it exists.
+@Suite("리뷰 세션")
+struct PhotoReviewSessionTests {
+
+    private func imageURL(_ name: String) -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("CrossValidation/images").appendingPathComponent(name)
+    }
+
+    private func session() -> PhotoReviewSession {
+        PhotoReviewSession(counters: InMemoryCounterStore(), logStore: InMemoryLogStore())
+    }
+
+    @Test("file:// URI 와 맨 경로를 모두 받는다")
+    func acceptsBothURIForms() throws {
+        let url = imageURL("receipt_tall.png")
+        #expect(PhotoReviewSession.fileURL(from: url.absoluteString).path == url.path)
+        #expect(PhotoReviewSession.fileURL(from: url.path).path == url.path)
+    }
+
+    @Test("한 번 호출로 OCR 전과 후를 모두 돌려준다")
+    func returnsBothPhases() async throws {
+        let dict = try await session().analyzeDictionary(uri: imageURL("receipt_tall.png").path)
+        #expect(dict["phase"] as? String == "refined")
+        let fast = try #require(dict["fast"] as? [String: Any], "fast 단계가 없습니다")
+        #expect(fast["phase"] as? String == "fast")
+        // The fast path must not have paid for OCR; that is its entire point.
+        #expect(fast.index(forKey: "ocr") == nil, "빠른 경로가 OCR 을 기다렸습니다")
+        #expect(dict["ocr"] != nil, "정제 단계에 OCR 이 없습니다")
+        #expect(JSONSerialization.isValidJSONObject(dict))
+    }
+
+    @Test("분석 전에 들어온 탭은 거절하고, 분석 후에는 기록한다")
+    func recordsOnlyAfterAnalysis() async throws {
+        let session = session()
+        #expect(session.recordChoice(verb: "save_note") == false,
+                "직전 분석이 없는데 탭을 기록했습니다")
+
+        let dict = try await session.analyzeDictionary(uri: imageURL("receipt_tall.png").path)
+        let actions = try #require(dict["actions"] as? [[String: Any]])
+        let verb = try #require(actions.first?["verb"] as? String)
+        #expect(session.recordChoice(verb: verb) == true)
+
+        // The click has to show up in the next analysis of the same photo —
+        // that is what the screen is demonstrating.
+        let again = try await session.analyzeDictionary(uri: imageURL("receipt_tall.png").path)
+        let repeated = try #require(again["actions"] as? [[String: Any]])
+        let row = try #require(repeated.first { $0["verb"] as? String == verb })
+        #expect((row["clicks"] as? Int ?? 0) >= 1, "클릭이 반영되지 않았습니다")
+        #expect(!session.exportLogJSONL().isEmpty, "로그가 비어 있습니다")
+    }
+
+    @Test("초기화하면 카운터와 로그가 함께 비워진다")
+    func resetClearsBoth() async throws {
+        let session = session()
+        let dict = try await session.analyzeDictionary(uri: imageURL("receipt_tall.png").path)
+        let actions = try #require(dict["actions"] as? [[String: Any]])
+        session.recordChoice(verb: try #require(actions.first?["verb"] as? String))
+        #expect(!session.exportLogJSONL().isEmpty)
+
+        session.reset()
+        #expect(session.exportLogJSONL().isEmpty, "로그가 남아 있습니다")
+        let after = try await session.analyzeDictionary(uri: imageURL("receipt_tall.png").path)
+        let rows = try #require(after["actions"] as? [[String: Any]])
+        // Impressions are recorded again by this very call, so clicks are the
+        // thing to check.
+        #expect(rows.allSatisfy { ($0["clicks"] as? Int ?? 0) == 0 }, "클릭이 남아 있습니다")
+    }
+
+    @Test("진단은 세션에서도 JSON 으로 나온다")
+    func diagnosticsAreBridgeable() {
+        let dict = session().diagnosticsDictionary()
+        #expect(dict["counterStoreShared"] as? Bool == false, "InMemory 인데 공유로 보고했습니다")
+        #expect(dict["foundationModels"] != nil)
+        #expect(JSONSerialization.isValidJSONObject(dict))
+    }
+}

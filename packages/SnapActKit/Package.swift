@@ -11,13 +11,18 @@ import PackageDescription
 let package = Package(
     name: "SnapActKit",
     // FoundationModels (SystemLanguageModel, @Generable) is iOS 26 / macOS 26.
-    platforms: [.iOS(.v26), .macOS(.v26)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "SnapActKit", targets: ["SnapActKit"]),
         .executable(name: "SnapActDebugApp", targets: ["SnapActDebugApp"]),
         // Answers one question: can the encoder live in a Share Extension?
         // Kept as a target so the same measurement runs on a device.
         .executable(name: "MemProbe", targets: ["MemProbe"]),
+        // Runs the real routing path over labelled photos so thresholds are
+        // set from the composition that ships, not from separate estimates.
+        .executable(name: "RouteEval", targets: ["RouteEval"]),
+        .executable(name: "ArbEval", targets: ["ArbEval"]),
+        .executable(name: "DeadlockProbe", targets: ["DeadlockProbe"]),
     ],
     targets: [
         .target(
@@ -35,6 +40,7 @@ let package = Package(
                 .process("Resources/actions.json"),
                 .process("Resources/routing_config.json"),
                 .process("Resources/ocr_spec.json"),
+                .process("Resources/ranking_config.json"),
             ]
         ),
         // The debug screen is a SwiftUI view inside SnapActKit/DebugUI, not
@@ -42,6 +48,9 @@ let package = Package(
         // The partner drops the same view into the iOS app unchanged.
         .executableTarget(name: "SnapActDebugApp", dependencies: ["SnapActKit"]),
         .executableTarget(name: "MemProbe", dependencies: ["SnapActKit"]),
+        .executableTarget(name: "RouteEval", dependencies: ["SnapActKit"]),
+        .executableTarget(name: "ArbEval", dependencies: ["SnapActKit"]),
+        .executableTarget(name: "DeadlockProbe", dependencies: ["SnapActKit"]),
         .testTarget(name: "SnapActKitTests", dependencies: ["SnapActKit"]),
     ]
 )

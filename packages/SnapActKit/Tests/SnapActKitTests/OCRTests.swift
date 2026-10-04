@@ -45,15 +45,31 @@ struct OCRTests {
         #expect(s.defaults.maxLanguages > 0)
     }
 
-    @Test("care_tag · 네거티브 · unknown 은 OCR 을 건너뛴다")
+    @Test("읽을 게 없는 사진만 건너뛴다 — unknown 은 한 가지가 아니다")
     func skipsWhereTextIsNotThePoint() throws {
         let s = try spec()
         // care_tag is laundry symbols, not text.
-        #expect(!s.needsOCR(CategoryID("care_tag"), isNegative: false))
-        #expect(!s.needsOCR(CategoryID("neg_food"), isNegative: true))
-        #expect(!s.needsOCR(.unknown, isNegative: false))
-        #expect(s.needsOCR(CategoryID("receipt"), isNegative: false))
-        #expect(s.needsOCR(CategoryID("business_card"), isNegative: false))
+        #expect(!s.needsOCR(CategoryID("care_tag"), hasNothingToRead: false))
+        // A photo of a dog.
+        #expect(!s.needsOCR(CategoryID("neg_food"), hasNothingToRead: true))
+        // Unknown because nothing cleared the threshold — may be full of text.
+        #expect(s.needsOCR(.unknown, hasNothingToRead: false))
+        // Unknown because the prefilter saw scenery.
+        #expect(!s.needsOCR(.unknown, hasNothingToRead: true))
+        #expect(s.needsOCR(CategoryID("receipt"), hasNothingToRead: false))
+    }
+
+    @Test("라우터의 unknown 사유가 OCR 여부를 가른다")
+    func unknownReasonDecidesOCR() {
+        func routing(_ reason: UnknownReason?) -> RoutingResult {
+            RoutingResult(category: .unknown, score: 0.2, margin: 0.01, alternates: [],
+                          source: .clip, unknownReason: reason, structuralAdjustments: [:])
+        }
+        #expect(PhotoPipeline.hasNothingToRead(routing(.topClassIsNegative(CategoryID("neg_food")))))
+        #expect(PhotoPipeline.hasNothingToRead(routing(.prefilterRejected(label: "food", confidence: 0.9))))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(.thresholdsNotConfigured)))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(.scoreBelowThreshold(score: 0.1, threshold: 0.2))))
+        #expect(!PhotoPipeline.hasNothingToRead(routing(nil)))
     }
 
     @Test("skip 대상 클래스가 실재한다")
@@ -131,9 +147,9 @@ struct OCRTests {
     // MARK: - Reading
 
     @Test("실제 텍스트를 span 으로 읽는다")
-    func readsRealText() throws {
+    func readsRealText() async throws {
         let reader = TextReader(spec: try spec())
-        let result = try reader.read(try textImage("SnapAct 1234 Main Street"),
+        let result = try await reader.read(try textImage("SnapAct 1234 Main Street"),
                                      category: CategoryID("business_card"),
                                      preferredLanguages: ["en-US"])
         #expect(result.didRun)
@@ -146,9 +162,9 @@ struct OCRTests {
     }
 
     @Test("한국어가 실제로 읽힌다 — 주 시장이고 .accurate 전용이다")
-    func readsKorean() throws {
+    func readsKorean() async throws {
         let reader = TextReader(spec: try spec())
-        let result = try reader.read(try textImage("영수증 합계 12,500원"),
+        let result = try await reader.read(try textImage("영수증 합계 12,500원"),
                                      category: CategoryID("receipt"),
                                      preferredLanguages: ["ko-KR", "en-US"])
         #expect(result.didRun)
@@ -160,15 +176,15 @@ struct OCRTests {
     }
 
     @Test(".fast 와 .accurate 의 비용 차이")
-    func levelCostDiffers() throws {
+    func levelCostDiffers() async throws {
         let reader = TextReader(spec: try spec())
         let image = try textImage("Invoice 2026 Total 48.20")
         // Warm up so the first-call pipeline setup is not attributed to .fast.
-        _ = try reader.read(image, category: CategoryID("receipt"), preferredLanguages: ["en-US"])
+        _ = try await reader.read(image, category: CategoryID("receipt"), preferredLanguages: ["en-US"])
 
-        let accurate = try reader.read(image, category: CategoryID("receipt"),
+        let accurate = try await reader.read(image, category: CategoryID("receipt"),
                                        isScreenshot: false, preferredLanguages: ["en-US"])
-        let fast = try reader.read(image, category: CategoryID("receipt"),
+        let fast = try await reader.read(image, category: CategoryID("receipt"),
                                    isScreenshot: true, preferredLanguages: ["en-US"])
         #expect(accurate.plan?.level == .accurate)
         #expect(fast.plan?.level == .fast)
@@ -177,9 +193,9 @@ struct OCRTests {
     }
 
     @Test("span 은 평탄화되지 않고 위치와 신뢰도를 보존한다")
-    func spansKeepBoxesAndConfidence() throws {
+    func spansKeepBoxesAndConfidence() async throws {
         let reader = TextReader(spec: try spec())
-        let result = try reader.read(try textImage("Total 12,500 KRW"),
+        let result = try await reader.read(try textImage("Total 12,500 KRW"),
                                      category: CategoryID("receipt"),
                                      preferredLanguages: ["en-US"])
         let span = try #require(result.spans.first)
@@ -190,7 +206,7 @@ struct OCRTests {
     }
 
     @Test("텍스트가 없으면 인식을 돌리지 않는다")
-    func skipsRecognitionWithoutText() throws {
+    func skipsRecognitionWithoutText() async throws {
         // The cheap detector exists so the expensive step is not paid for a
         // photo of a wall.
         let blank = CGContext(data: nil, width: 400, height: 400, bitsPerComponent: 8,
@@ -199,7 +215,7 @@ struct OCRTests {
         blank.setFillColor(CGColor(red: 0.6, green: 0.6, blue: 0.6, alpha: 1))
         blank.fill(CGRect(x: 0, y: 0, width: 400, height: 400))
 
-        let result = try TextReader(spec: try spec())
+        let result = try await TextReader(spec: try spec())
             .read(blank.makeImage()!, category: CategoryID("receipt"),
                   preferredLanguages: ["en-US"])
         #expect(result.skipped == .noTextDetected)
@@ -207,8 +223,8 @@ struct OCRTests {
     }
 
     @Test("건너뛴 클래스는 OCR 비용을 전혀 내지 않는다")
-    func skippedClassCostsNothing() throws {
-        let result = try TextReader(spec: try spec())
+    func skippedClassCostsNothing() async throws {
+        let result = try await TextReader(spec: try spec())
             .read(try textImage("ignored"), category: CategoryID("care_tag"))
         #expect(result.skipped == .classDoesNotNeedOCR(CategoryID("care_tag")))
         #expect(result.durationMs == 0)

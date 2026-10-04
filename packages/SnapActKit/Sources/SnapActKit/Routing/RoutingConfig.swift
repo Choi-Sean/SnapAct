@@ -74,8 +74,8 @@ public extension RoutingConfig {
     static let resourceName = "routing_config"
 
     static func load(from bundle: Bundle? = nil) throws -> RoutingConfig {
-        let bundle = bundle ?? .module
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+        guard let url = bundle.map({ $0.url(forResource: resourceName, withExtension: "json") })
+            ?? ResourceBundle.url(forResource: resourceName, withExtension: "json") else {
             throw RoutingConfigError.resourceMissing(name: "\(resourceName).json")
         }
         let config = try JSONDecoder().decode(RoutingConfig.self, from: Data(contentsOf: url))

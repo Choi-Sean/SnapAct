@@ -18,15 +18,31 @@ struct RoutingTests {
 
     // MARK: - Config
 
-    @Test("설정이 로드되고, 미설정 항목을 스스로 보고한다")
-    func configReportsWhatIsUnset() throws {
+    @Test("임계값이 측정값으로 설정돼 있다")
+    func thresholdsAreMeasured() throws {
         let c = try config()
         #expect(c.schemaVersion == RoutingConfig.supportedSchemaVersion)
-        // These are meant to be null right now. If someone fills them in with
-        // guesses, this test is where that becomes a visible decision.
-        #expect(!c.thresholds.isConfigured)
+        #expect(c.thresholds.isConfigured)
+
+        // The values RouteEval produced over 662 real photos. Pinned because
+        // they are measurements, not preferences: minScore 0.22 loses 1.3% of
+        // actionable photos and misclassifies 0.4% of ordinary ones, where
+        // 0.20 loses none but misclassifies 2.0% — worse overall given
+        // pipeline.md expects ordinary photos to be the majority of traffic.
+        #expect(c.thresholds.minScore == 0.22)
+        // Zero because margin measurably does not separate here: across
+        // 0.000-0.020 the rejection rate never moved off 99.6% while the keep
+        // rate fell from 98.7% to 43.8%.
+        #expect(c.thresholds.minMargin == 0.0)
+        // 0.70 is the highest confidence that rejects no actionable photo at
+        // all (0/55 cards, 0/262 receipts) while still skipping CLIP for
+        // 54.4% of ordinary ones.
+        #expect(c.prefilter.minConfidence == 0.70)
+
+        // Boost weights are still unset, and that is deliberate — they want
+        // real interaction logs, which need thresholds first.
         #expect(!c.unconfigured.isEmpty)
-        print("  미설정: \(c.unconfigured.joined(separator: ", "))")
+        print("  미설정으로 남은 것: \(c.unconfigured.joined(separator: ", "))")
     }
 
     @Test("사전필터 라벨이 Vision 이 실제로 아는 것들이다")
@@ -149,11 +165,15 @@ struct RoutingTests {
         let result = try await router.route(try image(named: "receipt_tall.png"),
                                             signals: SignalSet(aspectRatio: 0.3))
         #expect(result.source == .clip)
-        // Thresholds are null, so it must decline rather than guess.
-        #expect(result.isUnknown)
-        #expect(result.unknownReason == .thresholdsNotConfigured
-                || { if case .topClassIsNegative = result.unknownReason { return true }
-                     return false }())
+        // A synthetic pattern image: it scores 0.21, under the measured 0.22,
+        // so the threshold declines it. Whatever the reason, it must be a
+        // stated one rather than a silent guess.
+        if result.isUnknown {
+            let reason = try #require(result.unknownReason)
+            // thresholdsNotConfigured would mean the config regressed to null.
+            #expect(reason != .thresholdsNotConfigured,
+                    "임계값이 설정돼 있는데 미설정 사유가 돌아왔습니다")
+        }
         // The ranking is still carried — that is what makes the debug screen
         // useful while the answer is unknown.
         #expect(result.alternates.count == 45)

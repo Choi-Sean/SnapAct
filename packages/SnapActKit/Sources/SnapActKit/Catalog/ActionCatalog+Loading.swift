@@ -19,8 +19,8 @@ public extension ActionCatalog {
     /// `validating: false` skips the integrity pass. Only for tests that need
     /// to examine one broken invariant without a different one masking it.
     static func load(from bundle: Bundle? = nil, validating: Bool = true) throws -> ActionCatalog {
-        let bundle = bundle ?? .module
-        guard let url = bundle.url(forResource: resourceName, withExtension: "json") else {
+        guard let url = bundle.map({ $0.url(forResource: resourceName, withExtension: "json") })
+            ?? ResourceBundle.url(forResource: resourceName, withExtension: "json") else {
             throw CatalogError.resourceMissing(name: "\(resourceName).json")
         }
         let catalog: ActionCatalog

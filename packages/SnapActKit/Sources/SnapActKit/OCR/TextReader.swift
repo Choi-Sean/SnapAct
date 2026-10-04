@@ -44,14 +44,15 @@ public struct TextReader: Sendable {
 
     public init(spec: OCRSpec) { self.spec = spec }
 
-    /// - Warning: `VNImageRequestHandler.perform(_:)` is synchronous. Never
-    ///   call this on the main queue (ios-platform.md).
+    /// Async because recognition blocks its thread. The blocking part runs on
+    /// VisionWork's queue, never on the cooperative pool — see VisionWork for
+    /// the deadlock that enforces.
     public func read(_ image: CGImage,
                      category: CategoryID,
-                     isNegative: Bool = false,
+                     hasNothingToRead: Bool = false,
                      isScreenshot: Bool = false,
-                     preferredLanguages: [String] = Locale.preferredLanguages) throws -> TextReadResult {
-        guard spec.needsOCR(category, isNegative: isNegative) else {
+                     preferredLanguages: [String] = Locale.preferredLanguages) async throws -> TextReadResult {
+        guard spec.needsOCR(category, hasNothingToRead: hasNothingToRead) else {
             return TextReadResult(spans: [], plan: nil, durationMs: 0,
                                   skipped: .classDoesNotNeedOCR(category))
         }
@@ -67,32 +68,36 @@ public struct TextReader: Sendable {
 
         // The cheap detector first: recognition on a photo with no text costs
         // the full price and returns nothing.
-        guard try Self.containsText(image) else {
+        guard try await Self.containsText(image) else {
             return TextReadResult(spans: [], plan: plan,
                                   durationMs: Int(Date().timeIntervalSince(started) * 1000),
                                   skipped: .noTextDetected)
         }
 
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = plan.level.vision
-        request.recognitionLanguages = plan.languages
-        request.usesLanguageCorrection = spec.defaults.usesLanguageCorrection
-
         let perClass = spec.perClass[category]
-        if let height = perClass?.minimumTextHeight ?? spec.defaults.minimumTextHeight {
-            request.minimumTextHeight = height
-        }
-        if let roi = perClass?.regionOfInterest {
-            request.regionOfInterest = roi
-        }
+        // VNRecognizedTextObservation is not Sendable, so spans are built
+        // inside the closure and only the plain values cross the boundary.
+        let level = plan.level.vision
+        let languages = plan.languages
+        let correction = spec.defaults.usesLanguageCorrection
+        let height = perClass?.minimumTextHeight ?? spec.defaults.minimumTextHeight
+        let roi = perClass?.regionOfInterest
 
-        try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+        let spans = try await VisionWork.run { () -> [TextSpan] in
+            let request = VNRecognizeTextRequest()
+            request.recognitionLevel = level
+            request.recognitionLanguages = languages
+            request.usesLanguageCorrection = correction
+            if let height { request.minimumTextHeight = height }
+            if let roi { request.regionOfInterest = roi }
 
-        let spans = (request.results ?? []).compactMap { observation -> TextSpan? in
-            guard let candidate = observation.topCandidates(1).first else { return nil }
-            return TextSpan(text: candidate.string,
-                            boundingBox: observation.boundingBox,
-                            confidence: Double(candidate.confidence))
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+            return (request.results ?? []).compactMap { observation -> TextSpan? in
+                guard let candidate = observation.topCandidates(1).first else { return nil }
+                return TextSpan(text: candidate.string,
+                                boundingBox: observation.boundingBox,
+                                confidence: Double(candidate.confidence))
+            }
         }
 
         return TextReadResult(spans: spans, plan: plan,
@@ -102,10 +107,12 @@ public struct TextReader: Sendable {
 
     /// VNDetectTextRectangles — much cheaper than recognition, and only asked
     /// whether anything text-shaped is present.
-    static func containsText(_ image: CGImage) throws -> Bool {
-        let request = VNDetectTextRectanglesRequest()
-        try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
-        return !(request.results ?? []).isEmpty
+    static func containsText(_ image: CGImage) async throws -> Bool {
+        try await VisionWork.run {
+            let request = VNDetectTextRectanglesRequest()
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+            return !(request.results ?? []).isEmpty
+        }
     }
 
     // MARK: - Language selection

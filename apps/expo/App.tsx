@@ -9,11 +9,13 @@ import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'r
 import AnalyzeScreen, { SharedAsset } from './src/AnalyzeScreen';
 import DemoScreen from './src/DemoScreen';
 import HistoryScreen from './src/HistoryScreen';
+import { isSnapActKitLinked } from './modules/snapact-kit';
 import { addHistoryEntry, clearHistory, deleteHistoryEntry, loadHistory } from './src/history';
 import { LanguageProvider, useLanguage } from './src/i18n/LanguageProvider';
 import OnboardingScreen from './src/OnboardingScreen';
 import PermissionsScreen from './src/PermissionsScreen';
 import ReviewModal from './src/ReviewModal';
+import SnapActKitScreen from './src/SnapActKitScreen';
 import { BatchSubEntry, DemoKey, HistoryCategory, HistoryEntry, ReplaySpec } from './src/types';
 
 SplashScreen.preventAutoHideAsync();
@@ -30,7 +32,12 @@ Notifications.setNotificationHandler({
 const ONBOARDED_KEY = 'snapsist_onboarded';
 const SAVE_ERROR = '__error__';
 
-type Tab = 'demo' | 'analyze' | 'history' | 'settings';
+type Tab = 'demo' | 'analyze' | 'history' | 'settings' | 'kit';
+
+// The on-device pipeline review tab appears only where the native module is
+// actually linked — a dev or EAS build. In Expo Go and over OTA it is absent
+// rather than present and broken.
+const KIT_TAB_ENABLED = isSnapActKitLinked();
 
 export default function App() {
   return (
@@ -47,6 +54,8 @@ function AppInner() {
     { key: 'analyze', icon: '🔬', label: t.tabs.analyze },
     { key: 'history', icon: '🗂️', label: t.tabs.history },
     { key: 'settings', icon: '⚙️', label: t.tabs.settings },
+    // Untranslated on purpose: a developer surface, not shipped copy.
+    ...(KIT_TAB_ENABLED ? [{ key: 'kit' as Tab, icon: '🧪', label: 'Kit' }] : []),
   ];
 
   const [appReady, setAppReady] = useState(false);
@@ -209,6 +218,7 @@ function AppInner() {
         <HistoryScreen entries={history} onClear={handleClearHistory} onDelete={handleDeleteEntry} />
       )}
       {tab === 'settings' && <PermissionsScreen />}
+      {tab === 'kit' && <SnapActKitScreen />}
 
       <ReviewModal demoKey={reviewKey} onClose={() => setReviewKey(null)} onSaved={handleSaved} />
 

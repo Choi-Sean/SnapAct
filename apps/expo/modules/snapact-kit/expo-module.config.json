@@ -1,0 +1,11 @@
+{
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["SnapActKitModule"],
+    "podspecPath": [
+      "ios/SnapActKitBridge.podspec",
+      "../../../../packages/SnapActKit/SnapActKit.podspec"
+    ],
+    "swiftModuleNames": ["SnapActKitBridge"]
+  }
+}

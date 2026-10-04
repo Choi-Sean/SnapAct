@@ -30,9 +30,17 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     public static let outputFeature = "final_emb_1"
     public static let embeddingDimension = 512
 
+    /// Searches the caller's bundle first, then every candidate — the package
+    /// is built both as a Swift package and as a CocoaPod, which put resources
+    /// in different places. See ResourceBundle.
+    static func modelURL(in bundle: Bundle?) -> URL? {
+        bundle?.url(forResource: modelName, withExtension: "mlpackage")
+            ?? ResourceBundle.url(forResource: modelName, withExtension: "mlpackage")
+    }
+
     private let lock = NSLock()
     private var loaded: MLModel?
-    private let bundle: Bundle
+    private let bundle: Bundle?
     private let configuration: MLModelConfiguration
 
     /// Footprint in bytes immediately before and after the model was loaded.
@@ -41,23 +49,33 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
     public private(set) var loadFootprint: (before: UInt64, after: UInt64)?
     public private(set) var loadDuration: TimeInterval?
 
-    /// Halves the memory cost for free.
+    /// Never worse than Core ML's own default, and on some OS versions much
+    /// better.
     ///
-    /// Measured on this Mac, release build, one process per configuration:
+    /// Measured in a release build, one process per configuration. The
+    /// footprint of `.all` moved a lot between OS releases, so the numbers
+    /// are recorded per version rather than as a single fact:
     ///
-    ///   .cpuOnly             22.2 MB   196 ms load   9.9 ms inference
-    ///   .cpuAndNeuralEngine  22.7 MB   718 ms load   2.4 ms inference
-    ///   .cpuAndGPU           62.4 MB   205 ms load   4.8 ms inference
-    ///   .all (the default)   48.0 MB   736 ms load   1.8 ms inference
+    ///                        macOS 26.6        macOS 27.0.1
+    ///   .cpuOnly             22.2 MB            20.7 MB
+    ///   .cpuAndNeuralEngine  22.7 MB            21.9 MB
+    ///   .cpuAndGPU           62.4 MB            41.3 MB
+    ///   .all (Core ML's own) 48.0 MB            23.7 MB
     ///
-    /// `.all` reserves the GPU path as well and pays ~25 MB for it, while
-    /// actually running on the Neural Engine anyway: the embeddings from
-    /// `.all` and `.cpuAndNeuralEngine` are bit-identical (cosine 1.000000).
-    /// So this is not a speed/memory trade — it is 25 MB for nothing.
+    /// On 26.6 `.all` reserved the GPU path and paid ~25 MB for it while
+    /// running on the Neural Engine anyway — 25 MB for nothing. On 27.0.1
+    /// that penalty is almost gone and the gap is under 2 MB. The choice
+    /// still holds either way, and matters most on the older OS that users
+    /// are still on.
     ///
-    /// 22.7 MB against 21.7 MB of Float16 weights leaves roughly no overhead
-    /// left to remove. Quantising further would cost accuracy to save single
-    /// digits.
+    /// What did NOT change across the upgrade: `.all` and
+    /// `.cpuAndNeuralEngine` remain bit-identical (cosine 1.000000), and ANE
+    /// against the Python reference is still 0.999647. The OS moved memory
+    /// accounting, not arithmetic.
+    ///
+    /// 21.9 MB against 21.7 MB of Float16 weights leaves essentially no
+    /// overhead to remove. Quantising further would cost accuracy to save
+    /// single digits.
     ///
     /// CPU remains the fallback when the Neural Engine is unavailable, and it
     /// produces slightly different numbers — cosine 0.995 against the ANE
@@ -71,8 +89,10 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
         return configuration
     }
 
+    /// `bundle` nil means "search the candidates" rather than "use
+    /// Bundle.module", because Bundle.module does not exist in a pod build.
     public init(bundle: Bundle? = nil, configuration: MLModelConfiguration? = nil) {
-        self.bundle = bundle ?? .module
+        self.bundle = bundle
         self.configuration = configuration ?? Self.defaultConfiguration()
     }
 
@@ -81,7 +101,7 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
         defer { lock.unlock() }
         if let loaded { return loaded }
 
-        guard let url = bundle.url(forResource: Self.modelName, withExtension: "mlpackage") else {
+        guard let url = Self.modelURL(in: bundle) else {
             throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")
         }
 
@@ -123,6 +143,71 @@ public final class MobileCLIPEncoder: ImageEmbedder, @unchecked Sendable {
             }
         }
         return out
+    }
+
+    /// Which hardware the model will actually run on.
+    ///
+    /// Not a curiosity. Measured over 662 real photos, CPU and Neural Engine
+    /// disagree about the top class 6.3% of the time (embedding cosine median
+    /// 0.992, minimum 0.971) — so "which device ran this" is a real
+    /// confounder in any evaluation, and class_embeddings.json plus whatever
+    /// thresholds get tuned are all Neural Engine numbers.
+    ///
+    /// Asking Core ML directly rather than assuming: requesting
+    /// .cpuAndNeuralEngine does not guarantee the Neural Engine was used, and
+    /// a silent fall back to CPU would otherwise look like a worse model.
+    ///
+    /// Costs a compile and a plan load, so this is called once by whoever
+    /// records it, not per photo.
+    @available(iOS 17.4, macOS 14.4, *)
+    public func computeDeviceSummary() async throws -> ComputeDeviceSummary {
+        guard let url = Self.modelURL(in: bundle) else {
+            throw EncoderError.modelMissing(name: "\(Self.modelName).mlpackage")
+        }
+        let compiled = try await MLModel.compileModel(at: url)
+        let plan = try await MLComputePlan.load(contentsOf: compiled, configuration: configuration)
+        // Throws rather than returning zeros: a summary of "nothing ran
+        // anywhere" is indistinguishable from a summary that failed to be
+        // taken, and the whole point of this is to notice a silent fallback.
+        guard case let .program(program) = plan.modelStructure else {
+            throw EncoderError.unexpectedInterface(
+                "MLComputePlan 구조가 program 이 아닙니다: \(plan.modelStructure)")
+        }
+        guard let function = program.functions["main"] else {
+            throw EncoderError.unexpectedInterface(
+                "program 에 main 함수가 없습니다: \(Array(program.functions.keys))")
+        }
+        var neuralEngine = 0, gpu = 0, cpu = 0
+        for operation in function.block.operations {
+            // MLComputeDevice is an ENUM, not a protocol with class
+            // conformers — so `case is MLNeuralEngineComputeDevice` never
+            // matches and every count silently stays zero. Its description
+            // prints as "<MLNeuralEngineComputeDevice: 0x…>", which makes the
+            // wrong version look like it should work.
+            guard let preferred = plan.deviceUsage(for: operation)?.preferred else { continue }
+            switch preferred {
+            case .neuralEngine: neuralEngine += 1
+            case .gpu: gpu += 1
+            case .cpu: cpu += 1
+            @unknown default: break
+            }
+        }
+        return ComputeDeviceSummary(neuralEngine: neuralEngine, gpu: gpu, cpu: cpu)
+    }
+
+    public struct ComputeDeviceSummary: Sendable, Codable, Equatable {
+        public let neuralEngine: Int
+        public let gpu: Int
+        public let cpu: Int
+
+        public var total: Int { neuralEngine + gpu + cpu }
+        /// 1.0 means everything ran where the reference embeddings came from.
+        public var neuralEngineFraction: Double {
+            total == 0 ? 0 : Double(neuralEngine) / Double(total)
+        }
+        public var description: String {
+            "ANE \(neuralEngine) / GPU \(gpu) / CPU \(cpu)"
+        }
     }
 
     /// Fails at load rather than producing nonsense later if the bundled model

@@ -11,13 +11,14 @@ SWIFT := DEVELOPER_DIR=$(DEVELOPER_DIR) /usr/bin/xcrun swift
 REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))../..)
 PY := $(REPO_ROOT)/.venv/bin/python
 
-.PHONY: help build test run clean doctor catalog catalog-check
+.PHONY: help build test run clean doctor catalog catalog-check deadlock-check
 
 help:
 	@echo "make build    패키지 빌드 (호스트 macOS)"
 	@echo "make test     테스트 실행"
 	@echo "make run      디버그 화면 실행 (macOS 창)"
 	@echo "make catalog  엑셀 -> Resources/actions.json 재생성"
+	@echo "make deadlock-check  동시 라우팅 교착 검사 (외부 타임아웃)"
 	@echo "make doctor   툴체인 점검 (Xcode / Swift / SDK)"
 	@echo "make clean    빌드 산출물 삭제"
 
@@ -47,6 +48,21 @@ doctor:
 	@printf "FoundationModels (macOS SDK): "
 	@ls -d $(DEVELOPER_DIR)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/FoundationModels.framework >/dev/null 2>&1 \
 		&& echo "있음" || echo "없음 — Xcode 26 이상이 필요합니다"
+
+# 교착은 실패가 아니라 멈춤이라 인프로세스 테스트로 잡을 수 없습니다 —
+# 타임아웃 태스크 자체가 고갈된 풀을 기다리게 됩니다. 외부에서 재야 합니다.
+# 수정을 되돌리면 20초 안에 끝나지 않는 것을 확인했습니다.
+DEADLOCK_TIMEOUT ?= 60
+DEADLOCK_CONCURRENCY ?= 32
+deadlock-check:
+	@$(SWIFT) build -c release --product DeadlockProbe >/dev/null
+	@( $(SWIFT) run -c release DeadlockProbe $(DEADLOCK_CONCURRENCY) & \
+	   pid=$$!; \
+	   ( sleep $(DEADLOCK_TIMEOUT); kill -9 $$pid 2>/dev/null ) & \
+	   watchdog=$$!; \
+	   if wait $$pid; then kill $$watchdog 2>/dev/null; \
+	   else echo "교착: 동시 $(DEADLOCK_CONCURRENCY)개가 $(DEADLOCK_TIMEOUT)초 안에 끝나지 않았습니다"; \
+	        echo "  Vision 호출이 협력 스레드를 막고 있습니다 — VisionWork 참고"; exit 1; fi )
 
 clean:
 	rm -rf .build

@@ -22,6 +22,7 @@ let package = Package(
         // set from the composition that ships, not from separate estimates.
         .executable(name: "RouteEval", targets: ["RouteEval"]),
         .executable(name: "ArbEval", targets: ["ArbEval"]),
+        .executable(name: "DeadlockProbe", targets: ["DeadlockProbe"]),
     ],
     targets: [
         .target(
@@ -49,6 +50,7 @@ let package = Package(
         .executableTarget(name: "MemProbe", dependencies: ["SnapActKit"]),
         .executableTarget(name: "RouteEval", dependencies: ["SnapActKit"]),
         .executableTarget(name: "ArbEval", dependencies: ["SnapActKit"]),
+        .executableTarget(name: "DeadlockProbe", dependencies: ["SnapActKit"]),
         .testTarget(name: "SnapActKitTests", dependencies: ["SnapActKit"]),
     ]
 )
